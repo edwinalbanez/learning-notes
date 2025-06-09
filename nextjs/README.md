@@ -1,5 +1,8 @@
 # Anotaciones sobre Next.js
 
+## ¿Qué es Next.js?
+ Next.js es un framework de React de código abierto desarrollado por Vercel.  Mientras que React es una librería para construir interfaces de usuario, Next.js es un framework completo que añade funcionalidades esenciales para aplicaciones web en producción, como renderizado del lado del servidor, enrutamiento automático, optimización de rendimiento y mucho más.
+
 ## Creando un nuevo proyecto
 
 Se recomienda utilizar `pnpm` como gestor de paquetes, ya que es más rápido y eficiente que npm o yarn. Si no lo tiene instalado, se puede instalar globalmente ejecutando:
