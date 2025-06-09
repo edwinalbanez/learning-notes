@@ -3,18 +3,18 @@
 ## Enrutamiento
 
 Cada carpeta representa un segmento de URL.
-<img width="706" alt="image" src="https://github.com/user-attachments/assets/c7790b79-8329-4b08-8a82-53d1fba8a16e" />
+<img width="706" alt="image" src="https://github.com/user-attachments/assets/aef06dc4-42cc-49b8-9ca0-1040d9ebdf82" />
 
 En cada carpeta debe existir un archivo `page.tsx` para que el segmento de la URL sea accesible.
-<img width="707" alt="image" src="https://github.com/user-attachments/assets/07e5e858-b6d1-42e6-89c2-d33f2eb6306d" />
+<img width="707" alt="image" src="https://github.com/user-attachments/assets/67ea59ea-38d0-414b-9d1f-2ebb026a150a" />
 
 Al agregar un archivo especial `layout.tsx` en una carpeta que representa un segmento de URL, se crea un diseño compartido para las páginas (`<page.tsx`) adentro de esa carpeta.
 
 El componente `<Layout />` recibe una propiedad `children`, las paginas (`page.tsx`) internas de un segmento se anidaran automáticamente como la propiedad `children` de `<Layout />`.
-<img width="707" alt="image" src="https://github.com/user-attachments/assets/8720920c-9ee2-46f0-af65-f65ce1cb038f" />
+<img width="707" alt="image" src="https://github.com/user-attachments/assets/810eb2bf-5b74-4b11-b99d-95110f81c856" />
 
-Usando diseños (`layout.tsx`) en Next, durante la navegación, solo se actualizan los componentes de página (`page.tsx`), mientras que el diseño (`layout.tsx`) no se vuelve a renderizar. Esto se denomina renderizado parcial.
-<img width="703" alt="image" src="https://github.com/user-attachments/assets/49da7e3a-7bec-488e-83a3-714ba8b34909" />
+Usando diseños (`layout.tsx`) en Next, durante la navegación, solo se actualizan los componentes de página (`page.tsx`), mientras que el diseño (`layout.tsx`) no se vuelve a renderizar. Esto se denomina renderizado parcial. 
+<img width="704" alt="image" src="https://github.com/user-attachments/assets/9b21f52f-1294-44ab-8cc7-b7ef6fa58ada" />
 
 ## Navegando entre páginas
 
@@ -37,7 +37,7 @@ Los componentes del servidor se ejecutan en el servidor, por lo que se puede man
 Dado que los componentes de servidor se ejecutan en el servidor, puede consultar la base de datos directamente sin una capa de API adicional.
 
 Una "cascada" es una secuencia de solicitudes de red que dependen de la finalización de las solicitudes anteriores. Cada solicitud solo puede comenzar una vez que la solicitud anterior haya devuelto datos.
-<img width="710" alt="image" src="https://github.com/user-attachments/assets/c8aaa70c-650c-43e8-82a2-2ef0a491bd8b" />
+<img width="710" alt="image" src="https://github.com/user-attachments/assets/47be0143-06fb-478d-98a2-2db616517bda" />
 
 ## Renderizado estático y dinámico
 
@@ -50,7 +50,7 @@ Con la renderización dinámica, el contenido se renderiza en el **servidor** pa
 ## Streaming
 
 La transmisión es una técnica de transferencia de datos que permite dividir una ruta en "fragmentos" más pequeños y transmitirlos progresivamente desde el servidor al cliente a medida que estén listos.
-<img width="706" alt="image" src="https://github.com/user-attachments/assets/88a6dc5b-4a7c-44ed-9641-8b43f632319e" />
+<img width="707" alt="image" src="https://github.com/user-attachments/assets/637ceffd-2af5-4a49-8185-9ed9d658edfc" />
 
 Los fragmentos se procesan en paralelo, lo que reduce el tiempo de carga general.
 
@@ -65,7 +65,7 @@ Hay dos formas de implementar la transmisión en Next.js:
 
 Los grupos de rutas permiten organizar archivos en grupos lógicos sin afectar la estructura de la ruta URL. Al crear una carpeta nueva con paréntesis (), el nombre no se incluirá en la ruta URL. Por lo tanto, /dashboard/(overview)/page.tsxse convierte en /dashboard.
 
-<img width="712" alt="image" src="https://github.com/user-attachments/assets/4212e9bc-0b8e-4939-8fa7-89d363064254" />
+<img width="709" alt="image" src="https://github.com/user-attachments/assets/ae047828-1289-4358-91d0-e1fdada3c153" />
 
 ## TEMAS PENDIENTES
 
