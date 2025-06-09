@@ -1,5 +1,7 @@
-## Instalaciones
+# Testing en React 
+Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones_react)
 
+## Instalaciones
 Comencemos instalando Vitest y la librería jsdom que simula un navegador web:
 
 ```bash
@@ -69,3 +71,254 @@ Resumen de configuraciones:
 - Agregar un script en `package.json` para ejecutar los tests.
 - Crear un archivo que se ejecuta automáticamente antes de todas las pruebas. Su propósito es preparar el entorno de testing y establecer comportamientos comunes.
 - Definir el entorno de las pruebas (jsdom), permitir el uso de funciones comunes para el testing sin necesidad de importarlas, y establecer que archivos se ejecutan antes de las pruebas.
+
+## Componente de notas
+Tomando como ejemplo este componente para renderizar una nota:
+```javascript
+const Note = ({ note, toggleImportance }) => {
+  const { content, important } = note;
+  const label = important
+    ? 'make not important'
+    : 'make important'
+
+  return (
+
+    <li className='note'>
+      { content }
+      <button onClick={toggleImportance}> { label } </button>
+    </li>
+  )
+}
+```
+
+El elemento `li` tiene el valor "note" para el atributo de CSS className, que se usa para acceder al componente en las pruebas.
+
+## Renderizando el componente para pruebas
+
+El archivo para las prueba será `Note.test.jsx`.
+
+La primera prueba verifica que el componente muestra el contenido de la nota:
+```javascript
+import { render, screen } from '@testing-library/react'
+import Note from './Note'
+
+test('renders content', () => {
+  const note = {
+    content: 'Component testing is done with react-testing-library',
+    important: true
+  }
+
+  render(<Note note={note} />)
+
+  const element = screen.getByText('Component testing is done with react-testing-library')
+  expect(element).toBeDefined()
+})
+```
+- La prueba renderiza el componente con el método render proporcionado por react-testing-library:
+```javascript
+render(<Note note={note} />)
+```
+- Podemos usar el objeto `screen` para acceder al componente renderizado.
+```javascript
+  const element = screen.getByText('Component testing is done with react-testing-library')
+  expect(element).toBeDefined()
+```
+- Utilizamos el método `getByText` de `screen` para buscar un elemento que tenga el contenido de la nota y asegurarnos de que existe.
+- La existencia de un elemento se verifica utilizando el comando `expect` de Vitest.
+- `expect` genera una aserción para su argumento, cuya validez se puede probar utilizando varias funciones de condición.
+- Ahora utilizamos `toBeDefined` que prueba si el argumento element de expect existe.
+
+Problemas de Eslint con las palabras clave `test` y `expect` en las pruebas:
+```bash
+npm install --save-dev eslint-plugin-vitest-globals
+```
+y habilitando el plugin al editar el archivo .eslint.cjs de la siguiente manera:
+```javascript
+module.exports = {
+  root: true,
+  env: {
+    browser: true,
+    es2020: true,
+
+    "vitest-globals/env": true
+  },
+  extends: [
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'plugin:react-hooks/recommended',
+
+    'plugin:vitest-globals/recommended',
+  ],
+  // ...
+}
+```
+
+ El test se ejecuta con el comando:
+ ```bash
+npm test
+```
+
+## Ubicacion del archivo de prueba
+En React hay (al menos) dos convenciones diferentes para la ubicación de los archivos de prueba:
+- Colocar los archivos de prueba en el mismo directorio que el componente que se esta probando. (configuración predeterminada por Vite)
+- Almacenar los archivos de prueba "normalmente" en su propio directorio separado llamado `test`. (me gusta más)
+
+## Búsqueda de contenido en un componente
+
+`react-testing-library` ofrece muchas formas de investigar el contenido del componente. En realidad, el expect en la prueba anterior no es necesario en absoluto ya que la prueba falla si getByText no encuentra el elemento que está buscando.:
+```javascript
+expect(element).toBeDefined()
+```
+
+También es posible usar selectores CSS para encontrar elementos renderizados mediante el uso del método `querySelector` del objeto `container`, que es uno de los elementos devueltos por el renderizado. La nueva version del test es:
+```javascript
+import { render, screen } from '@testing-library/react'
+import Note from './Note'
+
+test('renders content', () => {
+  const note = {
+    content: 'Component testing is done with react-testing-library',
+    important: true
+  }
+
+
+  const { container } = render(<Note note={note} />)
+
+
+  const div = container.querySelector('.note')
+  expect(div).toHaveTextContent(
+    'Component testing is done with react-testing-library'
+  )
+})
+```
+
+Una forma más consistente de seleccionar elementos es usando un atributo de datos que esté específicamente definido para propósitos de prueba. 
+Usando `react-testing-library`, podemos aprovechar el método `getByTestId` para seleccionar elementos con un atributo `data-testid` especificado:
+```html
+<div data-testid="custom-element" >
+```
+```javascript
+import {screen} from '@testing-library/dom'
+
+const element = screen.getByTestId('custom-element')
+```
+
+## Depurando pruebas
+
+El objeto `screen` tiene el método `debug` que se puede utilizar para imprimir en la terminal todo el HTML que se ha renderizado.
+```javascript
+screen.debug();
+```
+
+También es posible utilizar el mismo método para imprimir el elemento que queramos en la consola:
+```javascript
+const element = screen.getByText("Some text");
+screen.debug(element);
+```
+
+## Clicando botones en las pruebas
+La librería `user-event` simula la interacción del usuario:
+```bash
+npm install --save-dev @testing-library/user-event
+```
+
+El componente `<Note />` recibe una propiedad llamada `toggleImportance` que es una función para cambiar el estado de una nota.
+```javascript
+import { render, screen } from '@testing-library/react'
+
+import userEvent from '@testing-library/user-event'
+import Note from './Note'
+
+// ...
+
+test('clicking the button calls event handler once', async () => {
+  const note = {
+    content: 'Component testing is done with react-testing-library',
+    important: true
+  }
+  const mockHandler = vi.fn()
+
+  render(<Note note={note} toggleImportance={mockHandler} />)
+
+  const user = userEvent.setup()
+  const button = screen.getByText('make not important')
+  await user.click(button)
+
+  expect(mockHandler.mock.calls).toHaveLength(1)
+})
+```
+Hay algunas cosas interesantes relacionadas con esta prueba. el valor de `toggleImportance` es una función simulada o falsa creada con Vitest:
+```javasctipt
+const mockHandler = vi.fn()
+```
+Se inicia una session (sesión) para interactuar con el componente renderizado:
+```javascript
+const user = userEvent.setup()
+```
+La prueba encuentra el botón basada en el texto del componente renderizado y hace clic en el elemento:
+```javascript
+const button = screen.getByText('make not important')
+await user.click(button)
+```
+El clic ocurre con el método click de la librería userEvent.
+
+La expectativa de la prueba utiliza toHaveLength para verificar que la mock function (función simulada) se haya llamado exactamente una vez:
+```javascript
+expect(mockHandler.mock.calls).toHaveLength(1)
+```
+
+Las llamadas a la mock function son guardadas en el array mock.calls dentro del objeto de la mock function.
+
+En Vitest, estas tres funciones son fundamentales para organizar y estructurar tus pruebas:
+
+`describe`: Agrupa pruebas relacionadas bajo un contexto común. Es útil para organizar múltiples tests que evalúan una misma funcionalidad o componente.
+```javascript
+describe('Calculator', () => {
+  test('should add two numbers', () => {
+    // test code
+  })
+  
+  test('should subtract two numbers', () => {
+    // test code
+  })
+})
+```
+
+`beforeEach`: Se ejecuta antes de cada test individual dentro del bloque donde se define. Es ideal para configurar el estado inicial que necesita cada prueba.
+```javascript
+describe('User service', () => {
+  let user;
+  
+  beforeEach(() => {
+    user = { name: 'John', age: 25 }
+    // Esta configuración se ejecuta antes de cada test
+  })
+  
+  test('should update user name', () => {
+    // user ya está disponible y configurado
+  })
+  
+  test('should update user age', () => {
+    // user se reinicia para este test también
+  })
+})
+```
+`afterEach`: Se ejecuta después de cada test individual. Se usa para limpiar recursos, resetear mocks, o cualquier tarea de limpieza necesaria.
+```javascript
+describe('Database tests', () => {
+  beforeEach(() => {
+    // Configurar conexión a DB de prueba
+  })
+  
+  afterEach(() => {
+    // Limpiar datos de prueba
+    // Cerrar conexiones
+    // Resetear mocks
+  })
+  
+  test('should save user', () => {
+    // test code
+  })
+})
+```
