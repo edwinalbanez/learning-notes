@@ -20,7 +20,7 @@ Resumen de instalaciones:
 - `@testing-library/react` => renderiza componentes de React en el DOM simulado.
 - `@testing-library/jest-dom` => añade métodos para realizar pruebas.
 
-# Configuraciones
+## Configuraciones
 
 Agregamos un script al archivo `package.json` para ejecutar las pruebas:
 
@@ -47,6 +47,8 @@ Vamos a crear un archivo `testSetup.js` en la raíz del proyecto con el siguient
  ```
 
 Ahora, luego de cada prueba, la función cleanup es ejecutada para resetear jsdom, que esta simulando al navegador.
+
+El último import extiende el uso de Vitest con matchers específicos para DOM. Añade métodos como `toBeInTheDocument()`, `toHaveClass()`, `toBeVisible()`, etc.
 
 Expandamos el archivo `vite.config.js` de la siguiente manera:
 
