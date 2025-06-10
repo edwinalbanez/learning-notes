@@ -1,7 +1,7 @@
 # Testing en React 
 Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones_react)
 
-## Tabla de Contenidos
+## Tabla de Contenido
 1. [Instalaciones](#instalaciones)
 2. [Configuración](#configuración)
 3. [Renderizando el componente](#renderizando-el-componente-para-pruebas)
