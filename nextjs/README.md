@@ -160,9 +160,3 @@ Los grupos de rutas permiten organizar archivos en grupos lógicos sin afectar l
 Optimización de imágenes y fuentes.
 En Next.js, puedes crear puntos finales de API utilizando controladores de ruta.
 
-
-
-
-
-
-
