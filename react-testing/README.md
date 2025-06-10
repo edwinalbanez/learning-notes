@@ -16,14 +16,14 @@ Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones
 Comencemos instalando Vitest y la librería jsdom que simula un navegador web:
 
 ```bash
-pnpm install --save-dev vitest jsdom
+npm install --save-dev vitest jsdom
 ```
 Además de Vitest, también necesitamos otra librería de pruebas que nos ayudará a renderizar componentes para fines de prueba. La mejor opción actual para esto es **react-testing-library**, que ha visto un rápido crecimiento en popularidad recientemente. También vale la pena extender el poder expresivo de las pruebas con la librería **jest-dom**.
 
 Instalemos las librerías con el comando:
 
 ```bash
-pnpm install --save-dev @testing-library/react @testing-library/jest-dom
+npm install --save-dev @testing-library/react @testing-library/jest-dom
 ```
 
 Resumen de instalaciones:
