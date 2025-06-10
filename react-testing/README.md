@@ -4,7 +4,7 @@ Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones
 ## Tabla de Contenido
 1. [Instalaciones](#instalaciones)
 2. [Configuración](#configuración)
-3. [Renderizando el componente](#renderizando-el-componente-para-pruebas)
+3. [Renderizando componentes](#renderizando-el-componente-para-pruebas)
 4. [Ubicación del archivo de pruebas](#ubicación-del-archivo-de-pruebas)
 5. [Buscar contenido en componentes](#búsqueda-de-contenido-en-un-componente)
 6. [Depurando pruebas](#depurando-pruebas)
