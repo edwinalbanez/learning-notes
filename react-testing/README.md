@@ -1,6 +1,12 @@
 # Testing en React 
 Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones_react)
 
+## Tabla de Contenidos
+1. [Instalaciones](#instalaciones)
+2. [Configuraciones](#configuraciones)
+3. [Conceptos Básicos](#conceptos-básicos)
+4. [Primeros Pasos](#primeros-pasos)
+
 ## Instalaciones
 Comencemos instalando Vitest y la librería jsdom que simula un navegador web:
 
