@@ -3,9 +3,14 @@ Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones
 
 ## Tabla de Contenidos
 1. [Instalaciones](#instalaciones)
-2. [Configuraciones](#configuraciones)
-3. [Conceptos Básicos](#conceptos-básicos)
-4. [Primeros Pasos](#primeros-pasos)
+2. [Configuración](#configuración)
+3. [Renderizando el componente](#renderizando-el-componente-para-pruebas)
+4. [Ubicación del archivo de pruebas](#ubicación-del-archivo-de-pruebas)
+5. [Buscar contenido en componentes](#búsqueda-de-contenido-en-un-componente)
+6. [Depurando pruebas](#depurando-pruebas)
+7. [Hacer click](#clicando-botones-en-las-pruebas)
+8. [Probando formularios](#probando-formularios)
+9. [Cobertura de las pruebas](#cobertura-de-las-pruebas)
 
 ## Instalaciones
 Comencemos instalando Vitest y la librería jsdom que simula un navegador web:
@@ -28,8 +33,7 @@ Resumen de instalaciones:
 - `@testing-library/react` ➡️ renderiza componentes de React en el DOM simulado.
 - `@testing-library/jest-dom` ➡️ añade métodos para realizar pruebas.
 
-## Configuraciones
-
+## Configuración
 Agregamos un script al archivo `package.json` para ejecutar las pruebas:
 
 ```json
@@ -78,8 +82,8 @@ Resumen de configuraciones:
 - Crear un archivo que se ejecuta automáticamente antes de todas las pruebas. Su propósito es preparar el entorno de testing y establecer comportamientos comunes.
 - Definir el entorno de las pruebas (jsdom), permitir el uso de funciones comunes para el testing sin necesidad de importarlas, y establecer que archivos se ejecutan antes de las pruebas.
 
-## Componente de notas
-Tomando como ejemplo este componente para renderizar una nota:
+## Renderizando el componente para pruebas
+Tomaremos como ejemplo este componente para renderizar una nota:
 ```javascript
 const Note = ({ note, toggleImportance }) => {
   const { content, important } = note;
@@ -96,10 +100,7 @@ const Note = ({ note, toggleImportance }) => {
   )
 }
 ```
-
 El elemento `li` tiene el valor "note" para el atributo de CSS className, que se usa para acceder al componente en las pruebas.
-
-## Renderizando el componente para pruebas
 
 El archivo para las prueba será `Note.test.jsx`.
 
@@ -165,7 +166,7 @@ module.exports = {
 npm test
 ```
 
-## Ubicacion del archivo de prueba
+## Ubicación del archivo de pruebas
 En React hay (al menos) dos convenciones diferentes para la ubicación de los archivos de prueba:
 - Colocar los archivos de prueba en el mismo directorio que el componente que se esta probando. (configuración predeterminada por Vite)
 - Almacenar los archivos de prueba "normalmente" en su propio directorio separado llamado `test`. (me gusta más)
