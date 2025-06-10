@@ -1,4 +1,4 @@
-# Guía Completa de Playwright
+# Guía de Playwright
 
 ## Tabla de contenido
 1. [¿Qué es Playwright?](#qué-es-playwright)
