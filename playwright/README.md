@@ -9,7 +9,7 @@
 6. [Funcionalidades Avanzadas](#funcionalidades-avanzadas)
 7. [Debugging y Troubleshooting](#debugging-y-troubleshooting)
 8. [Mejores Prácticas](#mejores-prácticas)
-9. [Comandos Útiles](#comanfos-Útiles)
+9. [Comandos Útiles](#comandos-Útiles)
 
 ## ¿Qué es Playwright?
 
