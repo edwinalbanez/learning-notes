@@ -14,18 +14,15 @@ Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones
 
 ## Instalaciones
 Comencemos instalando Vitest y la librería jsdom que simula un navegador web:
-
 ```bash
 npm install --save-dev vitest jsdom
 ```
 Además de Vitest, también necesitamos otra librería de pruebas que nos ayudará a renderizar componentes para fines de prueba. La mejor opción actual para esto es **react-testing-library**, que ha visto un rápido crecimiento en popularidad recientemente. También vale la pena extender el poder expresivo de las pruebas con la librería **jest-dom**.
 
 Instalemos las librerías con el comando:
-
 ```bash
 npm install --save-dev @testing-library/react @testing-library/jest-dom
 ```
-
 Resumen de instalaciones:
 
 - `vitest` ➡️ framework principal para los tests.
@@ -35,7 +32,6 @@ Resumen de instalaciones:
 
 ## Configuración
 Agregamos un script al archivo `package.json` para ejecutar las pruebas:
-
 ```json
 {
   "scripts": {
@@ -45,9 +41,7 @@ Agregamos un script al archivo `package.json` para ejecutar las pruebas:
   //...
 }
 ```
-
 Vamos a crear un archivo `testSetup.js` en la raíz del proyecto con el siguiente contenido:
-
  ```javascript
  import { afterEach } from 'vitest'
  import { cleanup } from '@testing-library/react'
@@ -57,13 +51,11 @@ Vamos a crear un archivo `testSetup.js` en la raíz del proyecto con el siguient
   cleanup();
  })
  ```
-
 Ahora, luego de cada prueba, la función cleanup es ejecutada para resetear jsdom, que esta simulando al navegador.
 
 El último import extiende el uso de Vitest con matchers específicos para DOM. Añade métodos como `toBeInTheDocument()`, `toHaveClass()`, `toBeVisible()`, etc.
 
 Expandamos el archivo `vite.config.js` de la siguiente manera:
-
 ```javascript
 export default defineConfig({
   //...
@@ -212,7 +204,6 @@ const element = screen.getByTestId('custom-element')
 ```
 
 ## Depurando pruebas
-
 El objeto `screen` tiene el método `debug` que se puede utilizar para imprimir en la terminal todo el HTML que se ha renderizado.
 ```javascript
 screen.debug();
