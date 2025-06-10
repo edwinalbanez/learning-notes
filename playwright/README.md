@@ -1,5 +1,16 @@
 # Guía Completa de Playwright
 
+## Tabla de contenido
+1. [¿Qué es Playwright?](#qué-es-playwright)
+2. [Instalación](#instalación)
+3. [Configuración Básica](#configuración-básica)
+4. [Conceptos Fundamentales](#conceptos-fundamentales)
+5. [Ejemplos Prácticos](#ejemplos-prácticos)
+6. [Funcionalidades Avanzadas](#funcionalidades-avanzadas)
+7. [Debugging y Troubleshooting](#debugging-y-troubleshooting)
+8. [Mejores Prácticas](#mejores-prácticas)
+9. [Comandos Útiles](#comanfos-Útiles)
+
 ## ¿Qué es Playwright?
 
 Playwright es una biblioteca de automatización de navegadores desarrollada por Microsoft que permite escribir pruebas end-to-end confiables y rápidas. Soporta múltiples navegadores (Chromium, Firefox, Safari) y lenguajes de programación (JavaScript, TypeScript, Python, Java, .NET).
