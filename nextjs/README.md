@@ -1,4 +1,17 @@
-# Anotaciones sobre Next.js
+# Guía de Next.js
+Fuente: [nextjs.org](https://nextjs.org/learn/dashboard-app/getting-started)
+
+## Tabla de Contenido
+1. [¿Qué es Next.js?](#qué-es-nextjs)
+2. [Creando un nuevo proyecto](#creando-un-nuevo-proyecto)
+3. [Estructura de carpetas](#estructura-de-carpetas)
+4. [Ejecución del servidor](#ejecución-del-servidor-de-desarrollo)
+5. [Optimización de fuentes e imágenes](#optimización-de-fuentes-e-imágenes)
+6. [Enrutamiento](#enrutamiento)
+7. [Navegando entre páginas](#navegando-entre-páginas)
+8. [Obteniendo datos](#obteniendo-datos)
+9. [Renderizado estático y dinámico](#renderizado-estático-y-dinámico)
+10. [Streaming](#streaming)
 
 ## ¿Qué es Next.js?
  Next.js es un framework de React de código abierto desarrollado por Vercel.  Mientras que React es una librería para construir interfaces de usuario, Next.js es un framework completo que añade funcionalidades esenciales para aplicaciones web en producción, como renderizado del lado del servidor, enrutamiento automático, optimización de rendimiento y mucho más.
