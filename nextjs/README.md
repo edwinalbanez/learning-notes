@@ -95,9 +95,45 @@ export default function RootLayout({
   );
 }
 ```
+Next.js puede servir recursos estáticos, como imágenes, en la carpeta de nivel superior `/public`. Los archivos que contiene pueden referenciarse en la aplicación.
+
+Con HTML normal, agregarías una imagen de la siguiente manera:
+```html
+<img
+  src="/hero.png"
+  alt="Screenshots of the dashboard project showing desktop version"
+/>
+```
+### El componente `<Image />`
+El componente `<Image>` es una extensión de la etiqueta `<img>` HTML y viene con optimización automática de imágenes, como:
+
+- Evitar el cambio de diseño automático cuando se cargan las imágenes.
+- Cambiar el tamaño de las imágenes para evitar enviar imágenes grandes a dispositivos con una ventana gráfica más pequeña.
+- Carga diferida de imágenes de forma predeterminada (las imágenes se cargan a medida que ingresan a la ventana gráfica).
+- Sirviendo imágenes en formatos modernos, como `WebP` y `AVIF`, cuando el navegador lo admita.
+
+Por ejemplo:
+```html
+<Image
+  src="/hero-desktop.png"
+  width={1000}
+  height={760}
+  className="hidden md:block"
+  alt="Screenshots of the dashboard project showing desktop version"
+/>
+```
+Aquí, se configuran los valores de `width` a 1000 y `height` a 760 en píxeles. Es recomendable configurar los valores de `width` y `height` en las imágenes para evitar cambios de diseño. Estos valores deben tener una relación de aspecto idéntica a la de la imagen original. Estos valores *no* representan el tamaño de la imagen renderizada, sino el tamaño del archivo de imagen real utilizado para comprender la relación de aspecto.
+
+### Lectura recomendada
+Hay mucho más que aprender sobre estos temas, como la optimización de imágenes remotas y el uso de archivos de fuentes locales. Si desea profundizar en el tema de las fuentes y las imágenes, consulte:
+- [Documentos de optimización de imágenes](https://nextjs.org/docs/app/building-your-application/optimizing/images)
+- [Documentos de optimización de fuentes](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)
+- [Mejorar el rendimiento web con imágenes (MDN)](https://developer.mozilla.org/en-US/docs/Learn/Performance/Multimedia)
+- [Fuentes web (MDN)](https://developer.mozilla.org/en-US/docs/Learn/CSS/Styling_text/Web_fonts)
+- [Cómo afectan los core Web Vitals al CEO](https://vercel.com/blog/how-core-web-vitals-affect-seo)
+- [Cómo gestiona Google Javascript durante el proceso de indexación](https://vercel.com/blog/how-google-handles-javascript-throughout-the-indexing-process)
 
 ## Enrutamiento
-
 Cada carpeta representa un segmento de URL.
 
 <img width="706" alt="image" src="https://github.com/user-attachments/assets/aef06dc4-42cc-49b8-9ca0-1040d9ebdf82" />
