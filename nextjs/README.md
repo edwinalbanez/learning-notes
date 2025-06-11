@@ -204,11 +204,39 @@ Hay dos formas de implementar la transmisión en Next.js:
 - A nivel de página, con el archivo `loading.tsx`  (crea `<Suspense>` automáticamente).
 - A nivel de componentes, con <Suspense> para un control más granular.
 
-`loading.tsx` s un archivo especial de Next.js basado en React Suspense. Permite crear una interfaz de usuario alternativa mientras se carga el contenido de la página.
+### Transmitiendo una página completa con `loading.tsx`
+`loading.tsx` es un archivo especial de Next.js basado en React Suspense. Al agregarlo en un segmento de ruta. Permite crear una interfaz de usuario alternativa para un segmento de URL mientras se carga el contenido de la página.
 
-Los grupos de rutas permiten organizar archivos en grupos lógicos sin afectar la estructura de la ruta URL. Al crear una carpeta nueva con paréntesis (), el nombre no se incluirá en la ruta URL. Por lo tanto, /dashboard/(overview)/page.tsxse convierte en /dashboard.
+### Grupos de rutas
+Dado que `loading.tsx` esta en un nivel superior a `/invoices/page.tsx` y `/customers/page.tsx` en el sistema de archivos, también se aplica a esas páginas.
 
+Podemos cambiar esto con **Grupos de Rutas**. Cree una nueva carpeta `/(overview)` dentro de la carpeta del panel. Luego, mueva sus archivos `loading.tsx` y `page.tsx` dentro de ella:
+<img width="702" alt="image" src="https://github.com/user-attachments/assets/f91018ac-4669-47e2-aabb-765d1f8753bb" />
+
+Ahora, el archivo `loading.tsx` solo se aplicará a la página de descripción general de su panel de control.
+
+Los grupos de rutas permiten organizar archivos en grupos lógicos sin afectar la estructura de la ruta URL. Al crear una carpeta nueva con paréntesis (), el nombre no se incluirá en la ruta URL. Por lo tanto, `/dashboard/(overview)/page.tsx` se convierte en `/dashboard`.
 <img width="709" alt="image" src="https://github.com/user-attachments/assets/ae047828-1289-4358-91d0-e1fdada3c153" />
+
+### Transmisión de un componente
+Hasta ahora, se transmitió una página completa. Pero también puedes ser más específico y transmitir componentes específicos con React `Suspense`.
+
+`Suspense` permite aplazar la renderización de partes de la aplicación hasta que se cumpla una condición (por ejemplo, la carga de datos). Puedes encapsular tus componentes dinámicos en Suspense. Luego, pásale un componente de reserva para que se muestre mientras se carga el componente dinámico.
+
+Por ejemplo:
+```javascript
+import { Suspense } from 'react';
+import { ComponentSkeleton } from '@/app/ui/skeletons';
+import Component from '@/app/ui/Component';
+
+export default Page(){
+  return(
+    <Suspense fallback={<ComponentSkeleton />}>
+    <Component />
+    </Suspense>
+  )
+}
+```
 
 ## TEMAS PENDIENTES
 
