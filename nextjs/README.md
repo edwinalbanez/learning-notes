@@ -17,7 +17,6 @@ Fuente: [nextjs.org](https://nextjs.org/learn/dashboard-app/getting-started)
  Next.js es un framework de React de código abierto desarrollado por Vercel.  Mientras que React es una librería para construir interfaces de usuario, Next.js es un framework completo que añade funcionalidades esenciales para aplicaciones web en producción, como renderizado del lado del servidor, enrutamiento automático, optimización de rendimiento y mucho más.
 
 ## Creando un nuevo proyecto
-
 Se recomienda utilizar `pnpm` como gestor de paquetes, ya que es más rápido y eficiente que npm o yarn. Si no lo tiene instalado, se puede instalar globalmente ejecutando:
 ```bash
 npm install -g pnpm
@@ -68,7 +67,6 @@ El servidor de desarrollo se ha iniciado en el puerto `3000`, compruebe si funci
 Next.js optimiza automáticamente las fuentes de la aplicación al usar el módulo `next/font`. Descarga los archivos de fuentes durante la compilación y los aloja con el resto de tus recursos estáticos. Esto significa que, cuando un usuario visita tu aplicación, no hay solicitudes de red adicionales para las fuentes que afecten al rendimiento.
 
 ### Agregar una fuente principal
-
 Agreguemos una fuente de Google personalizada a su aplicación para ver cómo funciona. En la carpeta `/app/ui`, crea un archivo llamado `fonts.ts`.
 
 Importe la fuente `Inter` del módulo `next/font/google`: esta será la fuente principal. Luego, especifique el subconjunto que desea cargar, en este caso 'latin':
@@ -78,7 +76,7 @@ import { Inter } from 'next/font/google';
 export const inter = Inter({ subsets: ['latin'] });
 ```
 
-Por último, añada la fuente al elemento `<body>` en `/app/layout.tsx`:
+Por último, se añade la fuente al elemento `<body>` para aplicar la fuente a toda la app:
 ```javascript
 import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
@@ -113,14 +111,22 @@ El componente `<Image>` es una extensión de la etiqueta `<img>` HTML y viene co
 - Sirviendo imágenes en formatos modernos, como `WebP` y `AVIF`, cuando el navegador lo admita.
 
 Por ejemplo:
-```html
-<Image
-  src="/hero-desktop.png"
-  width={1000}
-  height={760}
-  className="hidden md:block"
-  alt="Screenshots of the dashboard project showing desktop version"
-/>
+```javascript
+import Image from 'next/image';
+ 
+export default function Page() {
+  return (
+    <div>
+      <Image
+        src="/hero-desktop.png"
+        width={1000}
+        height={760}
+        className="hidden md:block"
+        alt="Screenshots of the dashboard project showing desktop version"
+      />
+    </div>
+  );
+}
 ```
 Aquí, se configuran los valores de `width` a 1000 y `height` a 760 en píxeles. Es recomendable configurar los valores de `width` y `height` en las imágenes para evitar cambios de diseño. Estos valores deben tener una relación de aspecto idéntica a la de la imagen original. Estos valores *no* representan el tamaño de la imagen renderizada, sino el tamaño del archivo de imagen real utilizado para comprender la relación de aspecto.
 
