@@ -235,12 +235,146 @@ export default Page(){
   )
 }
 ```
+La ubicación de los límites de suspense variará según la aplicación. En general, se recomienda mover las búsquedas de datos a los componentes que las necesitan y luego encapsularlos en Suspense. Sin embargo, no hay problema en transmitir las secciones o la página completa si así lo requiere la aplicación.
 
 ## Prerenderizado parcial
+La prerenderización parcial es una función experimental introducida en Next.js 14. El contenido de esta página puede actualizarse a medida que la función se estabilice. La prerenderización parcial solo está disponible con las versiones canarias de Next.js ( next@canary), no en la versión estable. Aún no recomendamos su uso en producción.
+
+Para instalar la versión Canary de Next.js, ejecute:
+```bash
+pnpm install next@canary
+```
+
 ### Rutas estáticas vs. dinámicas
 En la mayoría de las aplicaciones web desarrolladas hoy en día, se puede elegir entre renderizado estático o dinámico para toda la aplicación o para una ruta específica . En Next.js, si se llama a una función dinámica en una ruta (como al consultar la base de datos), toda la ruta se vuelve dinámica.
 
 Sin embargo, la mayoría de las rutas no son completamente estáticas ni dinámicas. Por ejemplo, considere un sitio de comercio electrónico.Es posible que desees renderizar estáticamente la mayor parte de la página de información del producto, pero también puedes querer obtener el carrito del usuario y los productos recomendados dinámicamente; esto te permite mostrar contenido personalizado a tus usuarios.
+
+### ¿Qué es la pre-renderización parcial?
+Next.js 14 introdujo una versión experimental de Prerenderizado Parcial : un nuevo modelo de renderizado que permite combinar las ventajas del renderizado estático y dinámico en una misma ruta. Por ejemplo:
+
+<img width="707" alt="image" src="https://github.com/user-attachments/assets/01fc6cac-9ebf-4e57-8531-896c0857dc2b" />
+Cuando un usuario visita una ruta:
+
+Se proporciona un shell de ruta estática que incluye la barra de navegación y la información del producto, lo que garantiza una carga inicial rápida.
+El shell deja espacios donde el contenido dinámico, como el carrito y los productos recomendados, se cargarán de forma asincrónica.
+Los agujeros asincrónicos se transmiten en paralelo, lo que reduce el tiempo de carga general de la página.
+
+### ¿Cómo funciona la pre-renderización parcial?
+La prerenderización parcial utiliza `Suspense` de React(que aprendiste en el capítulo anterior) para diferir la representación de partes de tu aplicación hasta que se cumpla alguna condición (por ejemplo, se carguen los datos).
+
+El respaldo de Suspense se integra en el archivo HTML inicial junto con el contenido estático. Durante la compilación (o la revalidación), el contenido estático se pre-renderiza para crear un shell estático. La renderización del contenido dinámico se pospone hasta que el usuario solicita la ruta.
+
+Envolver un componente en `Suspense` no hace que el componente en sí sea dinámico, sino que Suspense se utiliza como un límite entre su código estático y dinámico.
+
+### Implementación de prerenderizado parcial
+Habilite PPR para su aplicación Next.js agregando la opción `ppr` a su archivo `next.config.ts`:
+```javascript
+import type { NextConfig } from 'next';
+ 
+const nextConfig: NextConfig = {
+  experimental: {
+    ppr: 'incremental'
+  }
+};
+ 
+export default nextConfig;
+```
+El valor 'incremental' le permite adoptar `PPR` para rutas específicas.
+
+A continuación, agregue la opción de configuración del segmento `experimental_ppr` al diseño de su panel:
+```javascript
+import SideNav from '@/app/ui/dashboard/sidenav';
+ 
+export const experimental_ppr = true;
+ 
+// ...
+```
+Eso es todo. Puede que no notes ninguna diferencia en tu aplicación durante el desarrollo, pero deberías notar una mejora en el rendimiento en producción. Next.js pre-renderizará las partes estáticas de tu ruta y pospondrá las partes dinámicas hasta que el usuario las solicite.
+
+Lo mejor del prerenderizado parcial es que no necesitas modificar el código para usarlo. Mientras uses Suspense para encapsular las partes dinámicas de tu ruta, Next.js sabrá qué partes de tu ruta son estáticas y cuáles dinámicas.
+
+## Agregar búsqueda y paginación
+### Código de inicio
+Dentro de tu `/dashboard/invoices/page.tsx` archivo, pega el siguiente código:
+```javascript
+import Pagination from '@/app/ui/invoices/pagination';
+import Search from '@/app/ui/search';
+import Table from '@/app/ui/invoices/table';
+import { CreateInvoice } from '@/app/ui/invoices/buttons';
+import { lusitana } from '@/app/ui/fonts';
+import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+import { Suspense } from 'react';
+ 
+export default async function Page() {
+  return (
+    <div className="w-full">
+      <div className="flex w-full items-center justify-between">
+        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+        <Search placeholder="Search invoices..." />
+        <CreateInvoice />
+      </div>
+      {/*  <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+        <Table query={query} currentPage={currentPage} />
+      </Suspense> */}
+      <div className="mt-5 flex w-full justify-center">
+        {/* <Pagination totalPages={totalPages} /> */}
+      </div>
+    </div>
+  );
+}
+```
+
+### ¿Por qué utilizar parámetros de búsqueda de URL?
+Como se mencionó anteriormente, usará parámetros de búsqueda de URL para administrar el estado de la búsqueda. Este patrón puede ser nuevo si está acostumbrado a hacerlo con el estado del lado del cliente.
+
+Implementar la búsqueda con parámetros de URL tiene un par de beneficios:
+
+- URL que se pueden marcar y compartir : dado que los parámetros de búsqueda están en la URL, los usuarios pueden marcar el estado actual de la aplicación, incluidas sus consultas de búsqueda y filtros, para futuras referencias o compartir.
+- Representación del lado del servidor : los parámetros de URL se pueden consumir directamente en el servidor para representar el estado inicial, lo que facilita el manejo de la representación del servidor.
+- Análisis y seguimiento : tener consultas de búsqueda y filtros directamente en la URL facilita el seguimiento del comportamiento del usuario sin necesidad de lógica adicional del lado del cliente.
+
+### Añadiendo la funcionalidad de búsqueda
+Estos son los ganchos de cliente Next.js que usarás para implementar la funcionalidad de búsqueda:
+
+- `useSearchParams` permite acceder a los parámetros de la URL actual. Por ejemplo, los parámetros de búsqueda para esta URL `/dashboard/invoices?page=1&query=pending` serían los siguientes: `{page: '1', query: 'pending'}`.
+- `usePathname` permite leer la ruta de la URL actual. Por ejemplo, para la ruta `/dashboard/invoices`, `usePathname` devolvería '/dashboard/invoices'.
+`useRouter` permite la navegación entre rutas dentro de los componentes del cliente mediante programación. Existen varios métodos que se pueden utilizar.
+
+A continuación se ofrece una descripción general rápida de los pasos de implementación:
+
+- Capturar la entrada del usuario.
+- Actualice la URL con los parámetros de búsqueda.
+- Mantenga la URL sincronizada con el campo de entrada.
+- Actualice la tabla para reflejar la consulta de búsqueda.
+
+### 1. Capturar la entrada del usuario
+Vaya al componente `<Search>` (/app/ui/search.tsx) y notará lo siguiente:
+
+- `"use client"`: este es un componente de cliente, lo que significa que puede utilizar escuchas y ganchos de eventos.
+- `<input>`: esta es la entrada de búsqueda.
+- 
+Crea una nueva función `handleSearch` y agrega un detector `onChange` al elemento `<input>`. `onChangeSe` invocará `handleSearch` siempre que cambie el valor de entrada.
+
+### 2. Actualice la URL con los parámetros de búsqueda.
+Importa el hook `useSearchParams` desde `next/navigation` y asígnalo a una variable:
+```javascript
+'use client';
+ 
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useSearchParams } from 'next/navigation';
+ 
+export default function Search() {
+  const searchParams = useSearchParams();
+ 
+  function handleSearch(term: string) {
+    console.log(term);
+  }
+  // ...
+}
+```
 
 ## TEMAS PENDIENTES
 
