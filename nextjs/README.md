@@ -183,9 +183,7 @@ Una "cascada" es una secuencia de solicitudes de red que dependen de la finaliza
 
 ## Renderizado estático y dinámico
 
-Con la representación estática, la obtención y representación de datos se realiza en el servidor en el momento de la **compilación** (cuando se implementa) o al revalidar los datos.
-
-Cada vez que un usuario visita la aplicación, se muestra el resultado almacenado en caché.
+Con la representación estática, la obtención y representación de datos se realiza en el servidor en el momento de la **compilación** (cuando se implementa) o al revalidar los datos. Cada vez que un usuario visita la aplicación, se muestra el resultado almacenado en caché.
 
 Con la renderización dinámica, el contenido se renderiza en el **servidor** para cada usuario en el **momento de la solicitud** (cuando el usuario visita la página). 
 
