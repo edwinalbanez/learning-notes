@@ -236,6 +236,12 @@ export default Page(){
 }
 ```
 
+## Prerenderizado parcial
+### Rutas estáticas vs. dinámicas
+En la mayoría de las aplicaciones web desarrolladas hoy en día, se puede elegir entre renderizado estático o dinámico para toda la aplicación o para una ruta específica . En Next.js, si se llama a una función dinámica en una ruta (como al consultar la base de datos), toda la ruta se vuelve dinámica.
+
+Sin embargo, la mayoría de las rutas no son completamente estáticas ni dinámicas. Por ejemplo, considere un sitio de comercio electrónico.Es posible que desees renderizar estáticamente la mayor parte de la página de información del producto, pero también puedes querer obtener el carrito del usuario y los productos recomendados dinámicamente; esto te permite mostrar contenido personalizado a tus usuarios.
+
 ## TEMAS PENDIENTES
 
 Optimización de imágenes y fuentes.
