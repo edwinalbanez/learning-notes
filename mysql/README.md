@@ -1,5 +1,6 @@
 # Guía para MySQL
 ## Índice
+0. [Introducción](#qué-es-sql)
 1. [Crear una Base de Datos](#1-crear-una-base-de-datos)
 2. [Crear Tablas](#2-crear-tablas)
 3. [Definir Llaves Foráneas](#3-definir-llaves-foráneas)
@@ -21,6 +22,21 @@
 19. [Vistas](#19-vistas)
 
 ---
+
+## ¿Qué es SQL?
+El lenguaje de consulta estructurada (SQL, por sus siglas en inglés) permite la interacción con bases de datos desde el almacenamiento y manipulación hasta la recuperación de los datos.
+
+---
+<img width="338" alt="image" src="https://github.com/user-attachments/assets/8f79a8e8-635f-4ded-b112-37f9ce5d9ea4" />
+
+---
+<img width="544" alt="image" src="https://github.com/user-attachments/assets/4e3bee63-5aac-439f-a3a9-de073c79adc0" />
+
+---
+<img width="548" alt="image" src="https://github.com/user-attachments/assets/4740b428-7562-427d-b9de-a770d7ec4f87" />
+
+---
+<img width="542" alt="image" src="https://github.com/user-attachments/assets/ff3252e8-fef7-45f2-8438-ef1b877e2e75" />
 
 ## 1. Crear una Base de Datos
 
@@ -414,6 +430,9 @@ WHERE id_pedido IN (
 > Siempre se debe especificar con `WHERE` el registro a eliminar, de lo contrario, se eliminarán todos los registros de la tabla.
 
 ---
+
+### Funciones internas de MySQL
+
 
 ## 6. Operadores BETWEEN e IN
 
