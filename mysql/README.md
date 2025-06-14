@@ -1,7 +1,7 @@
 # Guía Profesional de SQL - Desde Fundamentos hasta Técnicas Avanzadas
 
 ## Índice
-<!-- 1. [Crear una Base de Datos](#1-crear-una-base-de-datos) -->
+1. [Crear una Base de Datos](#1-crear-una-base-de-datos)
 2. [Crear Tablas](#2-crear-tablas)
 3. [Definir Llaves Foráneas](#3-definir-llaves-foráneas)
 4. [Modificaciones con ALTER TABLE](#4-modificaciones-con-alter-table)
@@ -82,7 +82,7 @@ CREATE TABLE nombre_tabla (
 ### Ejemplo Completo
 ```sql
 CREATE TABLE clientes (
-    id_cliente INT AUTO_INCREMENT,
+    id_cliente INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE,
     telefono VARCHAR(20),
@@ -92,7 +92,7 @@ CREATE TABLE clientes (
 );
 
 CREATE TABLE productos (
-    id_producto INT AUTO_INCREMENT,
+    id_producto INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(200) NOT NULL,
     precio DECIMAL(10,2) NOT NULL,
     stock INT DEFAULT 0,
@@ -101,6 +101,8 @@ CREATE TABLE productos (
     PRIMARY KEY (id_producto)
 );
 ```
+>[!NOTE]
+> En MySQL, cuando defines una columna como PRIMARY KEY, automáticamente se le aplica la restricción NOT NULL. Sin embargo, se incluye NOT NULL explícitamente por claridad y para hacer el código más legible.
 
 ### Restricciones Importantes
 - **NOT NULL**: El campo no puede estar vacío
@@ -118,7 +120,7 @@ Las llaves foráneas (Foreign Keys) establecen relaciones entre tablas, garantiz
 ### Sintaxis en CREATE TABLE
 ```sql
 CREATE TABLE tabla_hija (
-    id INT PRIMARY KEY,
+    id INT NOT NULL PRIMARY KEY,
     id_padre INT,
     FOREIGN KEY (id_padre) REFERENCES tabla_padre(id)
 );
@@ -135,7 +137,7 @@ FOREIGN KEY (columna_local) REFERENCES tabla_padre(columna_referenciada);
 ```sql
 -- Crear tabla de pedidos con referencia a clientes
 CREATE TABLE pedidos (
-    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    id_pedido INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
     fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
     total DECIMAL(10,2),
@@ -164,6 +166,74 @@ CREATE TABLE detalle_pedidos (
 - **ON DELETE RESTRICT**: Impide eliminar si hay referencias
 - **ON DELETE SET NULL**: Establece NULL en referencias
 - **ON UPDATE CASCADE**: Actualiza referencias automáticamente
+
+### ¿Qué es la Integridad Referencial?
+La integridad referencial es una regla que garantiza que las relaciones entre tablas se mantengan consistentes. Cuando tienes una clave foránea (foreign key) que referencia a una clave primaria en otra tabla, estas opciones definen qué sucede cuando se modifica o elimina el registro padre.
+
+### ON DELETE CASCADE
+Cuando eliminas un registro padre, automáticamente elimina todos los registros hijos relacionados.
+
+### Ejemplo Práctico
+```sql
+-- Tablas: Clientes y Pedidos
+CREATE TABLE Clientes (
+    id INT PRIMARY KEY,
+    nombre VARCHAR(100)
+);
+
+CREATE TABLE Pedidos (
+    id INT PRIMARY KEY,
+    cliente_id INT,
+    producto VARCHAR(100),
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(id) ON DELETE CASCADE
+);
+```
+Si eliminas el cliente con ID 1, todos sus pedidos se eliminan automáticamente. Es útil cuando los registros hijos no tienen sentido sin el padre (como pedidos sin cliente).
+
+### ON DELETE RESTRICT
+Impide eliminar el registro padre si existen registros hijos relacionados.
+
+### Ejemplo:
+```sql
+CREATE TABLE Pedidos (
+    id INT PRIMARY KEY,
+    cliente_id INT,
+    producto VARCHAR(100),
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(id) ON DELETE RESTRICT
+);
+```
+Si intentas eliminar un cliente que tiene pedidos, la base de datos rechaza la operación con un error. Primero debes eliminar manualmente todos los pedidos de ese cliente.
+
+### ON DELETE SET NULL
+Cuando eliminas el registro padre, establece NULL en la clave foránea de los registros hijos.
+
+### Ejemplo:
+```sql
+CREATE TABLE Pedidos (
+    id INT PRIMARY KEY,
+    cliente_id INT NULL,  -- Debe permitir NULL
+    producto VARCHAR(100),
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(id) ON DELETE SET NULL
+);
+```
+Si eliminas un cliente, sus pedidos permanecen pero con cliente_id = NULL. Útil cuando quieres conservar el historial pero marcar que el padre ya no existe.
+
+### ON UPDATE CASCADE
+Cuando cambias el valor de la clave primaria del registro padre, automáticamente actualiza todas las claves foráneas relacionadas.
+
+### Ejemplo:
+```sql
+CREATE TABLE Pedidos (
+    id INT PRIMARY KEY,
+    cliente_id INT,
+    producto VARCHAR(100),
+    FOREIGN KEY (cliente_id) REFERENCES Clientes(id) ON UPDATE CASCADE
+);
+```
+Si cambias el ID del cliente de 1 a 100, todos los pedidos que tenían cliente_id = 1 se actualizan automáticamente a cliente_id = 100.
+
+> [!NOTE]
+> Cuando creas una clave foránea sin especificar las opciones ON DELETE o ON UPDATE, el comportamiento por defecto es RESTRICT tanto para eliminaciones como para actualizaciones.
 
 ---
 
@@ -222,6 +292,41 @@ ADD INDEX idx_categoria (categoria);
 ALTER TABLE clientes 
 ADD CONSTRAINT uk_email UNIQUE (email);
 ```
+
+### ¿Como funcionan los índices?
+En MySQL, un **índice** es una estructura de datos especial que mejora la velocidad de las operaciones de recuperación de datos en una tabla de base de datos. Permite al motor de la base de datos encontrar filas rápidamente sin tener que escanear la tabla completa.
+
+Cuando creas un índice en una o más columnas de una tabla, MySQL crea y mantiene una estructura de datos separada (comúnmente un árbol B o un árbol B+) que almacena los valores de esas columnas y punteros a las filas correspondientes en la tabla real.
+
+Cuando ejecutas una consulta SELECT que incluye una cláusula WHERE en una columna indexada, MySQL puede usar el índice para ir directamente a las filas que cumplen con la condición, en lugar de revisar cada fila de la tabla.
+
+### Ejemplos de Creación de Índices:
+```sql
+-- Crear un índice simple en una columna
+CREATE INDEX idx_nombre ON clientes (nombre);
+
+-- Crear un índice único
+CREATE UNIQUE INDEX udx_email ON usuarios (email);
+
+-- Crear un índice compuesto (en múltiples columnas)
+-- Útil para consultas que filtran por ambas columnas
+CREATE INDEX idx_apellido_nombre ON empleados (apellido, nombre);
+
+-- Crear un índice FULLTEXT
+CREATE FULLTEXT INDEX fdx_contenido ON articulos (titulo, contenido);
+```
+Cuando MySQL construye el índice, tomará todos los valores de la columna nombre de cada fila de la tabla clientes y los organizará en una estructura optimizada para búsquedas (generalmente un árbol B-Tree).
+
+MySQL escanea la tabla clientes. Para cada fila, toma el valor de la columna `nombre` y un "puntero"  a la ubicación física de esa fila en el disco.
+
+### ¿Para qué es útil este índice? (Un Ejemplo Práctico)
+Imagina que tienes una tabla clientes con millones de filas, y a menudo realizas consultas como:
+```sql
+SELECT * FROM clientes WHERE nombre = 'Juan Perez';
+```
+**Sin el índice `idx_nombre`**:
+MySQL tendría que recorrer toda la tabla (fila por fila, lo que se llama un "escaneo de tabla completo" o "full table scan") para encontrar todas las filas donde el nombre sea 'Juan Perez'. Si la tabla tiene un millón de clientes, eso podría significar leer un millón de filas, lo cual es muy ineficiente y lento.
+
 
 ---
 
