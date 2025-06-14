@@ -1,5 +1,4 @@
-# Guía Profesional de SQL - Desde Fundamentos hasta Técnicas Avanzadas
-
+# Guía para MySQL
 ## Índice
 1. [Crear una Base de Datos](#1-crear-una-base-de-datos)
 2. [Crear Tablas](#2-crear-tablas)
