@@ -81,23 +81,23 @@ CREATE TABLE nombre_tabla (
 ### Ejemplo Completo
 ```sql
 CREATE TABLE clientes (
-    id_cliente INT NOT NULL AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE,
     telefono VARCHAR(20),
     fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
-    PRIMARY KEY (id_cliente)
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE productos (
-    id_producto INT NOT NULL AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     nombre VARCHAR(200) NOT NULL,
     precio DECIMAL(10,2) NOT NULL,
     stock INT DEFAULT 0,
     categoria VARCHAR(50),
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_producto)
+    PRIMARY KEY (id)
 );
 ```
 >[!NOTE]
@@ -136,26 +136,26 @@ FOREIGN KEY (columna_local) REFERENCES tabla_padre(columna_referenciada);
 ```sql
 -- Crear tabla de pedidos con referencia a clientes
 CREATE TABLE pedidos (
-    id_pedido INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    id_cliente INT NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
     fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
     total DECIMAL(10,2),
     estado VARCHAR(20) DEFAULT 'PENDIENTE',
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
 
 -- Crear tabla de detalles de pedido
 CREATE TABLE detalle_pedidos (
-    id_detalle INT AUTO_INCREMENT PRIMARY KEY,
-    id_pedido INT NOT NULL,
-    id_producto INT NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id INT NOT NULL,
+    producto_id INT NOT NULL,
     cantidad INT NOT NULL,
     precio_unitario DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)
+    FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
         ON DELETE CASCADE,
-    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+    FOREIGN KEY (producto_id) REFERENCES productos(id)
         ON DELETE RESTRICT
 );
 ```
