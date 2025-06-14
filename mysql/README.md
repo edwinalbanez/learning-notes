@@ -295,7 +295,7 @@ ADD CONSTRAINT uk_email UNIQUE (email);
 ### ¿Como funcionan los índices?
 En MySQL, un **índice** es una estructura de datos especial que mejora la velocidad de las operaciones de recuperación de datos en una tabla de base de datos. Permite al motor de la base de datos encontrar filas rápidamente sin tener que escanear la tabla completa.
 
-Cuando creas un índice en una o más columnas de una tabla, MySQL crea y mantiene una estructura de datos separada (comúnmente un árbol B o un árbol B+) que almacena los valores de esas columnas y punteros a las filas correspondientes en la tabla real.
+Cuando creas un índice en una o más columnas de una tabla, MySQL crea y mantiene una estructura de datos separada (comúnmente un árbol B o un árbol B+) que almacena los valores de esas columnas y punteros (variables que almacenan una dirección numérica que apunta a la ubicación específica de un dato en la memoria RAM) a las filas correspondientes en la tabla real.
 
 Cuando ejecutas una consulta SELECT que incluye una cláusula WHERE en una columna indexada, MySQL puede usar el índice para ir directamente a las filas que cumplen con la condición, en lugar de revisar cada fila de la tabla.
 
@@ -317,6 +317,8 @@ CREATE FULLTEXT INDEX fdx_contenido ON articulos (titulo, contenido);
 Cuando MySQL construye el índice, tomará todos los valores de la columna nombre de cada fila de la tabla clientes y los organizará en una estructura optimizada para búsquedas (generalmente un árbol B-Tree).
 
 MySQL escanea la tabla clientes. Para cada fila, toma el valor de la columna `nombre` y un "puntero"  a la ubicación física de esa fila en el disco.
+
+La estructura del índice (idx_nombre) se almacena en el disco, separada de los datos reales de la tabla clientes. Esto significa que el índice ocupa espacio de almacenamiento adicional.
 
 ### ¿Para qué es útil este índice? (Un Ejemplo Práctico)
 Imagina que tienes una tabla clientes con millones de filas, y a menudo realizas consultas como:
@@ -383,6 +385,8 @@ UPDATE productos
 SET precio = precio * 1.10 
 WHERE categoria = 'Electrónicos';
 ```
+>[!WARNING]
+> Siempre se debe especificar con `WHERE` el registro a actualizar, de lo contrario, se actualizarán todos los registros de la tabla.
 
 ### DELETE - Eliminar Datos
 
@@ -406,6 +410,8 @@ WHERE id_pedido IN (
     WHERE estado = 'CANCELADO'
 );
 ```
+>[!WARNING]
+> Siempre se debe especificar con `WHERE` el registro a eliminar, de lo contrario, se eliminarán todos los registros de la tabla.
 
 ---
 
