@@ -597,10 +597,84 @@ CREATE TEMPORARY TABLE temp_procesamiento (
 ) ENGINE=InnoDB;
 ```
 
+### Motor Predeterminado
+El motor de almacenamiento por defecto para las tablas temporales depende de la configuración del servidor y se controla mediante la variable `default_tmp_storage_engine`.
+
+Por defecto, las tablas temporales creadas con `CREATE TEMPORARY TABLE` utilizan el motor definido por la variable `default_tmp_storage_engine`, que por defecto es `InnoDB`.
+
+### Verificar la configuración actual
+```sql
+-- Ver el motor por defecto para tablas temporales
+SHOW VARIABLES LIKE 'default_tmp_storage_engine';
+
+-- También puedes ver todas las variables relacionadas
+SHOW VARIABLES LIKE '%tmp%storage%';
+```
+
+### Cambiar el motor por defecto
+```sql
+-- Para la sesión actual
+SET default_tmp_storage_engine = 'MEMORY';
+
+-- Para cambiar globalmente (requiere privilegios SUPER)
+SET GLOBAL default_tmp_storage_engine = 'MEMORY';
+```
+
+### Para diferentes casos de uso:
+### InnoDB (por defecto):
+- Bueno para tablas temporales grandes.
+- Soporte completo para transacciones.
+- Mejor para datos que pueden exceder la memoria.
+
+### MEMORY
+- Ideal para tablas pequeñas y acceso muy rápido
+- Limitado por la RAM disponible
+- No soporta columnas TEXT/BLOB
+
 ---
 
 ### Funciones internas de MySQL
+MySQL cuenta con **funciones internas** para operar cadenas de textos, números y fechas. Algunas de estas son:
 
+---
+<img width="374" alt="image" src="https://github.com/user-attachments/assets/4752a640-4ec0-43ba-bd28-0330a0118969" />
+
+---
+<img width="451" alt="image" src="https://github.com/user-attachments/assets/e1f3c2e2-8181-4f5d-80b5-5ee9a3342b9c" />
+
+---
+<img width="452" alt="image" src="https://github.com/user-attachments/assets/7a9be808-7292-440c-8b26-0134e38b71db" />
+
+## Operadores Aritméticos, de Comparación y Lógicos
+
+### Operadores Aritmético
+Los operadores aritméticos permiten realizar cálculos matemáticos en consultas SQL:
+
+### Operadores básicos:
+- `+` (suma): Suma dos valores.
+- `-` (resta): Resta el segundo valor del primero.
+- `*` (multiplicación): Multiplica dos valores.
+- `/` (división): Divide el primer valor entre el segundo.
+- `%` o `MOD` (módulo): Devuelve el resto de una división.
+
+### Ejemplos:
+```sql
+SELECT 10 + 5;          -- Resultado: 15
+SELECT 20 - 8;          -- Resultado: 12
+SELECT 6 * 7;           -- Resultado: 42
+SELECT 15 / 3;          -- Resultado: 5.0000
+SELECT 17 % 5;          -- Resultado: 2
+SELECT 17 MOD 5;        -- Resultado: 2
+```
+
+### Uso en consultas:
+```sql
+SELECT producto_id, precio, cantidad, precio * cantidad AS total
+FROM ventas;
+
+SELECT empleado_id, salario, salario * 0.15 AS impuesto
+FROM empleados;
+```
 
 ## 6. Operadores BETWEEN e IN
 
