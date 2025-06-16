@@ -436,6 +436,93 @@ A continuación un resumen de lo que está sucediendo:
 - `replace(${pathname}?${params.toString()})` actualiza la URL con los datos de búsqueda del usuario. Por ejemplo, `/dashboard/invoices?query=rodrigo` si el usuario busca "Rodrigo".
 - Finalmente la URL se actualiza sin recargar la página, gracias a la navegación del lado del cliente de Next.js.
 
+### 3. Mantener la URL y la entrada sincronizadas
+Para garantizar que el campo de entrada esté sincronizado con la URL y se completará al compartir, puede pasar un `defaultValue` a la entrada leyendo desde `searchParams`:
+```javascript
+<input
+  onChange={(e) => {
+    handleSearch(e.target.value);
+  }}
+  defaultValue={searchParams.get('query')?.toString()}
+/>
+```
+
+### 4. Actualización de la tabla
+Por último, debe actualizar una tabla para reflejar la consulta de búsqueda.
+
+Los componentes de página (`page.tsx`) aceptan una propiedad llamada `searchParams` , por lo que puedes pasar los parámetros de la URL actual al `<Table>` componente.
+
+**Por ejemplo:**
+```javascript
+import Search from '@/app/ui/search';
+import Table from '@/app/ui/invoices/table';
+import { Suspense } from 'react';
+import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+ 
+export default async function Page(props: {
+  searchParams?: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const searchParams = await props.searchParams; // parametros de búsqueda
+  const query = searchParams?.query || ''; // se obtiene el parámetro "query"
+  const currentPage = Number(searchParams?.page) || 1; // se obtiene el parametro "page"
+ 
+  return (
+    <div className="w-full">
+      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+        <Search placeholder="Search invoices..." /> {/* barra de búsqueda  */}
+      </div>
+      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}> {/* se envuelte <Table> con <Suspense> */}
+        <Table query={query} currentPage={currentPage} />
+      </Suspense>
+      <div className="mt-5 flex w-full justify-center">
+      </div>
+    </div>
+  );
+}
+```
+
+### Mejor práctica: Antirrebote
+Se actualiza la URL con cada pulsación de tecla y, por lo tanto, consultas tu base de datos con cada pulsación. Esto no supone un problema en una aplicación pequeña, pero imagina que tu aplicación tuviera miles de usuarios, cada uno de los cuales enviara una nueva solicitud a tu base de datos con cada pulsación de tecla.
+
+La eliminación de rebotes es una práctica de programación que limita la velocidad de ejecución de una función. En nuestro caso, solo se desea consultar la base de datos cuando el usuario deja de escribir.
+
+Cómo funciona el rebote:
+
+- **Evento desencadenante**: cuando se produce un evento que debe rebotarse (como una pulsación de tecla en el cuadro de búsqueda), se inicia un temporizador.
+- **Esperar**: si ocurre un nuevo evento antes de que expire el temporizador, éste se reinicia.
+- **Ejecución**: Si el temporizador llega al final de su cuenta regresiva, se ejecuta la función antirrebote.
+
+Puedes implementar la función de rebote de varias maneras, incluyendo la creación manual de tu propia función. Para simplificar, usaremos una biblioteca llamada `use-debounce`.
+```bash
+pnpm i use-debounce
+```
+
+En el componente de la barra de búsqueda, importe una función llamada `useDebouncedCallback`:
+```bash
+// ...
+import { useDebouncedCallback } from 'use-debounce';
+ 
+// dentro del componente de búsqueda...
+const handleSearch = useDebouncedCallback((term) => {
+  console.log(`Searching... ${term}`);
+ 
+  const params = new URLSearchParams(searchParams);
+  if (term) {
+    params.set('query', term);
+  } else {
+    params.delete('query');
+  }
+  replace(`${pathname}?${params.toString()}`);
+}, 300);
+```
+
+Esta función envolverá el contenido de `handleSearch` y solo ejecutará el código después de un tiempo específico una vez que el usuario haya dejado de escribir (300 ms).
+
+Al eliminar el rebote, puede reducir la cantidad de solicitudes enviadas a su base de datos, ahorrando así recursos.
+
 ## TEMAS PENDIENTES
 
 Optimización de imágenes y fuentes.
