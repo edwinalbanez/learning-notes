@@ -435,14 +435,14 @@ WHERE id_pedido IN (
 ## Safe Updates
 En MySQL, la opción `safe Updates (rejects UPDATEs and DELETEs with no restrictions)` en `Edit` > `SQL Editor` es un mecanismo de seguridad que previene la ejecución accidental de comandos UPDATE y DELETE que podrían modificar o eliminar datos de manera masiva e indeseada.
 
-<img width="587" alt="image" src="https://github.com/user-attachments/assets/9b61d5c4-ea6b-4140-b23b-bd4cacddc04d" />
+<img width="589" alt="image" src="https://github.com/user-attachments/assets/74315518-08f1-4ad0-a0fb-7eeaef99edf6" />
 
 ### ¿Qué hace exactamente?
 Cuando está habilitada, esta opción rechaza automáticamente cualquier comando UPDATE o DELETE que no incluya una cláusula WHERE con al menos una de estas condiciones:
 
-- Una cláusula WHERE que haga referencia a una columna con índice (KEY)
-- Una cláusula LIMIT que restrinja el número de filas afectadas
-- El comando debe poder usar un índice para localizar las filas
+- Una cláusula `WHERE` que haga referencia a una columna con índice (KEY).
+- Una cláusula `LIMIT` que restrinja el número de filas afectadas.
+- El comando debe poder usar un índice para localizar las filas.
 
 ### ¿Por qué es importante?
 Sin esta protección, es muy fácil cometer errores devastadores como:
@@ -486,6 +486,115 @@ SET sql_safe_updates = 0;
 
 -- Verificar el estado actual
 SELECT @@sql_safe_updates;
+```
+
+>[!NOTE]
+>No significa que solo puedas eliminar o actualizar 1 registro. `Safe Updates` no limita el número de registros que puedes modificar, sino que se asegura de que uses condiciones "seguras" en tu `WHERE`.
+
+Safe Updates verifica que tu comando WHERE use columnas indexadas, no que afecte solo 1 registro. Puedes modificar múltiples registros siempre que uses índices.
+
+### Ejemplos Prácticos
+```sql
+-- ✅ PERMITIDO: Puede eliminar 100 usuarios con el mismo rol
+-- (si 'rol' tiene índice)
+DELETE FROM usuarios WHERE rol = 'invitado';
+
+-- ✅ PERMITIDO: Puede actualizar todos los empleados de un departamento
+-- (si 'departamento_id' tiene índice)
+UPDATE empleados SET salario = salario * 1.1 WHERE departamento_id = 5;
+
+-- ✅ PERMITIDO: Puede eliminar múltiples pedidos del mismo cliente
+-- (si 'cliente_id' tiene índice)
+DELETE FROM pedidos WHERE cliente_id = 123;
+
+-- ❌ RECHAZADO: No usa columna indexada
+DELETE FROM usuarios WHERE nombre_completo LIKE '%Juan%';
+
+-- ❌ RECHAZADO: No tiene WHERE
+UPDATE empleados SET activo = 0;
+```
+
+## Tablas Temporales
+Las tablas temporales en MySQL son estructuras de datos que existen solo durante una sesión específica o por un tiempo determinado.
+
+### Características principales
+Las tablas temporales de sesión se crean con la palabra clave `TEMPORARY` y tienen estas propiedades:
+
+- Solo son visibles para la conexión que las creó.
+- Se eliminan automáticamente cuando la sesión termina.
+- No aparecen en `SHOW TABLES`.
+- Pueden tener el mismo nombre que una tabla permanente (la temporal tendrá prioridad, pero es recomendable asignarle un nombre diferente).
+- Se almacenan en memoria o en disco según su tamaño.
+
+### Sintaxis Básica
+```sql
+CREATE TEMPORARY TABLE nombre_tabla (
+    columna1 tipo_dato,
+    columna2 tipo_dato,
+    ...
+);
+```
+
+### Ejemplo práctico
+```sql
+-- Crear tabla temporal para procesamiento de datos
+CREATE TEMPORARY TABLE temp_ventas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    producto VARCHAR(100),
+    cantidad INT,
+    precio DECIMAL(10,2),
+    fecha DATE
+);
+
+-- Insertar datos
+INSERT INTO temp_ventas (producto, cantidad, precio, fecha)
+VALUES ('Laptop', 2, 1500.00, '2024-01-15');
+
+-- La tabla desaparece al cerrar la conexión
+```
+
+También es posible crear tablas temporales con el comando `SELECT`.
+
+### Sintaxis Básica
+```sql
+CREATE TEMPORARY TABLE nombre_tabla AS
+SELECT columnas FROM tabla_origen WHERE condiciones;
+```
+
+### Ejemplo Práctico
+```sql
+-- Crear tabla temporal directamente desde una consulta
+CREATE TEMPORARY TABLE temp_ventas_enero AS
+SELECT 
+    cliente_id,
+    producto,
+    cantidad,
+    precio,
+    fecha
+FROM ventas 
+WHERE MONTH(fecha) = 1 AND YEAR(fecha) = 2024;
+```
+
+### Motor de Almacenamiento
+### MEMORY Engine
+Para tablas completamente en memoria:
+```sql
+CREATE TEMPORARY TABLE temp_cache (
+    id INT PRIMARY KEY,
+    datos VARCHAR(255)
+) ENGINE=MEMORY;
+```
+**Ventajas**: Acceso muy rápido.
+
+**Desventajas**: Limitado por la RAM disponible, se pierden si se reinicia MySQL
+
+### InnoDB/MyISAM
+Para tablas que pueden usar disco:
+```sql
+CREATE TEMPORARY TABLE temp_procesamiento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    datos TEXT
+) ENGINE=InnoDB;
 ```
 
 ---
