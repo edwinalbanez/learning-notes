@@ -401,7 +401,8 @@ UPDATE IGNORE productos
 SET precio = precio * 1.10 
 WHERE categoria = 'Electrónicos';
 ```
-El comando **opcional** `IGNORE` sirve para que no se detenga la ejecución de una consulta si se producen errores al momento de la actualización. En caso de que hayan errores no se realiza la actualización y continua con la siguiente sentencia.
+>[!NOTE]
+>El comando **opcional** `IGNORE` sirve para que no se detenga la ejecución de una consulta si se producen errores al momento de la actualización. En caso de que hayan errores no se realiza la actualización y continua con la siguiente sentencia.
 
 >[!WARNING]
 > Siempre se debe especificar con `WHERE` el registro a actualizar, de lo contrario, se actualizarán todos los registros de la tabla.
