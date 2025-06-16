@@ -387,20 +387,22 @@ UPDATE tabla SET columna1 = valor1 WHERE condición;
 #### Ejemplos Prácticos
 ```sql
 -- Actualizar precio de un producto
-UPDATE productos 
+UPDATE IGNORE productos 
 SET precio = 799.99 
 WHERE id_producto = 1;
 
 -- Actualizar múltiples columnas
-UPDATE clientes 
+UPDATE IGNORE clientes 
 SET email = 'nuevo@email.com', telefono = '555-9999'
 WHERE id_cliente = 1;
 
 -- Actualizar con cálculos
-UPDATE productos 
+UPDATE IGNORE productos 
 SET precio = precio * 1.10 
 WHERE categoria = 'Electrónicos';
 ```
+El comando **opcional** `IGNORE` sirve para que no se detenga la ejecución de una consulta si se producen errores al momento de la actualización. En caso de que hayan errores no se realiza la actualización y continua con la siguiente sentencia.
+
 >[!WARNING]
 > Siempre se debe especificar con `WHERE` el registro a actualizar, de lo contrario, se actualizarán todos los registros de la tabla.
 
