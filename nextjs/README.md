@@ -295,49 +295,18 @@ Eso es todo. Puede que no notes ninguna diferencia en tu aplicación durante el 
 Lo mejor del prerenderizado parcial es que no necesitas modificar el código para usarlo. Mientras uses Suspense para encapsular las partes dinámicas de tu ruta, Next.js sabrá qué partes de tu ruta son estáticas y cuáles dinámicas.
 
 ## Agregar búsqueda y paginación
-### Código de inicio
-Dentro de tu `/dashboard/invoices/page.tsx` archivo, pega el siguiente código:
-```javascript
-import Pagination from '@/app/ui/invoices/pagination';
-import Search from '@/app/ui/search';
-import Table from '@/app/ui/invoices/table';
-import { CreateInvoice } from '@/app/ui/invoices/buttons';
-import { lusitana } from '@/app/ui/fonts';
-import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { Suspense } from 'react';
- 
-export default async function Page() {
-  return (
-    <div className="w-full">
-      <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
-      </div>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search invoices..." />
-        <CreateInvoice />
-      </div>
-      {/*  <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query} currentPage={currentPage} />
-      </Suspense> */}
-      <div className="mt-5 flex w-full justify-center">
-        {/* <Pagination totalPages={totalPages} /> */}
-      </div>
-    </div>
-  );
-}
-```
 
 ### ¿Por qué utilizar parámetros de búsqueda de URL?
-Como se mencionó anteriormente, usará parámetros de búsqueda de URL para administrar el estado de la búsqueda. Este patrón puede ser nuevo si está acostumbrado a hacerlo con el estado del lado del cliente.
+Usará parámetros de búsqueda de URL para administrar el estado de la búsqueda. Este patrón puede ser nuevo si está acostumbrado a hacerlo con el estado del lado del cliente.
 
 Implementar la búsqueda con parámetros de URL tiene un par de beneficios:
 
-- URL que se pueden marcar y compartir : dado que los parámetros de búsqueda están en la URL, los usuarios pueden marcar el estado actual de la aplicación, incluidas sus consultas de búsqueda y filtros, para futuras referencias o compartir.
-- Representación del lado del servidor : los parámetros de URL se pueden consumir directamente en el servidor para representar el estado inicial, lo que facilita el manejo de la representación del servidor.
-- Análisis y seguimiento : tener consultas de búsqueda y filtros directamente en la URL facilita el seguimiento del comportamiento del usuario sin necesidad de lógica adicional del lado del cliente.
+- **URL que se pueden marcar y compartir**: dado que los parámetros de búsqueda están en la URL, los usuarios pueden marcar el estado actual de la aplicación, incluidas sus consultas de búsqueda y filtros, para futuras referencias o compartir.
+- **Representación del lado del servidor**: los parámetros de URL se pueden consumir directamente en el servidor para representar el estado inicial, lo que facilita el manejo de la representación del servidor.
+- **Análisis y seguimiento**: tener consultas de búsqueda y filtros directamente en la URL facilita el seguimiento del comportamiento del usuario sin necesidad de lógica adicional del lado del cliente.
 
 ### Añadiendo la funcionalidad de búsqueda
-Estos son los ganchos de cliente Next.js que usarás para implementar la funcionalidad de búsqueda:
+Estos son los ganchos de cliente Next.js para implementar la funcionalidad de búsqueda:
 
 - `useSearchParams` permite acceder a los parámetros de la URL actual. Por ejemplo, los parámetros de búsqueda para esta URL `/dashboard/invoices?page=1&query=pending` serían los siguientes: `{page: '1', query: 'pending'}`.
 - `usePathname` permite leer la ruta de la URL actual. Por ejemplo, para la ruta `/dashboard/invoices`, `usePathname` devolvería '/dashboard/invoices'.
@@ -351,15 +320,47 @@ A continuación se ofrece una descripción general rápida de los pasos de imple
 - Actualice la tabla para reflejar la consulta de búsqueda.
 
 ### 1. Capturar la entrada del usuario
-Vaya al componente `<Search>` (/app/ui/search.tsx) y notará lo siguiente:
+Para usar escuchas y ganchos de eventos se debe escribir `"use client"` al inicio de un componente.
 
-- `"use client"`: este es un componente de cliente, lo que significa que puede utilizar escuchas y ganchos de eventos.
-- `<input>`: esta es la entrada de búsqueda.
-- 
-Crea una nueva función `handleSearch` y agrega un detector `onChange` al elemento `<input>`. `onChangeSe` invocará `handleSearch` siempre que cambie el valor de entrada.
+Poe ejemplo al crear una nueva función y agrega un detector `onChange` al elemento `<input>`. `onChange` se invocará siempre que cambie el valor de entrada.
+```javascript
+'use client';
+ 
+export default function Search({ placeholder }: { placeholder: string }) {
+  function handleSearch(term: string) {
+    console.log(term);
+  }
+ 
+  return (
+    <div>
+      <input
+        onChange={(e) => {
+          handleSearch(e.target.value);
+        }}
+      />
+    </div>
+  );
+}
+```
 
 ### 2. Actualice la URL con los parámetros de búsqueda.
-Importa el hook `useSearchParams` desde `next/navigation` y asígnalo a una variable:
+Importe el hook `useSearchParams` desde `next/navigation` y asígnalo a una variable:
+```javascript
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+ 
+export default function Search() {
+  const searchParams = useSearchParams(); // uso de UseSearParams
+ 
+  function handleSearch(term: string) {
+    console.log(term);
+  }
+  // ...
+}
+```
+
+Dentro  de `handleSearch`, crea una nueva instacia de `URLSearchParams` usando la variable `searchParams`.
 ```javascript
 'use client';
  
@@ -370,11 +371,70 @@ export default function Search() {
   const searchParams = useSearchParams();
  
   function handleSearch(term: string) {
-    console.log(term);
+    const params = new URLSearchParams(searchParams); // nueva instancia de URLSearchParams
   }
   // ...
 }
 ```
+
+`URLSearchParams` es una API web que proporciona métodos de utilidad para manipular los parámetros de consulta de URL. En lugar de crear una cadena literal compleja, puede usarla para obtener la cadena de parámetros como `?page=1&query=a`.
+
+A continuación, configure la cadena de parámetros según la entrada del usuario. Si la entrada está vacía, deberá eliminarla:
+```javascript
+'use client';
+ 
+import { useSearchParams } from 'next/navigation';
+ 
+export default function Search() {
+  const searchParams = useSearchParams();
+ 
+  function handleSearch(term: string) {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set('query', term); // Se actualiza el parametro "query"
+    } else {
+      params.delete('query'); // Se elimina "quey"
+    }
+  }
+  // ...
+}
+```
+
+Ahora que tienes la cadena de consulta, puedes usar los ganchos `useRouter` y `usePathname` de Next.js para actualizar la URL.
+
+Importa `useRouter` y `usePathname` desde `'next/navigation'` y usa el método `replace` de `useRouter()` dentro de `handleSearch`.
+```javascript
+'use client';
+ 
+import {
+ useSearchParams,
+ usePathname,
+ useRouter
+} from 'next/navigation'; 
+ 
+export default function Search() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter(); // se obtiene la función "replace"
+ 
+  function handleSearch(term: string) {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set('query', term);
+    } else {
+      params.delete('query');
+    }
+    replace(`${pathname}?${params.toString()}`); // Se cambia la URL
+  }
+}
+```
+
+A continuación un resumen de lo que está sucediendo:
+
+- `${pathname}` es la ruta actual, en su caso.
+- A medida que el usuario escribe en la barra de búsqueda, `params.toString()` traduce esta entrada a un formato compatible con URL.
+- `replace(${pathname}?${params.toString()})` actualiza la URL con los datos de búsqueda del usuario. Por ejemplo, `/dashboard/invoices?query=rodrigo` si el usuario busca "Rodrigo".
+- Finalmente la URL se actualiza sin recargar la página, gracias a la navegación del lado del cliente de Next.js.
 
 ## TEMAS PENDIENTES
 
