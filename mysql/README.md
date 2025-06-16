@@ -432,6 +432,62 @@ WHERE id_pedido IN (
 >[!WARNING]
 > Siempre se debe especificar con `WHERE` el registro a eliminar, de lo contrario, se eliminarán todos los registros de la tabla.
 
+## Safe Updates
+En MySQL, la opción `safe Updates (rejects UPDATEs and DELETEs with no restrictions)` en `Edit` > `SQL Editor` es un mecanismo de seguridad que previene la ejecución accidental de comandos UPDATE y DELETE que podrían modificar o eliminar datos de manera masiva e indeseada.
+
+<img width="587" alt="image" src="https://github.com/user-attachments/assets/9b61d5c4-ea6b-4140-b23b-bd4cacddc04d" />
+
+### ¿Qué hace exactamente?
+Cuando está habilitada, esta opción rechaza automáticamente cualquier comando UPDATE o DELETE que no incluya una cláusula WHERE con al menos una de estas condiciones:
+
+- Una cláusula WHERE que haga referencia a una columna con índice (KEY)
+- Una cláusula LIMIT que restrinja el número de filas afectadas
+- El comando debe poder usar un índice para localizar las filas
+
+### ¿Por qué es importante?
+Sin esta protección, es muy fácil cometer errores devastadores como:
+```sql
+-- PELIGROSO: Elimina TODOS los registros de la tabla
+DELETE FROM usuarios;
+
+-- PELIGROSO: Actualiza TODOS los salarios a 0
+UPDATE empleados SET salario = 0;
+```
+Con Safe Updates habilitado, estos comandos serían rechazados automáticamente.
+
+### Comandos que serían aceptados:
+```sql
+-- SEGURO: Usa una clave primaria en WHERE
+DELETE FROM usuarios WHERE id = 123;
+
+-- SEGURO: Usa un índice en WHERE
+UPDATE empleados SET salario = 5000 WHERE email = 'juan@empresa.com';
+
+-- SEGURO: Incluye LIMIT
+DELETE FROM logs ORDER BY fecha LIMIT 100;
+```
+
+### Comandos que serían rechazados:
+```sql
+-- RECHAZADO: No tiene WHERE
+DELETE FROM usuarios;
+
+-- RECHAZADO: WHERE no usa columna indexada
+UPDATE empleados SET salario = salario * 1.1 WHERE departamento = 'ventas';
+```
+
+### Cómo habilitarla/deshabilitarla:
+```sql
+-- Habilitar Safe Updates
+SET sql_safe_updates = 1;
+
+-- Deshabilitar Safe Updates
+SET sql_safe_updates = 0;
+
+-- Verificar el estado actual
+SELECT @@sql_safe_updates;
+```
+
 ---
 
 ### Funciones internas de MySQL
