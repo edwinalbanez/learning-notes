@@ -488,6 +488,15 @@ export default async function Page(props: {
 }
 ```
 
+### ¿Cuándo utilizar el hook `useSearchParams()` frente a la propiedad `searchParams`de `page.tsx`?
+Quizás hayas notado que usaste dos métodos diferentes para extraer los parámetros de búsqueda. Usar uno u otro depende de si trabajas en el cliente o en el servidor.
+
+- `<Search>` es un componente de cliente, por lo que se usó el gancho `useSearchParams()` para acceder a los parámetros del cliente.
+- `<Table>` es un componente de servidor que obtiene sus propios datos, por lo que se puede pasar la propiedad `searchParams` de la página al componente.
+
+Como regla general, si desea leer los parámetros del cliente, utilice el gancho `useSearchParams()` ya que esto evita tener que volver al servidor.
+
+---
 ### Mejor práctica: Antirrebote
 Se actualiza la URL con cada pulsación de tecla y, por lo tanto, consultas tu base de datos con cada pulsación. Esto no supone un problema en una aplicación pequeña, pero imagina que tu aplicación tuviera miles de usuarios, cada uno de los cuales enviara una nueva solicitud a tu base de datos con cada pulsación de tecla.
 
