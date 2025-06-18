@@ -1,5 +1,9 @@
-# Guía de Next.js
-Fuente: [nextjs.org](https://nextjs.org/learn/dashboard-app/getting-started)
+# Anotaciones de Next.js
+
+>[!IMPORTANT]
+>Estas son anotaciones personales sobre los puntos clave de un curso de Next.js, por lo que algunos conceptos pueden parecer incompletos o requerir contexto adicional para su comprensión completa.
+
+Fuente: [Curso de Next.js](https://nextjs.org/learn/dashboard-app/getting-started)
 
 ## Tabla de Contenido
 1. [¿Qué es Next.js?](#qué-es-nextjs)
@@ -522,6 +526,9 @@ const handleSearch = useDebouncedCallback((term) => {
 Esta función envolverá el contenido de `handleSearch` y solo ejecutará el código después de un tiempo específico una vez que el usuario haya dejado de escribir (300 ms).
 
 Al eliminar el rebote, puede reducir la cantidad de solicitudes enviadas a su base de datos, ahorrando así recursos.
+
+### Añadiento Paginación
+
 
 ## TEMAS PENDIENTES
 
