@@ -1,4 +1,4 @@
-# Cosas que considero útiles para React
+# Cositas útiles
 
 ## Índice
 1. [useIsMobile](#useismobile)
