@@ -1333,9 +1333,14 @@ FROM empleados e
 JOIN empleados s ON e.id_supervisor = s.id_empleado
 WHERE e.salario > s.salario;
 ```
-
 ---
 
+## Funciones de agregado
+Las funciones de agregado se utilizan para **operar múltiples registros y retornar un valor en específico**.
+<img width="388" alt="image" src="https://github.com/user-attachments/assets/cae0634a-42bd-435f-a5b2-eaab0f77ac73" />
+
+
+---
 ## 14. GROUP BY
 
 ### Conceptos Fundamentales
