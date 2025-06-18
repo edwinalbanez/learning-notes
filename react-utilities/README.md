@@ -49,7 +49,7 @@ useEffect(() => {
 - `useEffect` se ejecuta cuando el componente se monta.
 - `window.matchMedia()` crea una consulta de medios CSS para detectar cuando la pantalla es menor a 767px (768-1).
 
-### ¿Qué retorna ` matchMedia()`?
+### ¿Qué retorna `matchMedia()`?
 Retorna un objeto `MediaQueryList` con propiedades como:
 ```javascript
 {
