@@ -3,7 +3,7 @@
 ## Índice
 1. [useIsMobile](#useismobile)
 
-## useIsMobile()
+## `useIsMobile()`: determina si el usuario está en un dispositivo móvil
 ```javascript
 import { useState, useEffect } from "react"
 
