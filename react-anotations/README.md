@@ -6,7 +6,9 @@
 ## Índice
 1. [¿Qué es un re-render?](#qué-es-un-re-render)
 2. [useCallback](#usecallback)
+3. [useMemo](#usememo)
 
+---
 ## ¿Qué es un re-render?
 Un **re-render** es cuando React ejecuta nuevamente la función del componente y recalcula todo su JSX. Esto incluye:
 
@@ -136,11 +138,14 @@ const Child = React.memo(function Child({ onClick }) {
 > ### *`RESUMEN`*
 >Siempre que un componente `Padre` se re-renderiza, tambien lo hacen todos los componentes `Hijos`, sin importar si las propiedades de los hijos realmente cambiaron. React no compara propiedades por defecto, simplemente re-renderiza todos los hijos.
 >
->Para evitar re-renderizados innecesarios, React proporciona *`React.memo`* que:
+>Para evitar re-renderizados innecesarios, se usa *`React.memo`* que:
 >- Memoriza el resultado del renderizado del componente.
 >- Compara las props actuales con las anteriores usando comparación superficial.
 >- Solo re-renderiza el componente cuando las propiedades realmente han cambiado.
+>
+>Para que *`React.memo`* funcione, las propiedades que reciben los componentes deben estar memorizadas con [useCallback](#usecallback) o [useMemo](#usememo)
 
+---
 ## useCallback
 Es un hook que memoriza una función y solo la recrea si sus dependencias cambian.
 
@@ -223,6 +228,7 @@ const Child = React.memo(function Child({ onClick }) {
 ```
 
 ### 2. Evitar renders innecesarios con React.memo 
+>[!NOTE]
 >*Esto es prácticamente otro ejemplo del punto anterior.*
 
 `React.memo` compara las props por referencia. Sin `useCallback`, las funciones siempre son "diferentes":
@@ -317,7 +323,41 @@ function UserProfile({ userId }) {
 }
 ```
 
-### ¿Cuándo NO usar useCallback?
-La clave es recordar que `useCallback` solo es útil cuando la **estabilidad de referencia** de la función importa para el rendimiento de tu aplicación.
-- No uses `useCallback` para funciones que **NO** se pasan como props o dependencias
+### ¿Cuándo NO usarlo?
+- La clave es recordar que `useCallback` solo es útil cuando la **estabilidad de referencia** de la función importa para el rendimiento de tu aplicación.
+- No uses `useCallback` para funciones que **NO** se pasan como props o dependencias.
+
+---
+## useMemo
+Es un hook que optimiza valores calculados. Memoriza el resultado de un cálculo costoso y solo lo recalcula si sus dependencias cambian.
+
+```javascript
+/ useMemo - memoriza el resultado
+const memoizedValue = useMemo(() => {
+  return expensiveCalculation();
+}, [dependencies]);
+```
+
+### ¿Cuándo usarlo?
+`useMemo` es útil cuando:
+- Tienes cálculos costosos que no deben ejecutarse en cada render.
+- Quieres memorizar objetos o arrays complejos.
+- El valor calculado es una dependencia de otros hooks.
+
+```javascript
+function Component({ data, filter }) {
+  // Cálculo costoso que solo se ejecuta si data o filter cambian
+  const filteredData = useMemo(() => {
+    return data.filter(item => item.category === filter)
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [data, filter]);
+
+  return <ExpensiveList items={filteredData} />;
+}
+```
+
+### ¿Cuándo NO usarlo?
+- No uses `useMemo` para valores simples o cálculos triviales.
+- La regla general es: usa `useCallback` para funciones y `useMemo` para valores calculados.
+
 
