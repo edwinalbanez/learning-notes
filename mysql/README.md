@@ -1884,7 +1884,7 @@ NULL      | NULL      | 4500         | 1            | 1  <- Total general
 ```
 
 >[!IMPORTANT]
-> `GROUPING` no indica **"qué estamos resumiendo"**, sino **qué columnas fueron eliminadas** del agrupamiento. En las filas de resumen se elimina la columna `categoria` por eso `GROUPING` devuelve `1` .
+> `GROUPING` no indica **"qué estamos resumiendo"**, sino **qué columnas fueron eliminadas** del agrupamiento. En las filas de resumen se elimina la columna `categoria` por eso `GROUPING(categoria)` devuelve `1` .
 
 ---
 ## 17. CASE
