@@ -1843,7 +1843,50 @@ ORDER BY
 ```
 
 ---
+### GROUPING
+`GROUPING` es una función analítica en MySQL que se utiliza principalmente con las extensiones `ROLLUP`, `CUBE` y `GROUPING SETS` de la cláusula `GROUP BY`. Su propósito principal es identificar qué filas son resultado de operaciones de agregación y cuáles contienen valores reales de agrupación.
 
+#### ¿Qué hace GROUPING?
+La función GROUPING devuelve:
+
+- `0` cuando el valor en esa columna proviene de los datos originales (agrupación real)
+- `1` cuando el valor es `NULL` debido a una operación `ROLLUP`, `CUBE` o `GROUPING SETS` (agregación)
+
+#### Sintaxis básica
+```sql
+GROUPING(columna)
+```
+
+#### Funcionamiento con ROLLUP
+ROLLUP genera subtotales jerárquicos. Veamos un ejemplo práctico:
+```sql
+SELECT 
+    region,
+    categoria,
+    SUM(ventas) as total_ventas,
+    GROUPING(region) as grupo_region,
+    GROUPING(categoria) as grupo_categoria
+FROM ventas_tabla
+GROUP BY region, categoria WITH ROLLUP;
+```
+
+Los resultados podrían ser:
+```sql
+region    | categoria | total_ventas | grupo_region | grupo_categoria
+----------|-----------|--------------|--------------|----------------
+Norte     | A         | 1000         | 0            | 0
+Norte     | B         | 1500         | 0            | 0
+Norte     | NULL      | 2500         | 0            | 1  <- Subtotal por región
+Sur       | A         | 800          | 0            | 0
+Sur       | B         | 1200         | 0            | 0
+Sur       | NULL      | 2000         | 0            | 1  <- Subtotal por región
+NULL      | NULL      | 4500         | 1            | 1  <- Total general
+```
+
+>[!IMPORTANT]
+> `GROUPING` no indica **"qué estamos resumiendo"**, sino **qué columnas fueron eliminadas** del agrupamiento. En las filas de resumen se elimina la columna `categoria` por eso `GROUPING` devuelve `1` .
+
+---
 ## 17. CASE
 
 ### Conceptos Fundamentales
