@@ -1633,43 +1633,103 @@ WITH ROLLUP es una extensión de GROUP BY que genera automáticamente subtotales
 ```sql
 SELECT columnas, funcion_agregacion(columna)
 FROM tabla
-GROUP BY columna1, columna2, ... WITH ROLLUP;
+GROUP BY columna1, columna2, columna3 ... WITH ROLLUP;
 ```
 
 ### Cómo Funciona ROLLUP
-Con GROUP BY col1, col2 WITH ROLLUP se generan estos grupos:
-1. (col1, col2) - Agrupación normal
-2. (col1, NULL) - Subtotales por col1
-3. (NULL, NULL) - Total general
+Con *`GROUP BY col1, col2 WITH ROLLUP`* se generan estos grupos:
+1. (col1, col2, col3) - Agrupación normal
+2. (col1, col2, NULL) - Subtotales por los grupos `col1-col2`
+3. (col1, NULL, NULL) - Subtotales por los grupos `col1`
+4. (NULL, NULL, NULL) - Total general
+
+### Ejemplo:
+```sql
+SELECT region, categoria, producto, SUM(cantidad)
+FROM ventas_detalladas
+GROUP BY region, categoria, producto WITH ROLLUP;
+```
+
+**Generaría:**
+- `(region, categoria, producto)` - detalle específico.
+- `(region, categoria, NULL)` - subtotal por región y categoría.
+- `(region, NULL, NULL)` - subtotal por región.
+- `(NULL, NULL, NULL)` - gran total.
 
 ### Ejemplos Básicos
 
 #### ROLLUP Simple
 ```sql
--- Ventas por categoría con subtotales
-SELECT 
-    categoria,
-    COUNT(*) as total_productos,
-    SUM(precio * stock) as valor_inventario
-FROM productos
-GROUP BY categoria WITH ROLLUP;
+-- Ventas por region y producto con subtotales
+SELECT region, producto, SUM(cantidad) as total_cantidad
+FROM ventas
+GROUP BY region, producto WITH ROLLUP;
+```
+
+#### Resultado:
+```sql
++--------+----------+----------------+
+| region | producto | total_cantidad |
++--------+----------+----------------+
+| Este   | Laptop   |              8 |
+| Este   | NULL     |              8 |  <-- Subtotal por región Este
+| Norte  | Laptop   |             10 |
+| Norte  | Mouse    |             50 |
+| Norte  | NULL     |             60 |  <-- Subtotal por región Norte
+| Sur    | Laptop   |             15 |
+| Sur    | Teclado  |             30 |
+| Sur    | NULL     |             45 |  <-- Subtotal por región Sur
+| NULL   | NULL     |            113 |  <-- Total general
++--------+----------+----------------+
 ```
 
 #### ROLLUP Múltiple
 ```sql
--- Análisis de ventas por año, mes con subtotales
-SELECT 
-    YEAR(fecha_pedido) as año,
-    MONTH(fecha_pedido) as mes,
-    COUNT(*) as total_pedidos,
-    SUM(total) as ingresos,
-    AVG(total) as ticket_promedio
-FROM pedidos
-WHERE estado = 'COMPLETADO'
-GROUP BY YEAR(fecha_pedido), MONTH(fecha_pedido) WITH ROLLUP
-ORDER BY año, mes;
+SELECT region, categoria, producto, SUM(cantidad) as total_cantidad
+FROM ventas_detalladas
+GROUP BY region, categoria, producto WITH ROLLUP;
 ```
 
+**Resultado:**
+```sql
++--------+-------------+-----------+----------------+
+| region | categoria   | producto  | total_cantidad |
++--------+-------------+-----------+----------------+
+| Este   | Electronica | Tablet    |             14 |  
+| Este   | Electronica | NULL      |             14 |  ← Subtotal: Este + Electronica
+| Este   | NULL        | NULL      |             14 |  ← Subtotal: Este (todas las categorías)
+| Norte  | Electronica | Laptop    |             10 |  
+| Norte  | Electronica | Mouse     |             25 | 
+| Norte  | Electronica | Teclado   |             15 |  
+| Norte  | Electronica | NULL      |             50 |  ← Subtotal: Norte + Electronica
+| Norte  | Oficina     | Escritorio|              5 |  
+| Norte  | Oficina     | Silla     |              8 | 
+| Norte  | Oficina     | NULL      |             13 |  ← Subtotal: Norte + Oficina
+| Norte  | NULL        | NULL      |             63 |  ← Subtotal: Norte (todas las categorías)
+| Sur    | Electronica | Laptop    |             12 |  
+| Sur    | Electronica | Monitor   |             18 |  
+| Sur    | Electronica | NULL      |             30 |  ← Subtotal: Sur + Electronica
+| Sur    | Hogar       | Lampara   |             20 |  
+| Sur    | Hogar       | NULL      |             20 |  ← Subtotal: Sur + Hogar
+| Sur    | NULL        | NULL      |             50 |  ← Subtotal: Sur (todas categorías)
+| NULL   | NULL        | NULL      |            127 |  ← GRAN TOTAL
++--------+-------------+-----------+----------------+
+```
+
+#### Explicación de los niveles de agrupación:
+#### Nivel 1 - Detalle completo:
+`(region, categoria, producto)` = Filas normales con datos específicos
+
+#### Nivel 2 - Subtotal por región + categoría:
+`(region, categoria, NULL)` = Total por cada combinación región-categoría
+
+#### Nivel 3 - Subtotal por región:
+`(region, NULL, NULL)` = Total por cada región
+
+#### Nivel 4 - Gran total:
+`(NULL, NULL, NULL)` = Total absoluto = 127
+
+---
 ### Mejorando la Presentación con ROLLUP
 
 #### Usando COALESCE para Etiquetas
