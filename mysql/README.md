@@ -2105,7 +2105,8 @@ SELECT ... FROM nombre_cte;
 
 ### Características Principales
 >[!IMPORTANT]
-> **Visibilidad y Alcance**: Los CTE **solo existen durante la ejecución de la consulta que los define**. No se almacenan permanentemente como las tablas o vistas.
+> - **Visibilidad y Alcance**: Los CTE **solo existen durante la ejecución de la consulta que los define**. No se almacenan permanentemente como las tablas o vistas.
+> - **Alternativa a subconsultas**: A menudo son más claros que subconsultas anidadas complejas.
 
 - **Nomenclatura**: Puedes especificar nombres de columnas explícitamente o dejar que MySQL use los nombres de las columnas del SELECT interno.
 - **Reutilización**: Un CTE puede ser referenciado múltiples veces en la consulta principal, lo que evita duplicar código complejo.
