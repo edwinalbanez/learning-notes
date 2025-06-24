@@ -5,7 +5,7 @@
 2. [Crear Tablas](#2-crear-tablas)
 3. [Definir Llaves Foráneas](#3-definir-llaves-foráneas)
 4. [Modificaciones con ALTER TABLE](#4-modificaciones-con-alter-table)
-5. [¿Cómo funcionan los índices?](#5-cómo-funcionan-los-índices)
+5. [¿Cómo Funcionan los Índices?](#5-cómo-funcionan-los-índices)
 6. [Insertar, Actualizar y Eliminar Registros](#6-insertar-actualizar-y-eliminar-registros)
 7. [Safe Updates](#7-safe-updates)
 8. [Tablas Temporales](#8-tablas-temporales)
@@ -80,7 +80,6 @@ USE sistema_ventas;
 ```
 
 ---
-
 ## 2. Crear Tablas
 
 ### Conceptos Fundamentales
@@ -315,7 +314,7 @@ ALTER TABLE clientes
 ADD CONSTRAINT uk_email UNIQUE (email);
 ```
 
-## 5. ¿Como funcionan los índices?
+## 5. ¿Cómo funcionan los índices?
 En MySQL, un **índice** es una estructura de datos especial que mejora la velocidad de las operaciones de recuperación de datos en una tabla de base de datos. Permite al motor de la base de datos encontrar filas rápidamente sin tener que escanear la tabla completa.
 
 Cuando creas un índice en una o más columnas de una tabla, MySQL crea y mantiene una estructura de datos separada (comúnmente un árbol B o un árbol B+) que almacena los valores de esas columnas y punteros (variables que almacenan una dirección numérica que apunta a la ubicación específica de un dato en la memoria RAM) a las filas correspondientes en la tabla real.
