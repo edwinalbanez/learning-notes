@@ -2091,7 +2091,7 @@ ORDER BY
     fecha_pedido DESC;
 ```
 
-## 27. Expresiones Comunes de Tablas
+## 25. Expresiones Comunes de Tablas
 Las expresiones comunes de tabla (CTE - Common Table Expressions) en MySQL son una característica poderosa que permite crear conjuntos de resultados temporales y nombrados que pueden ser referenciados dentro de una consulta SELECT, INSERT, UPDATE o DELETE.
 
 ### Sintaxis Básica
