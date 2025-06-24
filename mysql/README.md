@@ -10,7 +10,7 @@
 7. [Safe Updates](#7-safe-updates)
 8. [Tablas Temporales](#8-tablas-temporales)
 9. [Funciones Internas de MySQL](#9-funciones-internas-de-mysql)
-10. [Operadores Aritméticos, de Comparación y Lógicos](#10-operadores-aritméticos,-de-comparación-y-lógicos)
+10. [Operadores Aritméticos, de Comparación y Lógicos](#10-operadores-aritméticos-de-comparación-y-lógicos)
 11. [Operadores BETWEEN e IN](#11-operadores-between-e-in)
 12. [Operadores LIKE e IS NULL](#12-operadores-like-e-is-null)
 13. [Uso de ORDER BY](#13-uso-de-order-by)
