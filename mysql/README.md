@@ -642,7 +642,6 @@ SET GLOBAL default_tmp_storage_engine = 'MEMORY';
 ### 9. Funciones internas de MySQL
 MySQL cuenta con **funciones internas** para operar cadenas de textos, números y fechas. Algunas de estas son:
 
----
 <img width="374" alt="image" src="https://github.com/user-attachments/assets/4752a640-4ec0-43ba-bd28-0330a0118969" />
 
 ---
