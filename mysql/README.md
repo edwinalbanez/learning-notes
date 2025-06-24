@@ -26,8 +26,9 @@
 23. [GROUPING](#23-grouping)
 24. [CASE](#24-case)
 25. [Expresiones Comunes de Tablas](#25-expresiones-comunes-de-tablas)
-26. [OVER (Funciones de Ventana)](#26-over-funciones-de-ventana)
-27. [Vistas](#26-vistas)
+26. [UNION y UNION ALL](#26-union-y-union-all)
+27. [OVER (Funciones de Ventana)](#27-over-funciones-de-ventana)
+28. [Vistas](#26-vistas)
 
 ---
 
@@ -2108,8 +2109,8 @@ SELECT ... FROM nombre_cte;
 > - **Visibilidad y Alcance**: Los CTE **solo existen durante la ejecución de la consulta que los define**. No se almacenan permanentemente como las tablas o vistas.
 > - **Alternativa a subconsultas**: A menudo son más claros que subconsultas anidadas complejas.
 
-- **Nomenclatura**: Puedes especificar nombres de columnas explícitamente o dejar que MySQL use los nombres de las columnas del SELECT interno.
 - **Reutilización**: Un CTE puede ser referenciado múltiples veces en la consulta principal, lo que evita duplicar código complejo.
+- **Nomenclatura**: Puedes especificar nombres de columnas explícitamente o dejar que MySQL use los nombres de las columnas del SELECT interno.
 
 ### Tipos de CTE
 
@@ -2171,13 +2172,108 @@ JOIN ventas_2024 v ON p.id = v.producto_id;
 #### Limitaciones Importantes
 Los CTE en MySQL tienen algunas restricriciones que debes conocer:
 
-- No se pueden indexar (a diferencia de las tablas temporales)
+- No se pueden indexar (a diferencia de las tablas temporales).
 - No soportan parámetros como los procedimientos almacenados.
 - Los CTE recursivos tienen límites de profundidad (controlado por **cte_max_recursion_depth**).
-- No pueden contener ciertas cláusulas como **ORDER BY** en el nivel superior del CTE recursivo
+- No pueden contener ciertas cláusulas como **ORDER BY** en el nivel superior del CTE recursivo.
 
 ---
-## 26. OVER (Funciones de Ventana)
+## 26. UNION ALL y UNION
+`UNION ALL` es un operador SQL que combina los resultados de dos o más consultas SELECT en un solo conjunto de resultados.
+
+### Funcionalidad Básica
+Toma todas las filas de múltiples consultas SELECT y las apila una encima de la otra, creando un conjunto de resultados unificado.
+```sql
+SELECT columna1, columna2 FROM tabla1
+UNION ALL
+SELECT columna1, columna2 FROM tabla2;
+```
+
+### Diferencia con `UNION`
+La diferencia clave entre `UNION` y `UNION ALL`:
+
+- **`UNION`**: Elimina filas duplicadas del resultado final.
+- **`UNION`** ALL: Mantiene todas las filas, incluyendo duplicados.
+
+```sql
+-- Con UNION (elimina duplicados)
+SELECT nombre FROM empleados_madrid
+UNION
+SELECT nombre FROM empleados_barcelona;
+
+-- Con UNION ALL (mantiene duplicados)
+SELECT nombre FROM empleados_madrid
+UNION ALL
+SELECT nombre FROM empleados_barcelona;
+```
+Si hay un empleado llamado "Juan" en ambas ciudades, UNION mostraría "Juan" una sola vez, mientras que UNION ALL lo mostraría dos veces.
+
+### Reglas Importantes
+
+#### 1. Compatibilidad de Columnas
+Las consultas deben tener:
+
+- Mismo número de columnas.
+- Tipos de datos compatibles en cada posición correspondiente.
+```sql
+-- ✅ Correcto
+SELECT id, nombre, salario FROM empleados
+UNION ALL
+SELECT codigo, apellido, sueldo FROM contratistas;
+
+-- ❌ Incorrecto - diferente número de columnas
+SELECT id, nombre FROM empleados
+UNION ALL
+SELECT codigo, apellido, salario FROM contratistas;
+```
+
+#### 2. Nombres de Columnas
+Los nombres de las columnas finales se toman de la primera consulta SELECT:
+```sql
+SELECT nombre as empleado, salario as sueldo FROM empleados
+UNION ALL
+SELECT apellido, ingreso FROM freelancers;
+-- Las columnas del resultado se llamarán "empleado" y "sueldo"
+```
+### Casos de Uso Comunes
+
+#### 1. Combinar Datos de Tablas Similares
+```sql
+SELECT 'Ventas' as tipo, fecha, monto FROM ventas
+UNION ALL
+SELECT 'Devoluciones' as tipo, fecha, -monto FROM devoluciones
+ORDER BY fecha;
+```
+
+#### 2. Crear Reportes Consolidados
+```sql
+SELECT region, 'Q1' as trimestre, SUM(ventas) as total
+FROM ventas_q1 GROUP BY region
+UNION ALL
+SELECT region, 'Q2' as trimestre, SUM(ventas) as total
+FROM ventas_q2 GROUP BY region
+UNION ALL
+SELECT region, 'Q3' as trimestre, SUM(ventas) as total
+FROM ventas_q3 GROUP BY region;
+```
+
+>[!IMPORTANT]
+>UNION ALL es más rápido que `UNION` porque:
+>
+> - No necesita identificar duplicados.
+> - No requiere ordenamiento interno para comparar filas.
+> - Procesa los datos de forma más directa.
+
+### Limitaciones
+
+- No puedes usar `ORDER BY` en las consultas individuales del `UNION ALL`, solo al final.
+- El `LIMIT` en consultas individuales puede comportarse de manera inesperada.
+- Las funciones de ventana se evalúan después del `UNION ALL`.
+
+`UNION ALL` es especialmente útil cuando necesitas combinar datos de múltiples fuentes manteniendo todos los registros, o cuando estás seguro de que no hay duplicados y quieres el mejor rendimiento posible.
+
+---
+## 27. OVER (Funciones de Ventana)
 
 ### Conceptos Fundamentales
 Las funciones de ventana (Window Functions) permiten realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin necesidad de GROUP BY. La cláusula OVER define la "ventana" de filas para el cálculo.
