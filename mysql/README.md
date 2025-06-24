@@ -25,8 +25,9 @@
 22. [WITH ROLLUP](#22-with-rollup)
 23. [GROUPING](#23-grouping)
 24. [CASE](#24-case)
-25. [OVER (Funciones de Ventana)](#25-over-funciones-de-ventana)
-26. [Vistas](#26-vistas)
+25. [Expresiones Comunes de Tablas](#25-expresiones-comunes-de)
+26. [OVER (Funciones de Ventana)](#26-over-funciones-de-ventana)
+27. [Vistas](#26-vistas)
 
 ---
 
@@ -2090,9 +2091,91 @@ ORDER BY
     fecha_pedido DESC;
 ```
 
----
+## 27. Expresiones Comunes de Tablas
+Las expresiones comunes de tabla (CTE - Common Table Expressions) en MySQL son una característica poderosa que permite crear conjuntos de resultados temporales y nombrados que pueden ser referenciados dentro de una consulta SELECT, INSERT, UPDATE o DELETE.
 
-## 25. OVER (Funciones de Ventana)
+### Sintaxis Básica
+```sql
+WITH nombre_cte [(columna1, columna2, ...)] AS (
+    -- Consulta que define el CTE
+    SELECT ...
+)
+-- Consulta principal que usa el CTE
+SELECT ... FROM nombre_cte;
+```
+
+### Características Principales
+- **Visibilidad y Alcance**: Los CTE **solo existen durante la ejecución de la consulta que los define**. No se almacenan permanentemente como las tablas o vistas.
+- **Nomenclatura**: Puedes especificar nombres de columnas explícitamente o dejar que MySQL use los nombres de las columnas del SELECT interno.
+- **Reutilización**: Un CTE puede ser referenciado múltiples veces en la consulta principal, lo que evita duplicar código complejo.
+
+### Tipos de CTE
+
+#### CTE No Recursivos
+Son los más comunes y funcionan como subconsultas nombradas:
+```sql
+WITH ventas_por_region AS (
+    SELECT region, SUM(monto) as total_ventas
+    FROM ventas
+    WHERE fecha >= '2024-01-01'
+    GROUP BY region
+)
+SELECT region, total_ventas,
+       total_ventas / (SELECT SUM(total_ventas) FROM ventas_por_region) * 100 as porcentaje
+FROM ventas_por_region
+ORDER BY total_ventas DESC;
+```
+
+#### CTE Recursivos
+Utilizan la palabra clave RECURSIVE y pueden hacer referencia a sí mismos:
+```sql
+WITH RECURSIVE jerarquia_empleados AS (
+    -- Caso base: empleados sin jefe
+    SELECT id, nombre, jefe_id, 0 as nivel
+    FROM empleados
+    WHERE jefe_id IS NULL
+    
+    UNION ALL
+    
+    -- Caso recursivo: empleados con jefe
+    SELECT e.id, e.nombre, e.jefe_id, j.nivel + 1
+    FROM empleados e
+    JOIN jerarquia_empleados j ON e.jefe_id = j.id
+)
+SELECT * FROM jerarquia_empleados;
+```
+
+#### CTE Múltiples
+Puedes definir varios CTE en una sola consulta:
+```sql
+WITH 
+ventas_2024 AS (
+    SELECT producto_id, SUM(cantidad) as total_vendido
+    FROM ventas
+    WHERE YEAR(fecha) = 2024
+    GROUP BY producto_id
+),
+productos_top AS (
+    SELECT producto_id
+    FROM ventas_2024
+    WHERE total_vendido > 100
+)
+SELECT p.nombre, v.total_vendido
+FROM productos p
+JOIN productos_top pt ON p.id = pt.producto_id
+JOIN ventas_2024 v ON p.id = v.producto_id;
+```
+
+#### Limitaciones Importantes
+Los CTE en MySQL tienen algunas restricriciones que debes conocer:
+
+- No se pueden indexar (a diferencia de las tablas temporales)
+- No soportan parámetros como los procedimientos almacenados.
+- Los CTE recursivos tienen límites de profundidad (controlado por **cte_max_recursion_depth**).
+- No pueden contener ciertas cláusulas como **ORDER BY** en el nivel superior del CTE recursivo
+
+---
+## 26. OVER (Funciones de Ventana)
 
 ### Conceptos Fundamentales
 Las funciones de ventana (Window Functions) permiten realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin necesidad de GROUP BY. La cláusula OVER define la "ventana" de filas para el cálculo.
