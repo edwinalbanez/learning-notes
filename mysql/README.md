@@ -26,7 +26,7 @@
 23. [GROUPING](#23-grouping)
 24. [CASE](#24-case)
 25. [Expresiones Comunes de Tablas](#25-expresiones-comunes-de-tablas)
-26. [UNION y UNION ALL](#26-union-y-union-all)
+26. [UNION y UNION ALL](#26-union-all-y-union)
 27. [OVER (Funciones de Ventana)](#27-over-funciones-de-ventana)
 28. [Vistas](#26-vistas)
 
