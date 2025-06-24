@@ -315,7 +315,7 @@ ALTER TABLE clientes
 ADD CONSTRAINT uk_email UNIQUE (email);
 ```
 
-### ¿Como funcionan los índices?
+## 5. ¿Como funcionan los índices?
 En MySQL, un **índice** es una estructura de datos especial que mejora la velocidad de las operaciones de recuperación de datos en una tabla de base de datos. Permite al motor de la base de datos encontrar filas rápidamente sin tener que escanear la tabla completa.
 
 Cuando creas un índice en una o más columnas de una tabla, MySQL crea y mantiene una estructura de datos separada (comúnmente un árbol B o un árbol B+) que almacena los valores de esas columnas y punteros (variables que almacenan una dirección numérica que apunta a la ubicación específica de un dato en la memoria RAM) a las filas correspondientes en la tabla real.
@@ -354,7 +354,7 @@ MySQL tendría que recorrer toda la tabla (fila por fila, lo que se llama un "es
 
 ---
 
-## 5. Insertar, Actualizar y Eliminar Registros
+## 6. Insertar, Actualizar y Eliminar Registros
 
 ### INSERT - Insertar Datos
 
@@ -439,7 +439,7 @@ WHERE id_pedido IN (
 >[!WARNING]
 > Siempre se debe especificar con `WHERE` el registro a eliminar, de lo contrario, se eliminarán todos los registros de la tabla.
 
-## Safe Updates
+## 7. Safe Updates
 En MySQL, la opción `safe Updates (rejects UPDATEs and DELETEs with no restrictions)` en `Edit` > `SQL Editor` es un mecanismo de seguridad que previene la ejecución accidental de comandos UPDATE y DELETE que podrían modificar o eliminar datos de manera masiva e indeseada.
 
 <img width="589" alt="image" src="https://github.com/user-attachments/assets/74315518-08f1-4ad0-a0fb-7eeaef99edf6" />
@@ -521,7 +521,7 @@ DELETE FROM usuarios WHERE nombre_completo LIKE '%Juan%';
 UPDATE empleados SET activo = 0;
 ```
 
-## Tablas Temporales
+## 8. Tablas Temporales
 Las tablas temporales en MySQL son estructuras de datos que existen solo durante una sesión específica o por un tiempo determinado.
 
 ### Características principales
@@ -640,7 +640,7 @@ SET GLOBAL default_tmp_storage_engine = 'MEMORY';
 
 ---
 
-### Funciones internas de MySQL
+### 9. Funciones internas de MySQL
 MySQL cuenta con **funciones internas** para operar cadenas de textos, números y fechas. Algunas de estas son:
 
 ---
@@ -652,7 +652,7 @@ MySQL cuenta con **funciones internas** para operar cadenas de textos, números 
 ---
 <img width="452" alt="image" src="https://github.com/user-attachments/assets/7a9be808-7292-440c-8b26-0134e38b71db" />
 
-## Operadores Aritméticos, de Comparación y Lógicos
+## 10. Operadores Aritméticos, de Comparación y Lógicos
 
 ### Operadores Aritmético
 Los operadores aritméticos permiten realizar cálculos matemáticos en consultas SQL:
@@ -683,7 +683,7 @@ SELECT empleado_id, salario, salario * 0.15 AS impuesto
 FROM empleados;
 ```
 
-## 6. Operadores BETWEEN e IN
+## 11. Operadores BETWEEN e IN
 
 ### Operador BETWEEN
 
@@ -740,7 +740,7 @@ WHERE id_cliente IN (
 
 ---
 
-## 7. Operadores LIKE e IS NULL
+## 12. Operadores LIKE e IS NULL
 
 ### Operador LIKE
 
@@ -803,7 +803,7 @@ WHERE fecha_entrega IS NULL;
 
 ---
 
-## 8. Uso de ORDER BY
+## 13. Uso de ORDER BY
 
 ### Conceptos Fundamentales
 ORDER BY ordena los resultados de una consulta según una o más columnas.
@@ -861,7 +861,7 @@ ORDER BY
 
 ---
 
-## 9. Uso de LIMIT
+## 14. Uso de LIMIT
 
 ### Conceptos Fundamentales
 LIMIT restringe el número de filas devueltas por una consulta.
@@ -921,7 +921,7 @@ SELECT FOUND_ROWS();
 
 ---
 
-## 10. Subconsultas
+## 15. Subconsultas
 
 ### Conceptos Fundamentales
 Las subconsultas son consultas anidadas dentro de otras consultas, permitiendo operaciones complejas de filtrado y análisis.
@@ -1033,7 +1033,7 @@ WHERE salario > (
 
 ---
 
-## 11. INNER JOIN
+## 16. INNER JOIN
 
 ### Conceptos Fundamentales
 INNER JOIN combina registros de dos o más tablas basándose en una condición de coincidencia. Solo devuelve registros que tienen coincidencias en ambas tablas.
@@ -1110,7 +1110,7 @@ ORDER BY ingresos_totales DESC;
 
 ---
 
-## 12. LEFT JOIN y RIGHT JOIN
+## 17. LEFT JOIN y RIGHT JOIN
 
 ### LEFT JOIN
 
@@ -1229,7 +1229,7 @@ LEFT JOIN (
 
 ---
 
-## 13. SELF JOIN
+## 18. SELF JOIN
 
 ### Conceptos Fundamentales
 SELF JOIN es una técnica donde una tabla se une consigo misma. Es útil para comparar registros dentro de la misma tabla o para trabajar con estructuras jerárquicas.
@@ -1342,13 +1342,13 @@ WHERE e.salario > s.salario;
 ```
 ---
 
-## Funciones de agregado
+## 19. Funciones de agregado
 Las funciones de agregado se utilizan para **operar múltiples registros y retornar un valor en específico**.
+
 <img width="388" alt="image" src="https://github.com/user-attachments/assets/cae0634a-42bd-435f-a5b2-eaab0f77ac73" />
 
-
 ---
-## 14. GROUP BY
+## 20. GROUP BY
 
 ### Conceptos Fundamentales
 GROUP BY agrupa filas que tienen los mismos valores en columnas especificadas y permite aplicar funciones de agregación como COUNT, SUM, AVG, MAX, MIN.
@@ -1491,7 +1491,7 @@ ORDER BY ingresos DESC;
 
 ---
 
-## 15. HAVING
+## 21. HAVING
 
 ### Conceptos Fundamentales
 HAVING es similar a WHERE, pero se usa para filtrar grupos creados por GROUP BY. Mientras WHERE filtra filas individuales antes del agrupamiento, HAVING filtra grupos después del agrupamiento.
@@ -1631,7 +1631,7 @@ ORDER BY valor_monetario DESC;
 
 ---
 
-## 16. WITH ROLLUP
+## 22. WITH ROLLUP
 
 ### Conceptos Fundamentales
 WITH ROLLUP es una extensión de GROUP BY que genera automáticamente subtotales y totales generales. Crea filas adicionales que muestran agregaciones en diferentes niveles de la jerarquía de agrupamiento.
@@ -1850,7 +1850,7 @@ ORDER BY
 ```
 
 ---
-### GROUPING
+### 23. GROUPING
 `GROUPING` es una función analítica en MySQL que se utiliza principalmente con las extensiones `ROLLUP`, `CUBE` y `GROUPING SETS` de la cláusula `GROUP BY`. Su propósito principal es identificar qué filas son resultado de operaciones de agregación y cuáles contienen valores reales de agrupación.
 
 #### ¿Qué hace GROUPING?
@@ -1894,7 +1894,7 @@ NULL      | NULL      | 4500         | 1            | 1  <- Total general
 > `GROUPING` no indica **"qué estamos resumiendo"**, sino **qué columnas fueron eliminadas** del agrupamiento. En las filas de resumen se elimina la columna `categoria` por eso `GROUPING(categoria)` devuelve `1` .
 
 ---
-## 17. CASE
+## 24. CASE
 
 ### Conceptos Fundamentales
 CASE es una expresión condicional que permite implementar lógica if-then-else en SQL. Existen dos formas: CASE simple y CASE buscado.
@@ -2094,7 +2094,7 @@ ORDER BY
 
 ---
 
-## 18. OVER (Funciones de Ventana)
+## 25. OVER (Funciones de Ventana)
 
 ### Conceptos Fundamentales
 Las funciones de ventana (Window Functions) permiten realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin necesidad de GROUP BY. La cláusula OVER define la "ventana" de filas para el cálculo.
@@ -2177,18 +2177,3 @@ WHERE estado = 'COMPLETADO'
 GROUP BY DATE(fecha_pedido)
 ORDER BY fecha;
 ```
-
-#### Comparaciones con Valores Anteriores/Siguientes
-```sql
--- Análisis de crecimiento mensual
-SELECT 
-    YEAR(fecha_pedido) as año,
-    MONTH(fecha_pedido) as mes,
-    COUNT(*) as pedidos,
-    SUM(total) as ingresos,
-    LAG(SUM(total)) OVER (ORDER BY YEAR(fecha_pedido), MONTH(fecha_pedido)) as ingresos_mes_anterior,
-    LEAD(SUM(total)) OVER (ORDER BY YEAR(fecha_pedido), MONTH(fecha_pedido)) as ingresos_mes_siguiente,
-    ROUND(
-        (SUM(total) - LAG(SUM(total)) OVER (ORDER BY YEAR(fecha_pedido), MONTH(fecha_pedido))) 
-        / LAG(SUM(total)) OVER
-
