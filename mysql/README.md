@@ -25,7 +25,7 @@
 22. [WITH ROLLUP](#22-with-rollup)
 23. [GROUPING](#23-grouping)
 24. [CASE](#24-case)
-25. [Expresiones Comunes de Tablas](#25-expresiones-comunes-de)
+25. [Expresiones Comunes de Tablas](#25-expresiones-comunes-de-tablas)
 26. [OVER (Funciones de Ventana)](#26-over-funciones-de-ventana)
 27. [Vistas](#26-vistas)
 
