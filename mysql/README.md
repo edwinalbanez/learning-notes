@@ -2276,16 +2276,7 @@ FROM ventas_q3 GROUP BY region;
 ## 27. OVER (Funciones de Ventana)
 
 ### Conceptos Fundamentales
-Las funciones de ventana (Window Functions) permiten realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin necesidad de GROUP BY. La cláusula OVER define la "ventana" de filas para el cálculo.
-
-### Sintaxis Básica
-```sql
-funcion_ventana() OVER (
-    [PARTITION BY columna(s)]
-    [ORDER BY columna(s)]
-    [ROWS/RANGE BETWEEN ... AND ...]
-)
-```
+Las **funciones de ventana** (window functions) son una característica avanzada de SQL que permite realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin colapsar el resultado como lo haría `GROUP BY`.
 
 ### Tipos de Funciones de Ventana
 
@@ -2298,6 +2289,43 @@ funcion_ventana() OVER (
 #### 3. Funciones de Valor
 - FIRST_VALUE(), LAST_VALUE(), NTH_VALUE()
 - LAG(), LEAD()
+
+### ¿Qué es `OVER`?
+`OVER` define una "ventana" de filas sobre las cuales se aplica una función. A diferencia de `GROUP BY` que colapsa filas en grupos, las funciones de ventana mantienen todas las filas mientras realizan cálculos sobre un conjunto específico de filas relacionadas.
+
+### Sintaxis Básica
+```sql
+funcion_ventana() OVER (
+    [PARTITION BY columna(s)]
+    [ORDER BY columna(s)]
+    [ROWS/RANGE BETWEEN ... AND ...]
+)
+```
+
+### Componentes de OVER
+
+#### 1. PARTITION BY
+Divide el conjunto de resultados en particiones. La función se aplica independientemente a cada partición.
+```sql
+-- Ejemplo: Ranking por departamento
+SELECT 
+    empleado,
+    departamento,
+    salario,
+    ROW_NUMBER() OVER (PARTITION BY departamento ORDER BY salario DESC) as ranking
+FROM empleados;
+```
+
+#### 2. ORDER BY
+Define el orden de las filas dentro de cada partición o ventana.
+```sql
+-- Ejemplo: Suma acumulativa
+SELECT 
+    fecha,
+    ventas,
+    SUM(ventas) OVER (ORDER BY fecha) as ventas_acumuladas
+FROM ventas_diarias;
+```
 
 ### Ejemplos con Funciones de Ranking
 
