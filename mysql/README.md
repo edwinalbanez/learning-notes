@@ -2334,7 +2334,7 @@ FROM empleados;
 #### Resultado de la consulta:
 
 >[!NOTE]
-> De esta manera se ordenan internamente o en **"segundo plano"** las filas con las sentencias `PARTITION BY` y `ORDER BY` dentro de `OVER` para finalmente asignar los valores del campo  `ranking`. Este no es el orden real del resultado final.
+> Aquí se muestra cómo se ordenan internamente o en **"segundo plano"** las filas con las sentencias `PARTITION BY` y `ORDER BY` dentro de `OVER` para finalmente asignar los valores del campo  `ranking`. Este no es el orden real del resultado final.
 
 Cada departamento tiene su propio ranking independiente, donde el empleado con mayor salario obtiene el ranking 1.
 
