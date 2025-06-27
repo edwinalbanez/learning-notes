@@ -2443,3 +2443,56 @@ SELECT
 FROM empleados
 ORDER BY salario DESC;  -- Esto SÍ ordena el resultado final
 ```
+## 28. Vistas
+Las vistas en MySQL son objetos de base de datos que funcionan como "tablas virtuales" basadas en el resultado de una consulta SQL. No almacenan datos físicamente, sino que representan una consulta almacenada que se ejecuta cada vez que se referencia la vista.
+
+### ¿Qué es una Vista?
+Una vista es esencialmente una consulta `SELECT` guardada con un nombre específico. Cuando consultas una vista, MySQL ejecuta automáticamente la consulta subyacente y devuelve los resultados como si fuera una tabla real.
+
+### Creación de Vistas
+La sintaxis básica para crear una vista es:
+```sql
+CREATE VIEW nombre_vista AS
+SELECT columna1, columna2, ...
+FROM tabla
+WHERE condición;
+```
+
+### Ejemplo práctico:
+```sql
+-- Supongamos que tenemos una tabla empleados
+CREATE VIEW empleados_activos AS
+SELECT id, nombre, apellido, salario, departamento
+FROM empleados
+WHERE estado = 'activo' AND fecha_contratacion >= '2020-01-01';
+```
+
+### Tipos de Vistas
+
+#### 1. Vistas Simples
+Basadas en una sola tabla, generalmente permiten operaciones DML (`INSERT`, `UPDATE`, `DELETE`).
+```sql
+CREATE VIEW empleados_ventas AS
+SELECT id, nombre, salario
+FROM empleados
+WHERE departamento = 'Ventas';
+```
+
+#### 2. Vistas Complejas
+Involucran múltiples tablas, funciones agregadas, `GROUP BY`, etc. Generalmente son de solo lectura.
+```sql
+CREATE VIEW resumen_departamentos AS
+SELECT d.nombre as departamento, 
+       COUNT(e.id) as total_empleados,
+       AVG(e.salario) as salario_promedio
+FROM departamentos d
+LEFT JOIN empleados e ON d.id = e.departamento_id
+GROUP BY d.id, d.nombre;
+```
+
+
+
+
+
+
+
