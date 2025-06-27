@@ -16,6 +16,8 @@ Fuente: [Curso de Next.js](https://nextjs.org/learn/dashboard-app/getting-starte
 8. [Obteniendo datos](#8-obteniendo-datos)
 9. [Renderizado estático y dinámico](#9-renderizado-estático-y-dinámico)
 10. [Streaming](#10-streaming)
+11. [Prerrenderizado parcial](#11-prerrenderizado-parcial)
+12. [Agregar búsqueda y paginación](#12-agregar-búsqueda-y-paginación)
 
 ---
 ## 1. ¿Qué es Next.js?
@@ -252,7 +254,7 @@ export default Page(){
 La ubicación de los límites de suspense variará según la aplicación. En general, se recomienda mover las búsquedas de datos a los componentes que las necesitan y luego encapsularlos en Suspense. Sin embargo, no hay problema en transmitir las secciones o la página completa si así lo requiere la aplicación.
 
 ---
-## 11. Prerenderizado parcial
+## 11. Prerrenderizado parcial
 La prerenderización parcial es una función experimental introducida en Next.js 14. El contenido de esta página puede actualizarse a medida que la función se estabilice. La prerenderización parcial solo está disponible con las versiones canarias de Next.js ( next@canary), no en la versión estable. Aún no recomendamos su uso en producción.
 
 Para instalar la versión Canary de Next.js, ejecute:
