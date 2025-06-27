@@ -2331,7 +2331,7 @@ SELECT
 FROM empleados;
 ```
 
-#### Resultado de la consulta:
+#### Ordenamiento interno con `OVER`:
 
 >[!NOTE]
 > Aquí se muestra cómo se ordenan internamente o en **"segundo plano"** las filas con las sentencias `PARTITION BY` y `ORDER BY` dentro de `OVER` para finalmente asignar los valores del campo  `ranking`. Este no es el orden real del resultado final.
@@ -2365,7 +2365,8 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 | 9  | Elena    | RRHH         | 55000   | 1       |
 
 >[!IMPORTANT]
-> Las cláusulas `PARTITION BY` y `ORDER BY` dentro de `OVER` **NO afectan** el orden en que se muestran los datos en el resultado final.
+> - Las cláusulas `PARTITION BY` y `ORDER BY` dentro de `OVER` **NO afectan** el orden en que se muestran los datos en el resultado final.
+> - Para ordenar las filas es necesario `ORDER BY` al final de toda la consulta.
 
 ### ¿Qué hace `PARTITION BY`?
 `PARTITION BY` **solamente define grupos internos** para el cálculo de la función de ventana:
@@ -2375,8 +2376,8 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 3. Asigna el resultado a cada fila de la partición.
 4. NO reordena las filas.
 
-### ¿Qué hace `PARTITION BY`?
-1. Ordena las filas **solo dentro de cada grupo/partición** creado por `PARTITION BY`, es decir, cada grupo se ordena por separado, no a todas las filas de la tabla.
+### ¿Qué hace `ORDER BY`?
+1. Ordena las filas **solo dentro de cada grupo/partición** creadas por `PARTITION BY`, es decir, cada grupo se ordena por separado, no a todas las filas de la tabla.
 2. Cuando se usa sin `PARTITION BY` se ordenan todas las filas.
 
 ### Resumen:
@@ -2387,4 +2388,58 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 - `RANK()`: asigna rankings independientes para cada partición.
 
 >[!IMPORTANT]
-> Todas las cláusulas dentro de `OVER`, ese decir, `PARTITION BY` y `ORDER BY` son para hacer cálculos en "segundo plano" sin tocar el orden de presentación de los datos.
+> Todas las cláusulas dentro de `OVER`, ese decir, `PARTITION BY` y `ORDER BY` son para hacer cálculos en "segundo plano" sin alterar el orden de presentación de los datos.
+
+### Ejemplo únicamente con `ORDER BY` en `OVER`
+
+#### Consulta:
+```sql
+SELECT 
+    nombre,
+    salario,
+    ROW_NUMBER() OVER (ORDER BY salario DESC) as posicion
+FROM empleados;
+```
+
+#### Datos de ejemplo en la tabla `empleados`:
+
+| id | nombre          | salario |
+|----|-----------------|---------|
+| 1  | Ana García      | 75000   |
+| 2  | Carlos López    | 65000   |
+| 3  | María Rodríguez | 80000   |
+| 4  | Juan Pérez      | 70000   |
+| 5  | Laura Martín    | 90000   |
+| 6  | Pedro Sánchez   | 65000   |
+
+#### Ordenamiento interno con `OVER`:
+
+| id | nombre           | salario | posicion |
+|----|------------------|---------|----------|
+| 5  | Laura Martín     | 90000   | 1        |
+| 3  | María Rodríguez  | 80000   | 2        |
+| 1  | Ana García       | 75000   | 3        |
+| 4  | Juan Pérez       | 70000   | 4        |
+| 2  | Carlos López     | 65000   | 5        |
+| 6  | Pedro Sánchez    | 65000   | 6        |
+
+#### Resultado real (orden original de la tabla):
+
+| id | nombre          | salario | posicion |
+|----|-----------------|---------|----------|
+| 1  | Ana García      | 75000   | 3        |
+| 2  | Carlos López    | 65000   | 5        |
+| 3  | María Rodríguez | 80000   | 2        |
+| 4  | Juan Pérez      | 70000   | 4        |
+| 5  | Laura Martín    | 90000   | 1        |
+| 6  | Pedro Sánchez   | 65000   | 6        |
+
+#### Para ordenar el resultado final necesitarías:
+```sql
+SELECT 
+    nombre,
+    salario,
+    ROW_NUMBER() OVER (ORDER BY salario DESC) as posicion
+FROM empleados
+ORDER BY salario DESC;  -- Esto SÍ ordena el resultado final
+```
