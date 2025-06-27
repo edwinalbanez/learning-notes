@@ -2443,6 +2443,8 @@ SELECT
 FROM empleados
 ORDER BY salario DESC;  -- Esto SÍ ordena el resultado final
 ```
+
+---
 ## 28. Vistas
 Las vistas en MySQL son objetos de base de datos que funcionan como "tablas virtuales" basadas en el resultado de una consulta SQL. No almacenan datos físicamente, sino que representan una consulta almacenada que se ejecuta cada vez que se referencia la vista.
 
