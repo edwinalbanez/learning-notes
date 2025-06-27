@@ -2305,7 +2305,7 @@ funcion_ventana() OVER (
 ### Componentes de OVER
 
 #### 1. PARTITION BY
-Divide el conjunto de resultados en particiones. La función se aplica independientemente a cada partición.
+Divide el conjunto de resultados en particiones. La función de ventana se aplica a cada partición. Es similar a `GROUP BY`, pero sin colapsar las filas.
 ```sql
 -- Ejemplo: Ranking por departamento
 SELECT 
@@ -2315,6 +2315,43 @@ SELECT
     ROW_NUMBER() OVER (PARTITION BY departamento ORDER BY salario DESC) as ranking
 FROM empleados;
 ```
+#### Resultado esperado
+```sql
+
+| empleado        | departamento | ventas | ranking_dept |
+|-----------------|--------------|--------|--------------|
+| Ana García      | Ventas       | 95000  | 1            |
+| Carlos López    | Ventas       | 85000  | 2            |
+| María Rodríguez | Ventas       | 75000  | 3            |
+| Pedro Martín    | Ventas       | 75000  | 3            |
+| Luis Fernández  | Ventas       | 65000  | 5            |
+| Sofia Chen      | Marketing    | 70000  | 1            |
+| Roberto Silva   | Marketing    | 65000  | 2            |
+| Elena Morales   | Marketing    | 60000  | 3            |
+| David Kim       | IT           | 90000  | 1            |
+| Carmen Vega     | IT           | 85000  | 2            |
+| Miguel Santos   | IT           | 80000  | 3            |
+```
+
+>[!IMPORTANT]
+> Las cláusulas `PARTITION BY` y `ORDER BY` dentro de `OVER` **NO afectan** el orden en que se muestran los datos en el resultado final.
+
+### ¿Qué hace `PARTITION BY` entonces?
+`PARTITION BY` **solamente define grupos internos** para el cálculo de la función de ventana:
+
+1. Crea particiones lógicas temporales.
+2. Aplica la función dentro de cada partición.
+3. Asigna el resultado a cada fila de la partición.
+4. NO reordena las filas.
+
+### Resumen:
+
+- `PARTITION BY`: Solo agrupa internamente, NO ordena el resultado.
+- `ORDER BY` dentro de OVER: ordena las filas **solo dentro de cada grupo/partición**, no a todas las filas de la tabla.
+- `ORDER BY` al final de una consulta: Es lo único que determina el orden del resultado mostrado.
+- `RANK()`: asigna rankings independientes para cada partición.
+
+El `PARTITION BY` es como hacer cálculos en "segundo plano" sin tocar el orden de presentación de los datos.
 
 #### 2. ORDER BY
 Define el orden de las filas dentro de cada partición o ventana.
