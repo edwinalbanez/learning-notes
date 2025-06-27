@@ -2306,8 +2306,23 @@ funcion_ventana() OVER (
 
 #### 1. PARTITION BY
 Divide el conjunto de resultados en particiones. La función de ventana se aplica a cada partición. Es similar a `GROUP BY`, pero sin colapsar las filas.
+
+#### Datos de ejemplo en la tabla `empleados`:
+
+| id | empleado | departamento | salario |
+|----|----------|--------------|---------|
+| 1  | Juan     | Ventas       | 45000   |
+| 2  | María    | Ventas       | 52000   |
+| 3  | Carlos   | Ventas       | 38000   |
+| 4  | Ana      | IT           | 65000   |
+| 5  | Pedro    | IT           | 58000   |
+| 6  | Laura    | IT           | 72000   |
+| 7  | Sofia    | RRHH         | 48000   |
+| 8  | Miguel   | RRHH         | 42000   |
+| 9  | Elena    | RRHH         | 55000   |
+
+#### Consulta ejecutada:
 ```sql
--- Ejemplo: Ranking por departamento
 SELECT 
     empleado,
     departamento,
@@ -2315,23 +2330,39 @@ SELECT
     ROW_NUMBER() OVER (PARTITION BY departamento ORDER BY salario DESC) as ranking
 FROM empleados;
 ```
-#### Resultado esperado
-```sql
 
-| empleado        | departamento | ventas | ranking_dept |
-|-----------------|--------------|--------|--------------|
-| Ana García      | Ventas       | 95000  | 1            |
-| Carlos López    | Ventas       | 85000  | 2            |
-| María Rodríguez | Ventas       | 75000  | 3            |
-| Pedro Martín    | Ventas       | 75000  | 3            |
-| Luis Fernández  | Ventas       | 65000  | 5            |
-| Sofia Chen      | Marketing    | 70000  | 1            |
-| Roberto Silva   | Marketing    | 65000  | 2            |
-| Elena Morales   | Marketing    | 60000  | 3            |
-| David Kim       | IT           | 90000  | 1            |
-| Carmen Vega     | IT           | 85000  | 2            |
-| Miguel Santos   | IT           | 80000  | 3            |
-```
+#### Resultado de la consulta:
+
+>[!NOTE]
+> De esta manera se ordenan internamente o en **"segundo plano"** las filas con las sentencias `PARTITION BY` y `ORDER BY` dentro de `OVER` para finalmente asignar los valores del campo  `ranking`. Este no es el orden real del resultado final.
+
+Cada departamento tiene su propio ranking independiente, donde el empleado con mayor salario obtiene el ranking 1.
+
+| id | empleado | departamento | salario | ranking |
+|----|----------|--------------|---------|---------|
+| 6  | Laura    | IT           | 72000   | 1       |
+| 4  | Ana      | IT           | 65000   | 2       |
+| 5  | Pedro    | IT           | 58000   | 3       |
+| 9  | Elena    | RRHH         | 55000   | 1       |
+| 7  | Sofia    | RRHH         | 48000   | 2       |
+| 8  | Miguel   | RRHH         | 42000   | 3       |
+| 2  | María    | Ventas       | 52000   | 1       |
+| 1  | Juan     | Ventas       | 45000   | 2       |
+| 3  | Carlos   | Ventas       | 38000   | 3       |
+
+#### Resultado REAL de la consulta:
+
+| id | empleado | departamento | salario | ranking |
+|----|----------|--------------|---------|---------|
+| 1  | Juan     | Ventas       | 45000   | 2       |
+| 2  | María    | Ventas       | 52000   | 1       |
+| 3  | Carlos   | Ventas       | 38000   | 3       |
+| 4  | Ana      | IT           | 65000   | 2       |
+| 5  | Pedro    | IT           | 58000   | 3       |
+| 6  | Laura    | IT           | 72000   | 1       |
+| 7  | Sofia    | RRHH         | 48000   | 2       |
+| 8  | Miguel   | RRHH         | 42000   | 3       |
+| 9  | Elena    | RRHH         | 55000   | 1       |
 
 >[!IMPORTANT]
 > Las cláusulas `PARTITION BY` y `ORDER BY` dentro de `OVER` **NO afectan** el orden en que se muestran los datos en el resultado final.
