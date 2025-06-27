@@ -2291,7 +2291,7 @@ Las **funciones de ventana** (window functions) son una característica avanzada
 - LAG(), LEAD()
 
 ### ¿Qué es `OVER`?
-`OVER` define una "ventana" de filas sobre las cuales se aplica una función. A diferencia de `GROUP BY` que colapsa filas en grupos, las funciones de ventana mantienen todas las filas mientras realizan cálculos sobre un conjunto específico de filas relacionadas.
+`OVER` es parte fundamental de las funciones ventana, define una "ventana" de filas sobre las cuales se aplica una función. A diferencia de `GROUP BY` que colapsa filas en grupos, las funciones de ventana mantienen todas las filas mientras realizan cálculos sobre un conjunto específico de filas relacionadas.
 
 ### Sintaxis Básica
 ```sql
@@ -2304,7 +2304,7 @@ funcion_ventana() OVER (
 
 ### Componentes de OVER
 
-#### 1. PARTITION BY
+#### 1. `PARTITION BY` y `ORDER BY`
 Divide el conjunto de resultados en particiones. La función de ventana se aplica a cada partición. Es similar a `GROUP BY`, pero sin colapsar las filas.
 
 #### Datos de ejemplo en la tabla `empleados`:
@@ -2367,13 +2367,17 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 >[!IMPORTANT]
 > Las cláusulas `PARTITION BY` y `ORDER BY` dentro de `OVER` **NO afectan** el orden en que se muestran los datos en el resultado final.
 
-### ¿Qué hace `PARTITION BY` entonces?
+### ¿Qué hace `PARTITION BY`?
 `PARTITION BY` **solamente define grupos internos** para el cálculo de la función de ventana:
 
 1. Crea particiones lógicas temporales.
 2. Aplica la función dentro de cada partición.
 3. Asigna el resultado a cada fila de la partición.
 4. NO reordena las filas.
+
+### ¿Qué hace `PARTITION BY`?
+1. Ordena las filas **solo dentro de cada grupo/partición** creado por `PARTITION BY`, es decir, cada grupo se ordena por separado, no a todas las filas de la tabla.
+2. Cuando se usa sin `PARTITION BY` se ordenan todas las filas.
 
 ### Resumen:
 
@@ -2382,73 +2386,5 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 - `ORDER BY` al final de una consulta: Es lo único que determina el orden del resultado mostrado.
 - `RANK()`: asigna rankings independientes para cada partición.
 
-El `PARTITION BY` es como hacer cálculos en "segundo plano" sin tocar el orden de presentación de los datos.
-
-#### 2. ORDER BY
-Define el orden de las filas dentro de cada partición o ventana.
-```sql
--- Ejemplo: Suma acumulativa
-SELECT 
-    fecha,
-    ventas,
-    SUM(ventas) OVER (ORDER BY fecha) as ventas_acumuladas
-FROM ventas_diarias;
-```
-
-### Ejemplos con Funciones de Ranking
-
-#### ROW_NUMBER, RANK, DENSE_RANK
-```sql
--- Ranking de productos por precio
-SELECT 
-    nombre,
-    categoria,
-    precio,
-    ROW_NUMBER() OVER (ORDER BY precio DESC) as numero_fila,
-    RANK() OVER (ORDER BY precio DESC) as ranking,
-    DENSE_RANK() OVER (ORDER BY precio DESC) as ranking_denso,
-    ROW_NUMBER() OVER (PARTITION BY categoria ORDER BY precio DESC) as ranking_por_categoria
-FROM productos
-ORDER BY precio DESC;
-```
-
-#### NTILE para Segmentación
-```sql
--- Dividir clientes en cuartiles por valor total
-SELECT 
-    c.nombre,
-    COALESCE(SUM(p.total), 0) as total_gastado,
-    NTILE(4) OVER (ORDER BY COALESCE(SUM(p.total), 0) DESC) as cuartil,
-    CASE NTILE(4) OVER (ORDER BY COALESCE(SUM(p.total), 0) DESC)
-        WHEN 1 THEN 'Top 25%'
-        WHEN 2 THEN 'Segundo 25%'
-        WHEN 3 THEN 'Tercer 25%'
-        WHEN 4 THEN 'Último 25%'
-    END as segmento
-FROM clientes c
-LEFT JOIN pedidos p ON c.id_cliente = p.id_cliente AND p.estado = 'COMPLETADO'
-GROUP BY c.id_cliente, c.nombre
-ORDER BY total_gastado DESC;
-```
-
-### Funciones de Agregación con OVER
-
-#### Totales Acumulativos y Promedios Móviles
-```sql
--- Análisis de ventas con totales acumulativos
-SELECT 
-    DATE(fecha_pedido) as fecha,
-    COUNT(*) as pedidos_dia,
-    SUM(total) as ingresos_dia,
-    SUM(COUNT(*)) OVER (ORDER BY DATE(fecha_pedido)) as pedidos_acumulados,
-    SUM(SUM(total)) OVER (ORDER BY DATE(fecha_pedido)) as ingresos_acumulados,
-    AVG(SUM(total)) OVER (
-        ORDER BY DATE(fecha_pedido) 
-        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
-    ) as promedio_movil_7_dias,
-    SUM(total) / SUM(SUM(total)) OVER () * 100 as porcentaje_del_total
-FROM pedidos
-WHERE estado = 'COMPLETADO'
-GROUP BY DATE(fecha_pedido)
-ORDER BY fecha;
-```
+>[!IMPORTANT]
+> Todas las cláusulas dentro de `OVER`, ese decir, `PARTITION BY` y `ORDER BY` son para hacer cálculos en "segundo plano" sin tocar el orden de presentación de los datos.
