@@ -6,21 +6,23 @@
 Fuente: [Curso de Next.js](https://nextjs.org/learn/dashboard-app/getting-started)
 
 ## Tabla de Contenido
-1. [¿Qué es Next.js?](#qué-es-nextjs)
-2. [Creando un nuevo proyecto](#creando-un-nuevo-proyecto)
-3. [Estructura de carpetas](#estructura-de-carpetas)
-4. [Ejecución del servidor](#ejecución-del-servidor-de-desarrollo)
-5. [Optimización de fuentes e imágenes](#optimización-de-fuentes-e-imágenes)
-6. [Enrutamiento](#enrutamiento)
-7. [Navegando entre páginas](#navegando-entre-páginas)
-8. [Obteniendo datos](#obteniendo-datos)
-9. [Renderizado estático y dinámico](#renderizado-estático-y-dinámico)
-10. [Streaming](#streaming)
+1. [¿Qué es Next.js?](#1-qué-es-nextjs)
+2. [Creando un nuevo proyecto](#2-creando-un-nuevo-proyecto)
+3. [Estructura de carpetas](#3-estructura-de-carpetas)
+4. [Ejecución del servidor](#4-ejecución-del-servidor-de-desarrollo)
+5. [Optimización de fuentes e imágenes](#5-optimización-de-fuentes-e-imágenes)
+6. [Enrutamiento](#6-enrutamiento)
+7. [Navegando entre páginas](#7-navegando-entre-páginas)
+8. [Obteniendo datos](#8-obteniendo-datos)
+9. [Renderizado estático y dinámico](#9-renderizado-estático-y-dinámico)
+10. [Streaming](#10-streaming)
 
-## ¿Qué es Next.js?
- Next.js es un framework de React de código abierto desarrollado por Vercel.  Mientras que React es una librería para construir interfaces de usuario, Next.js es un framework completo que añade funcionalidades esenciales para aplicaciones web en producción, como renderizado del lado del servidor, enrutamiento automático, optimización de rendimiento y mucho más.
+---
+## 1. ¿Qué es Next.js?
+Next.js es un framework de React de código abierto desarrollado por Vercel.  Mientras que React es una librería para construir interfaces de usuario, Next.js es un framework completo que añade funcionalidades esenciales para aplicaciones web en producción, como renderizado del lado del servidor, enrutamiento automático, optimización de rendimiento y mucho más.
 
-## Creando un nuevo proyecto
+---
+## 2. Creando un nuevo proyecto
 Se recomienda utilizar `pnpm` como gestor de paquetes, ya que es más rápido y eficiente que npm o yarn. Si no lo tiene instalado, se puede instalar globalmente ejecutando:
 ```bash
 npm install -g pnpm
@@ -33,7 +35,8 @@ npx create-next-app@latest nextjs-dashboard --example "https://github.com/vercel
 
 Este comando usa `create-next-app`, una herramienta de interfaz de línea de comandos (CLI) que configura automáticamente una aplicación Next.js. En el comando anterior, también se usa la bandera `--example` con un ejemplo de inicio.
 
-## Estructura de carpetas
+---
+## 3. Estructura de carpetas
 
 Después de la instalación, abra el proyecto en su editor de código y navegue hasta nextjs-dashboard.
 ```bash
@@ -49,7 +52,8 @@ Notará que el proyecto tiene la siguiente estructura de carpetas:
 - `/public`: Contiene todos los activos estáticos para su aplicación, como imágenes.
 - **Archivos de configuración** : También encontrará archivos de configuración, como los que next.config.tsse encuentran en la raíz de su aplicación. La mayoría de estos archivos se crean y preconfiguran al iniciar un nuevo proyecto con create-next-app.
 
-## Ejecución del servidor de desarrollo
+---
+## 4. Ejecución del servidor de desarrollo
 
 Instale los paquetes del proyecto:
 ```bash
@@ -61,7 +65,8 @@ pnpm dev
 ```
 El servidor de desarrollo se ha iniciado en el puerto `3000`, compruebe si funciona abriendo `http://localhost:3000` en su navegador.
 
-## Optimización de fuentes e imágenes
+---
+## 5. Optimización de fuentes e imágenes
 
 ### ¿Por qué optimizar las fuentes?
 `Cambio de diseño acumulativo` es una métrica que Google utiliza para evaluar el rendimiento y la experiencia del usuario de un sitio web. En el caso de las fuentes, el cambio de diseño se produce cuando el navegador inicialmente muestra el texto en una fuente de respaldo o del sistema y, una vez cargado, la reemplaza por una fuente personalizada. Este cambio puede provocar cambios en el tamaño, el espaciado o el diseño del texto, desplazando los elementos a su alrededor.
@@ -143,7 +148,8 @@ Hay mucho más que aprender sobre estos temas, como la optimización de imágene
 - [Cómo afectan los core Web Vitals al CEO](https://vercel.com/blog/how-core-web-vitals-affect-seo)
 - [Cómo gestiona Google Javascript durante el proceso de indexación](https://vercel.com/blog/how-google-handles-javascript-throughout-the-indexing-process)
 
-## Enrutamiento
+---
+## 6. Enrutamiento
 Cada carpeta representa un segmento de URL.
 
 <img width="706" alt="image" src="https://github.com/user-attachments/assets/aef06dc4-42cc-49b8-9ca0-1040d9ebdf82" />
@@ -161,7 +167,8 @@ Usando diseños (`layout.tsx`) en Next, durante la navegación, solo se actualiz
 
 <img width="704" alt="image" src="https://github.com/user-attachments/assets/9b21f52f-1294-44ab-8cc7-b7ef6fa58ada" />
 
-## Navegando entre páginas
+---
+## 7. Navegando entre páginas
 
 Next.js divide automáticamente el código de la aplicación por segmentos de ruta. Según la ruta que se visite se cargará el código correspondiente. 
 
@@ -171,7 +178,8 @@ En producción, siempre que los componentes `<Link>` aparecen en la ventana grá
 
 Next proporciona el hook `usePathname()` para obtener la URL actual. Para utilizarlo, el componente debe contener la directiva `"use client"` al inicio.
 
-## Obteniendo datos
+---
+## 8. Obteniendo datos
 
 De forma predeterminada, las aplicaciones Next.js usan componentes de servidor de React.
 
@@ -185,13 +193,15 @@ Una "cascada" es una secuencia de solicitudes de red que dependen de la finaliza
 
 <img width="710" alt="image" src="https://github.com/user-attachments/assets/47be0143-06fb-478d-98a2-2db616517bda" />
 
-## Renderizado estático y dinámico
+---
+## 9. Renderizado estático y dinámico
 
 Con la representación estática, la obtención y representación de datos se realiza en el servidor en el momento de la **compilación** (cuando se implementa) o al revalidar los datos. Cada vez que un usuario visita la aplicación, se muestra el resultado almacenado en caché.
 
 Con la renderización dinámica, el contenido se renderiza en el **servidor** para cada usuario en el **momento de la solicitud** (cuando el usuario visita la página). 
 
-## Streaming
+---
+## 10. Streaming
 
 La transmisión es una técnica de transferencia de datos que permite dividir una ruta en "fragmentos" más pequeños y transmitirlos progresivamente desde el servidor al cliente a medida que estén listos.
 
@@ -241,7 +251,8 @@ export default Page(){
 ```
 La ubicación de los límites de suspense variará según la aplicación. En general, se recomienda mover las búsquedas de datos a los componentes que las necesitan y luego encapsularlos en Suspense. Sin embargo, no hay problema en transmitir las secciones o la página completa si así lo requiere la aplicación.
 
-## Prerenderizado parcial
+---
+## 11. Prerenderizado parcial
 La prerenderización parcial es una función experimental introducida en Next.js 14. El contenido de esta página puede actualizarse a medida que la función se estabilice. La prerenderización parcial solo está disponible con las versiones canarias de Next.js ( next@canary), no en la versión estable. Aún no recomendamos su uso en producción.
 
 Para instalar la versión Canary de Next.js, ejecute:
@@ -298,7 +309,8 @@ Eso es todo. Puede que no notes ninguna diferencia en tu aplicación durante el 
 
 Lo mejor del prerenderizado parcial es que no necesitas modificar el código para usarlo. Mientras uses Suspense para encapsular las partes dinámicas de tu ruta, Next.js sabrá qué partes de tu ruta son estáticas y cuáles dinámicas.
 
-## Agregar búsqueda y paginación
+---
+## 12. Agregar búsqueda y paginación
 
 ### ¿Por qué utilizar parámetros de búsqueda de URL?
 Usará parámetros de búsqueda de URL para administrar el estado de la búsqueda. Este patrón puede ser nuevo si está acostumbrado a hacerlo con el estado del lado del cliente.
@@ -537,6 +549,42 @@ Esta función envolverá el contenido de `handleSearch` y solo ejecutará el có
 Al eliminar el rebote, puede reducir la cantidad de solicitudes enviadas a su base de datos, ahorrando así recursos.
 
 ### Añadiento Paginación
+Añadir paginación permite a los usuarios navegar por las diferentes páginas para ver todas las facturas. Veamos cómo implementar la paginación mediante parámetros de URL, igual que con la búsqueda.
+
+En el componente `page.tsx` de la ruta `invoices`, mediante la funcion `fetchInvoicesPages` se obtiene el número total de páginas según la consulta de búsqueda. Por ejemplo, si hay 12 facturas que coinciden con la consulta de búsqueda (parametro de búsqueda en la url `/?query=sometext`) y cada página muestra 6 facturas, el número total de páginas sería 2.
+
+A continuación, pasa el totalPages accesorio al componente `<Pagination/>`:
+
+```javascript
+// ...
+const totalPages = await fetchInvoicesPages(query);
+// ...
+<Pagination totalPages={totalPages} />
+// ...
+```
+
+En el componente `<Pagination />` se importan los hooks `usePathname` y `useSearchParams` para obtener la página actual y configurar la nueva.
+```javascript
+// ...
+import { usePathname, useSearchParams } from 'next/navigation';
+
+// ...
+
+const pathname = usePathname(); // URL actual
+const searchParams = useSearchParams(); // parámetros de búsqueda de la URL (/?page=1&query=sometext se convierten en {page: 1, query: 'sometext'})
+const currentPage = Number(searchParams.get('page')) || 1; // Si no existe el parámetro page se asume que es la primera página
+// ...
+```
+
+A continuación, se crea una nueva función dentro del componente `<Pagination />` llamada `createPageURL`. Se usará `URLSearchParams` para establecer el nuevo número de página y `pathName` para construir la nueva URL.
+
+```javascript
+const createPageURL = (pageNumber: number | string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+};
+```
 
 
 ## TEMAS PENDIENTES
