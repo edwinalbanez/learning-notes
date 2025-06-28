@@ -2598,6 +2598,8 @@ GROUP BY departamento;
 SELECT * FROM resumen_ventas WHERE total_empleados > 5;
 ```
 
+Con `ALGORITHM = TEMPTABLE`, la tabla temporal **se crea cada vez que se ejecuta la vista** y **se elimina inmediatamente después de completar la consulta**. No persiste durante la sesión como las tablas temporales comunes.
+
 ### Cuándo MySQL fuerza `TEMPTABLE`:
 
 - Vistas con funciones agregadas (`COUNT`, `SUM`, `AVG`, etc.).
@@ -2678,21 +2680,96 @@ CREATE SQL SECURITY {DEFINER | INVOKER} VIEW nombre_vista AS
 SELECT ...
 ```
 
-#### 1. SQL SECURITY DEFINER (Predeterminado)
+**Hay dos opciones:**
+
+- `SQL SECURITY DEFINER`: Se ejecuta con los permisos del creador de la vista.
+- `SQL SECURITY INVOKER`: Se ejecuta con los permisos del usuario que consulta la vista.
+
+#### Ejemplos prácticos paso a paso:
+
+#### Configuración inicial:
+
+```sql
+-- Tabla con información sensible (solo admin puede acceder)
+CREATE TABLE empleados_completos (
+    id INT,
+    nombre VARCHAR(100),
+    salario DECIMAL(10,2),
+    numero_seguro_social VARCHAR(11),
+    evaluacion_confidencial TEXT
+);
+
+-- Solo el admin tiene permisos
+GRANT ALL ON empleados_completos TO admin@localhost;
+
+-- Usuario regular SIN permisos directos
+CREATE USER juan@localhost IDENTIFIED BY 'password';
+-- juan NO tiene acceso a empleados_completos
+````
+
+#### Ejemplo 1: `SQL SECURITY DEFINER` (Predeterminado)
 La vista se ejecuta con los privilegios del usuario definido en `DEFINER`.
 
 ```sql
--- El usuario admin tiene acceso a tabla_secreta
--- Los usuarios regulares NO tienen acceso directo
-CREATE DEFINER = admin@localhost 
-SQL SECURITY DEFINER VIEW datos_permitidos AS
-SELECT id, nombre_publico 
-FROM tabla_secreta 
-WHERE categoria = 'publico';
+-- Admin crea una vista "filtrada"
+CREATE DEFINER = admin@localhost
+SQL SECURITY DEFINER VIEW empleados_publicos AS
+SELECT id, nombre  -- Solo campos no sensibles
+FROM empleados_completos
+WHERE departamento = 'Marketing';
 
--- Ahora los usuarios regulares pueden acceder a través de la vista
-GRANT SELECT ON datos_permitidos TO usuario_regular@localhost;
+-- Dar acceso a la vista (no a la tabla)
+GRANT SELECT ON empleados_publicos TO juan@localhost;
 ```
+
+#### ¿Qué pasa cuando juan consulta la vista?
+```sql
+-- Juan ejecuta:
+SELECT * FROM empleados_publicos;
+```
+
+**Proceso interno:**
+1. Juan solicita datos de la vista `empleados_publicos`.
+2. MySQL ve que es `SQL SECURITY DEFINER`.
+3. MySQL ejecuta la consulta usando los permisos de `admin@localhost`.
+4. Admin SÍ tiene acceso a `empleados_completos`.
+5. La vista se ejecuta exitosamente.
+6. Juan ve solo los datos filtrados en la vista (id, nombre)
+
+Resultado: ✅ Juan puede ver los datos, aunque **NO** tiene permisos directos sobre la tabla `empleados_completos`.
+
+
+#### Ejemplo 2: `SQL SECURITY INVOKER`
+La vista se ejecuta con los privilegios del usuario que la está consultando.
+
+```sql
+-- Admin crea vista con INVOKER
+CREATE DEFINER = admin@localhost
+SQL SECURITY INVOKER VIEW empleados_invoker AS
+SELECT id, nombre
+FROM empleados_completos
+WHERE departamento = 'Marketing';
+
+GRANT SELECT ON empleados_invoker TO juan@localhost; 
+```
+
+#### ¿Qué pasa cuando juan consulta esta vista?
+```sql
+-- Juan ejecuta:
+SELECT * FROM empleados_invoker;
+```
+
+**Proceso interno:**
+1. Juan solicita datos de la vista `empleados_invoker`.
+2. MySQL ve que es `SQL SECURITY INVOKER`.
+3. MySQL ejecuta la consulta usando los permisos de `juan@localhost`.
+4. Juan **NO** tiene acceso a `empleados_completos`.
+5. **ERROR**: Access denied for user 'juan'@'localhost' to table 'empleados_completos'
+
+Resultado: ❌ Juan `NO` puede ver los datos porque no tiene permisos sobre la tabla `empleados_completos`.
+
+
+
 
 
 
