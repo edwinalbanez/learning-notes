@@ -31,7 +31,6 @@
 28. [Vistas](#28-vistas)
 
 ---
-
 ## ¿Qué es SQL?
 El lenguaje de consulta estructurada (SQL, por sus siglas en inglés) permite la interacción con bases de datos desde el almacenamiento y manipulación hasta la recuperación de los datos.
 
@@ -2448,10 +2447,10 @@ ORDER BY salario DESC;  -- Esto SÍ ordena el resultado final
 ## 28. Vistas
 Las vistas en MySQL son objetos de base de datos que funcionan como "tablas virtuales" basadas en el resultado de una consulta SQL. No almacenan datos físicamente, sino que representan una consulta almacenada que se ejecuta cada vez que se referencia la vista.
 
-### ¿Qué es una Vista?
+### ¿Qué es una vista?
 Una vista es esencialmente una consulta `SELECT` guardada con un nombre específico. Cuando consultas una vista, MySQL ejecuta automáticamente la consulta subyacente y devuelve los resultados como si fuera una tabla real.
 
-### Creación de Vistas
+### Creación de vistas
 La sintaxis básica para crear una vista es:
 ```sql
 CREATE VIEW nombre_vista AS
@@ -2460,7 +2459,7 @@ FROM tabla
 WHERE condición;
 ```
 
-### Ejemplo práctico:
+#### Ejemplo práctico:
 ```sql
 -- Supongamos que tenemos una tabla empleados
 CREATE VIEW empleados_activos AS
@@ -2469,9 +2468,9 @@ FROM empleados
 WHERE estado = 'activo' AND fecha_contratacion >= '2020-01-01';
 ```
 
-### Tipos de Vistas
+### Tipos de vistas
 
-#### 1. Vistas Simples
+#### 1. Vistas simples
 Basadas en una sola tabla, generalmente permiten operaciones DML (`INSERT`, `UPDATE`, `DELETE`).
 ```sql
 CREATE VIEW empleados_ventas AS
@@ -2480,7 +2479,7 @@ FROM empleados
 WHERE departamento = 'Ventas';
 ```
 
-#### 2. Vistas Complejas
+#### 2. Vistas complejas
 Involucran múltiples tablas, funciones agregadas, `GROUP BY`, etc. Generalmente son de solo lectura.
 ```sql
 CREATE VIEW resumen_departamentos AS
@@ -2492,6 +2491,116 @@ LEFT JOIN empleados e ON d.id = e.departamento_id
 GROUP BY d.id, d.nombre;
 ```
 
+### Operaciones con vistas
+
+#### Consultar una vista
+```sql
+SELECT * FROM empleados_activos;
+SELECT nombre, salario FROM empleados_activos WHERE salario > 50000;
+```
+
+#### Modificar una vista
+```sql
+ALTER VIEW empleados_activos AS
+SELECT id, nombre, apellido, salario, departamento, fecha_contratacion
+FROM empleados
+WHERE estado = 'activo';
+```
+
+#### Eliminar una vista
+```sql
+DROP VIEW empleados_activos;
+```
+
+### Vistas actualizables
+Una vista es actualizable si cumple ciertas condiciones:
+
+- Basada en una sola tabla.
+- No contiene funciones agregadas (`SUM`, `COUNT`, etc.).
+- No usa `DISTINCT`,` GROUP BY`, `HAVING`.
+- No contiene subconsultas en `SELECT`.
+
+```sql
+-- Vista actualizable
+CREATE VIEW empleados_it AS
+SELECT id, nombre, salario
+FROM empleados
+WHERE departamento = 'IT';
+
+-- Puedes hacer:
+UPDATE empleados_it SET salario = 60000 WHERE id = 1;
+INSERT INTO empleados_it (nombre, salario) VALUES ('Juan Pérez', 55000);
+```
+
+### `ALGORITHM`
+Este parámetro controla cómo MySQL procesa internamente la vista cuando es consultada.
+
+#### Sintaxis:
+```sql
+CREATE ALGORITHM = {MERGE | TEMPTABLE | UNDEFINED} VIEW nombre_vista AS
+SELECT ...
+```
+
+#### 1. ALGORITHM = MERGE
+MySQL combina la definición de la vista directamente con la consulta que la referencia, creando una sola consulta optimizada.
+
+```sql
+-- Crear vista con MERGE
+CREATE ALGORITHM = MERGE VIEW empleados_activos AS
+SELECT id, nombre, salario, departamento
+FROM empleados
+WHERE estado = 'activo';
+
+-- Cuando ejecutas:
+SELECT nombre, salario FROM empleados_activos WHERE salario > 50000;
+
+-- MySQL internamente lo convierte en:
+SELECT nombre, salario 
+FROM empleados 
+WHERE estado = 'activo' AND salario > 50000;
+```
+
+#### Ventajas de `MERGE`:
+
+- Mejor rendimiento porque evita crear tablas temporales.
+- Permite usar índices de las tablas base eficientemente.
+- Consume menos memoria.
+
+#### Cuándo usar `MERGE`:
+
+- Vistas simples basadas en una tabla.
+- Consultas que no usan funciones agregadas complejas.
+- Cuando necesitas máximo rendimiento.
+
+#### 2. ALGORITHM = TEMPTABLE
+MySQL ejecuta primero la vista, almacena los resultados en una tabla temporal, y luego ejecuta la consulta externa sobre esa tabla temporal. La necesidad de crear tablas temporales surge de limitaciones fundamentales en el orden de cómo SQL procesa las consultas y las reglas del lenguaje SQL estándar.
+
+Cuando tienes una vista con agregaciones (`COUNT`, `SUM`, `AVG`, etc.) o ciertas operaciones complejas, MySQL no puede simplemente "fusionar" la consulta externa con la vista porque violaría las reglas sintácticas de SQL.
+
+```sql
+-- Vista que requiere TEMPTABLE
+CREATE ALGORITHM = TEMPTABLE VIEW resumen_ventas AS
+SELECT departamento, 
+       COUNT(*) as total_empleados,
+       AVG(salario) as salario_promedio,
+       MAX(salario) as salario_maximo
+FROM empleados
+GROUP BY departamento;
+
+-- Cuando consultas esta vista:
+SELECT * FROM resumen_ventas WHERE total_empleados > 5;
+```
+
+#### 3. ALGORITHM = UNDEFINED (Predeterminado)
+MySQL decide automáticamente entre MERGE y TEMPTABLE basándose en la complejidad de la vista.
+
+```sql
+-- MySQL decide automáticamente
+CREATE VIEW empleados_departamento AS
+SELECT e.nombre, e.salario, d.nombre_departamento
+FROM empleados e
+JOIN departamentos d ON e.departamento_id = d.id;
+```
 
 
 
