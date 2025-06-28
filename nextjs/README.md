@@ -528,7 +528,7 @@ pnpm i use-debounce
 ```
 
 En el componente de la barra de búsqueda, importe una función llamada `useDebouncedCallback`:
-```bash
+```javascript
 // ...
 import { useDebouncedCallback } from 'use-debounce';
  
@@ -550,12 +550,20 @@ Esta función envolverá el contenido de `handleSearch` y solo ejecutará el có
 
 Al eliminar el rebote, puede reducir la cantidad de solicitudes enviadas a su base de datos, ahorrando así recursos.
 
-### Añadiento Paginación
+>[!IMPORTANT]
+> **`RESUMEN`**
+> - En el componente `<Search />` se obtienen los parámetros de búsqueda de la URL actual con `useSearchParams` y la URL actual con `usePathname` y el método `replace` de `useRouter`.
+> - Cada vez que se escribe en el `input` de `<Search />` se ejecuta una función que establece el parámetro `page` en 1 y `query` con el valor ingresado en el input, finalmente se navega mediante `replace` que recibe un `string` en formato de URL construido con el valor devuelto de `usePathname` y los parámetros de `URLSearchParams`.
+> - Al cambiar la URL, tambien debe cambiar el contenido, el componente `page.tsx` recibe automáticamente una propiedad llamada `searchParams` que son los parámetros de búsqueda de la URL actual en este formato: `{ page: 1, query: "sometext" }`.
+> - Los parámetros de búsqueda se pasan al componente `<Table />` para consultar la base datos.
+
+### Añadiendo Paginación
+
 Añadir paginación permite a los usuarios navegar por las diferentes páginas para ver todas las facturas. Veamos cómo implementar la paginación mediante parámetros de URL, igual que con la búsqueda.
 
-En el componente `page.tsx` de la ruta `invoices`, mediante la funcion `fetchInvoicesPages` se obtiene el número total de páginas según la consulta de búsqueda. Por ejemplo, si hay 12 facturas que coinciden con la consulta de búsqueda (parametro de búsqueda en la url `/?query=sometext`) y cada página muestra 6 facturas, el número total de páginas sería 2.
+En `page.tsx` de la ruta `invoices`, mediante la función `fetchInvoicesPages` se obtiene el número total de páginas según la consulta de búsqueda (parametro `query` en la URL). Por ejemplo, si hay 12 facturas que coinciden con la consulta de búsqueda y cada página muestra 6 facturas, el número total de páginas sería 2.
 
-A continuación, pasa el totalPages accesorio al componente `<Pagination/>`:
+A continuación, se pasa `totalPages` al componente `<Pagination/>`:
 
 ```javascript
 // ...
@@ -565,7 +573,8 @@ const totalPages = await fetchInvoicesPages(query);
 // ...
 ```
 
-En el componente `<Pagination />` se importan los hooks `usePathname` y `useSearchParams` para obtener la página actual y configurar la nueva.
+En el componente `<Pagination />` se importan los hooks `usePathname` para obtener la página actual y `useSearchParams` para obtener los parámetros de búsqueda.
+
 ```javascript
 // ...
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -573,12 +582,14 @@ import { usePathname, useSearchParams } from 'next/navigation';
 // ...
 
 const pathname = usePathname(); // URL actual
-const searchParams = useSearchParams(); // parámetros de búsqueda de la URL (/?page=1&query=sometext se convierten en {page: 1, query: 'sometext'})
-const currentPage = Number(searchParams.get('page')) || 1; // Si no existe el parámetro page se asume que es la primera página
+const searchParams = useSearchParams(); // la URL /?page=1&query=sometext se convierte en { page: 1, query: 'sometext' }
+const currentPage = Number(searchParams.get('page')) || 1; // Se obtiene la página actual
 // ...
 ```
 
 A continuación, se crea una nueva función dentro del componente `<Pagination />` llamada `createPageURL`. Se usará `URLSearchParams` para establecer el nuevo número de página y `pathName` para construir la nueva URL.
+
+Esta función retorna un `sting` en formato de URL con el parámetro `page` actualizado, que se usará como enlace en los controles de la paginación para navegar entre las páginas y obtener los datos de la nueva página seleccionada. 
 
 ```javascript
 const createPageURL = (pageNumber: number | string) => {
