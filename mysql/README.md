@@ -2688,7 +2688,7 @@ CREATE DEFINER = CURRENT_USER VIEW mi_vista AS SELECT ...;
 CREATE DEFINER = INVOKER VIEW mi_vista AS SELECT ...;
 ```
 
-## SQL SECURITY
+## `SQL SECURITY`
 Controla con qué privilegios se ejecuta la vista cuando es accedida.
 
 ### Sintaxis:
@@ -2755,7 +2755,6 @@ SELECT * FROM empleados_publicos;
 6. Juan ve solo los datos filtrados en la vista (id, nombre)
 
 Resultado: ✅ Juan puede ver los datos, aunque **NO** tiene permisos directos sobre la tabla `empleados_completos`.
-
 
 ### Ejemplo 2: `SQL SECURITY INVOKER`
 La vista se ejecuta con los privilegios del usuario que la está consultando.
