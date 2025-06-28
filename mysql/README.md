@@ -2573,9 +2573,11 @@ WHERE estado = 'activo' AND salario > 50000;
 - Cuando necesitas máximo rendimiento.
 
 #### 2. ALGORITHM = TEMPTABLE
-MySQL ejecuta primero la vista, almacena los resultados en una tabla temporal, y luego ejecuta la consulta externa sobre esa tabla temporal. La necesidad de crear tablas temporales surge de limitaciones fundamentales en el orden de cómo SQL procesa las consultas y las reglas del lenguaje SQL estándar.
+MySQL ejecuta primero la vista, almacena los resultados en una tabla temporal, y luego ejecuta la consulta externa sobre esa tabla temporal. 
 
-Cuando tienes una vista con agregaciones (`COUNT`, `SUM`, `AVG`, etc.) o ciertas operaciones complejas, MySQL no puede simplemente "fusionar" la consulta externa con la vista porque violaría las reglas sintácticas de SQL.
+La necesidad de crear tablas temporales surge de limitaciones fundamentales en el orden de cómo SQL procesa las consultas y las reglas del lenguaje SQL estándar.
+
+Cuando tienes una vista con agregaciones (`COUNT`, `SUM`, `AVG`, etc.) o ciertas operaciones complejas, MySQL no puede simplemente "fusionar" la consulta externa con la vista como en `MERGE` porque violaría las reglas sintácticas de SQL.
 
 ```sql
 -- Vista que requiere TEMPTABLE
@@ -2590,6 +2592,19 @@ GROUP BY departamento;
 -- Cuando consultas esta vista:
 SELECT * FROM resumen_ventas WHERE total_empleados > 5;
 ```
+### Cuándo MySQL fuerza `TEMPTABLE`:
+
+- Vistas con funciones agregadas (`COUNT`, `SUM`, `AVG`, etc.).
+- Uso de `GROUP BY`, `HAVING`.
+- Uso de `DISTINCT`.
+- Subconsultas correlacionadas.
+- Funciones de ventana (window functions).
+
+#### Desventajas de TEMPTABLE:
+
+- Mayor uso de memoria y E/O de disco.
+- No puede ser actualizable.
+- Rendimiento potencialmente menor
 
 #### 3. ALGORITHM = UNDEFINED (Predeterminado)
 MySQL decide automáticamente entre MERGE y TEMPTABLE basándose en la complejidad de la vista.
