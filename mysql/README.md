@@ -2579,6 +2579,11 @@ La necesidad de crear tablas temporales surge de limitaciones fundamentales en e
 
 Cuando tienes una vista con agregaciones (`COUNT`, `SUM`, `AVG`, etc.) o ciertas operaciones complejas, MySQL no puede simplemente "fusionar" la consulta externa con la vista como en `MERGE` porque violaría las reglas sintácticas de SQL.
 
+>[!NOTE]
+> SQL tiene un orden de ejecución estricto:
+>
+> `FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT`
+
 ```sql
 -- Vista que requiere TEMPTABLE
 CREATE ALGORITHM = TEMPTABLE VIEW resumen_ventas AS
@@ -2592,6 +2597,7 @@ GROUP BY departamento;
 -- Cuando consultas esta vista:
 SELECT * FROM resumen_ventas WHERE total_empleados > 5;
 ```
+
 ### Cuándo MySQL fuerza `TEMPTABLE`:
 
 - Vistas con funciones agregadas (`COUNT`, `SUM`, `AVG`, etc.).
@@ -2604,7 +2610,11 @@ SELECT * FROM resumen_ventas WHERE total_empleados > 5;
 
 - Mayor uso de memoria y E/O de disco.
 - No puede ser actualizable.
-- Rendimiento potencialmente menor
+- Rendimiento potencialmente menor.
+
+>[!IMPORTANT]
+> En resumen, la tabla temporal es un mecanismo necesario para mantener la correctitud sintáctica y semántica de SQL cuando las operaciones no se pueden fusionar directamente sin cambiar el significado de la consulta.
+
 
 #### 3. ALGORITHM = UNDEFINED (Predeterminado)
 MySQL decide automáticamente entre MERGE y TEMPTABLE basándose en la complejidad de la vista.
@@ -2617,6 +2627,72 @@ FROM empleados e
 JOIN departamentos d ON e.departamento_id = d.id;
 ```
 
+### `DEFINER`
+Especifica qué usuario se considera el "propietario" de la vista para propósitos de permisos y seguridad.
+
+#### Sintaxis:
+```sql
+CREATE DEFINER = usuario@host VIEW nombre_vista AS
+SELECT ...
+```
+
+#### Comportamiento predeterminado:
+```sql
+-- Sin especificar DEFINER (usa el usuario actual)
+CREATE VIEW empleados_publicos AS
+SELECT nombre, apellido, departamento FROM empleados;
+
+-- Equivale a:
+CREATE DEFINER = CURRENT_USER VIEW empleados_publicos AS
+SELECT nombre, apellido, departamento FROM empleados;
+```
+
+#### Especificar un DEFINER diferente:
+```sql
+-- Solo usuarios con privilegios SUPER pueden hacer esto
+CREATE DEFINER = admin@localhost VIEW datos_sensibles AS
+SELECT id, nombre, salario FROM empleados WHERE nivel_acceso >= 3;
+```
+
+#### Opciones de `DEFINER`:
+
+```sql
+-- Usuario específico
+CREATE DEFINER = juan@'192.168.1.%' VIEW mi_vista AS SELECT ...;
+
+-- Usuario actual
+CREATE DEFINER = CURRENT_USER VIEW mi_vista AS SELECT ...;
+
+-- Usuario que invoca la vista
+CREATE DEFINER = INVOKER VIEW mi_vista AS SELECT ...;
+```
+
+
+### SQL SECURITY
+Controla con qué privilegios se ejecuta la vista cuando es accedida.
+
+#### Sintaxis:
+
+```sql
+CREATE SQL SECURITY {DEFINER | INVOKER} VIEW nombre_vista AS
+SELECT ...
+```
+
+#### 1. SQL SECURITY DEFINER (Predeterminado)
+La vista se ejecuta con los privilegios del usuario definido en `DEFINER`.
+
+```sql
+-- El usuario admin tiene acceso a tabla_secreta
+-- Los usuarios regulares NO tienen acceso directo
+CREATE DEFINER = admin@localhost 
+SQL SECURITY DEFINER VIEW datos_permitidos AS
+SELECT id, nombre_publico 
+FROM tabla_secreta 
+WHERE categoria = 'publico';
+
+-- Ahora los usuarios regulares pueden acceder a través de la vista
+GRANT SELECT ON datos_permitidos TO usuario_regular@localhost;
+```
 
 
 
