@@ -561,7 +561,7 @@ Al eliminar el rebote, puede reducir la cantidad de solicitudes enviadas a su ba
 
 Añadir paginación permite a los usuarios navegar por las diferentes páginas para ver todas las facturas. Veamos cómo implementar la paginación mediante parámetros de URL, igual que con la búsqueda.
 
-En `page.tsx` de la ruta `invoices`, mediante la función `fetchInvoicesPages` se obtiene el número total de páginas según la consulta de búsqueda (parametro `query` en la URL). Por ejemplo, si hay 12 facturas que coinciden con la consulta de búsqueda y cada página muestra 6 facturas, el número total de páginas sería 2.
+En `page.tsx` de la ruta `invoices`, se obtiene el número total de páginas según la consulta de búsqueda (parametro `query` en la URL). Por ejemplo, si hay 12 facturas que coinciden con la consulta de búsqueda y cada página muestra 6 facturas, el número total de páginas sería 2.
 
 A continuación, se pasa `totalPages` al componente `<Pagination/>`:
 
