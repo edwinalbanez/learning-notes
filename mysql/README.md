@@ -31,7 +31,7 @@
 28. [Vistas](#28-vistas)
 
 ---
-## ¿Qué es SQL?
+# ¿Qué es SQL?
 El lenguaje de consulta estructurada (SQL, por sus siglas en inglés) permite la interacción con bases de datos desde el almacenamiento y manipulación hasta la recuperación de los datos.
 
 ---
@@ -46,24 +46,24 @@ El lenguaje de consulta estructurada (SQL, por sus siglas en inglés) permite la
 ---
 <img width="542" alt="image" src="https://github.com/user-attachments/assets/ff3252e8-fef7-45f2-8438-ef1b877e2e75" />
 
-## 1. Crear una Base de Datos
+# 1. Crear una Base de Datos
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 Una base de datos es un contenedor que almacena tablas, vistas, procedimientos y otros objetos relacionados. Es el primer paso para organizar la información de manera estructurada.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 CREATE DATABASE nombre_database;
 ```
 
-### Sintaxis Avanzada
+## Sintaxis Avanzada
 ```sql
 CREATE DATABASE empresa
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 ```
 
-### Mejores Prácticas
+## Mejores Prácticas
 - Usar nombres descriptivos y consistentes
 - Definir el conjunto de caracteres (CHARACTER SET) para soporte internacional
 - Establecer la colación (COLLATE) para reglas de ordenamiento
@@ -81,18 +81,18 @@ USE sistema_ventas;
 ```
 
 ---
-## 2. Crear Tablas
+# 2. Crear Tablas
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 Las tablas son estructuras que almacenan datos en filas y columnas. Cada columna tiene un tipo de dato específico y puede tener restricciones.
 
-### Tipos de Datos Principales
+## Tipos de Datos Principales
 - **Numéricos**: INT, DECIMAL, FLOAT, DOUBLE
 - **Texto**: VARCHAR, CHAR, TEXT
 - **Fecha/Hora**: DATE, TIME, DATETIME, TIMESTAMP
 - **Booleanos**: BOOLEAN
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 CREATE TABLE nombre_tabla (
     columna1 tipo_dato restricciones,
@@ -123,22 +123,23 @@ CREATE TABLE productos (
     PRIMARY KEY (id)
 );
 ```
+
 >[!NOTE]
 > En MySQL, cuando defines una columna como PRIMARY KEY, automáticamente se le aplica la restricción NOT NULL. Sin embargo, se incluye NOT NULL explícitamente por claridad y para hacer el código más legible.
 
-### Restricciones Importantes
+## Restricciones Importantes
 - **NOT NULL**: El campo no puede estar vacío
 - **UNIQUE**: Valores únicos en la columna
 - **DEFAULT**: Valor por defecto
 - **AUTO_INCREMENT**: Incremento automático para claves primarias
 
 ---
-## 3. Definir Llaves Foráneas
+# 3. Definir llaves foráneas
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 Las llaves foráneas (Foreign Keys) establecen relaciones entre tablas, garantizando la integridad referencial de los datos.
 
-### Sintaxis en CREATE TABLE
+## Sintaxis en CREATE TABLE
 ```sql
 CREATE TABLE tabla_hija (
     id INT NOT NULL PRIMARY KEY,
@@ -147,7 +148,7 @@ CREATE TABLE tabla_hija (
 );
 ```
 
-### Sintaxis con ALTER TABLE
+## Sintaxis con ALTER TABLE
 ```sql
 ALTER TABLE tabla_hija
 ADD CONSTRAINT fk_nombre
@@ -182,13 +183,13 @@ CREATE TABLE detalle_pedidos (
 );
 ```
 
-### Opciones de Integridad Referencial
+## Opciones de Integridad Referencial
 - **ON DELETE CASCADE**: Elimina registros relacionados
 - **ON DELETE RESTRICT**: Impide eliminar si hay referencias
 - **ON DELETE SET NULL**: Establece NULL en referencias
 - **ON UPDATE CASCADE**: Actualiza referencias automáticamente
 
-### ¿Qué es la Integridad Referencial?
+## ¿Qué es la integridad referencial?
 La integridad referencial es una regla que garantiza que las relaciones entre tablas se mantengan consistentes. Cuando tienes una clave foránea (foreign key) que referencia a una clave primaria en otra tabla, estas opciones definen qué sucede cuando se modifica o elimina el registro padre.
 
 ### ON DELETE CASCADE
@@ -257,29 +258,28 @@ Si cambias el ID del cliente de 1 a 100, todos los pedidos que tenían cliente_i
 > Cuando creas una clave foránea sin especificar las opciones ON DELETE o ON UPDATE, el comportamiento por defecto es RESTRICT tanto para eliminaciones como para actualizaciones.
 
 ---
+# 4. Modificaciones con ALTER TABLE
 
-## 4. Modificaciones con ALTER TABLE
+## Conceptos Fundamentales
+`ALTER TABLE` permite modificar la estructura de tablas existentes sin perder datos.
 
-### Conceptos Fundamentales
-ALTER TABLE permite modificar la estructura de tablas existentes sin perder datos.
-
-### Agregar Columnas
+## Agregar Columnas
 ```sql
 ALTER TABLE tabla ADD COLUMN nueva_columna tipo_dato restricciones;
 ```
 
-### Modificar Columnas
+## Modificar Columnas
 ```sql
 ALTER TABLE tabla MODIFY COLUMN columna nuevo_tipo_dato;
 ALTER TABLE tabla CHANGE COLUMN nombre_viejo nombre_nuevo tipo_dato;
 ```
 
-### Eliminar Columnas
+## Eliminar Columnas
 ```sql
 ALTER TABLE tabla DROP COLUMN nombre_columna;
 ```
 
-### Agregar/Eliminar Restricciones
+## Agregar/Eliminar Restricciones
 ```sql
 -- Agregar clave primaria
 ALTER TABLE tabla ADD PRIMARY KEY (columna);
@@ -291,7 +291,7 @@ ALTER TABLE tabla ADD INDEX idx_nombre (columna);
 ALTER TABLE tabla DROP FOREIGN KEY nombre_fk;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Agregar columna de descuento a productos
 ALTER TABLE productos 
@@ -314,14 +314,15 @@ ALTER TABLE clientes
 ADD CONSTRAINT uk_email UNIQUE (email);
 ```
 
-## 5. ¿Cómo funcionan los índices?
+---
+# 5. ¿Cómo funcionan los índices?
 En MySQL, un **índice** es una estructura de datos especial que mejora la velocidad de las operaciones de recuperación de datos en una tabla de base de datos. Permite al motor de la base de datos encontrar filas rápidamente sin tener que escanear la tabla completa.
 
 Cuando creas un índice en una o más columnas de una tabla, MySQL crea y mantiene una estructura de datos separada (comúnmente un árbol B o un árbol B+) que almacena los valores de esas columnas y punteros (variables que almacenan una dirección numérica que apunta a la ubicación específica de un dato en la memoria RAM) a las filas correspondientes en la tabla real.
 
 Cuando ejecutas una consulta SELECT que incluye una cláusula WHERE en una columna indexada, MySQL puede usar el índice para ir directamente a las filas que cumplen con la condición, en lugar de revisar cada fila de la tabla.
 
-### Ejemplos de Creación de Índices:
+### Ejemplos de creación de índices:
 ```sql
 -- Crear un índice simple en una columna
 CREATE INDEX idx_nombre ON clientes (nombre);
@@ -336,13 +337,14 @@ CREATE INDEX idx_apellido_nombre ON empleados (apellido, nombre);
 -- Crear un índice FULLTEXT
 CREATE FULLTEXT INDEX fdx_contenido ON articulos (titulo, contenido);
 ```
+
 Cuando MySQL construye el índice, tomará todos los valores de la columna nombre de cada fila de la tabla clientes y los organizará en una estructura optimizada para búsquedas (generalmente un árbol B-Tree).
 
 MySQL escanea la tabla clientes. Para cada fila, toma el valor de la columna `nombre` y un "puntero"  a la ubicación física de esa fila en el disco.
 
 La estructura del índice (idx_nombre) se almacena en el disco, separada de los datos reales de la tabla clientes. Esto significa que el índice ocupa espacio de almacenamiento adicional.
 
-### ¿Para qué es útil este índice? (Un Ejemplo Práctico)
+## ¿Para qué es útil este índice? (Un Ejemplo Práctico)
 Imagina que tienes una tabla clientes con millones de filas, y a menudo realizas consultas como:
 ```sql
 SELECT * FROM clientes WHERE nombre = 'Juan Perez';
@@ -350,19 +352,17 @@ SELECT * FROM clientes WHERE nombre = 'Juan Perez';
 **Sin el índice `idx_nombre`**:
 MySQL tendría que recorrer toda la tabla (fila por fila, lo que se llama un "escaneo de tabla completo" o "full table scan") para encontrar todas las filas donde el nombre sea 'Juan Perez'. Si la tabla tiene un millón de clientes, eso podría significar leer un millón de filas, lo cual es muy ineficiente y lento.
 
-
 ---
+# 6. Insertar, Actualizar y Eliminar Registros
 
-## 6. Insertar, Actualizar y Eliminar Registros
+## INSERT - insertar daatos
 
-### INSERT - Insertar Datos
-
-#### Sintaxis Básica
+### Sintaxis Básica
 ```sql
 INSERT INTO tabla (columna1, columna2) VALUES (valor1, valor2);
 ```
 
-#### Inserción Múltiple
+## Inserción múltiple
 ```sql
 INSERT INTO tabla (columna1, columna2) VALUES 
 (valor1a, valor2a),
@@ -370,7 +370,7 @@ INSERT INTO tabla (columna1, columna2) VALUES
 (valor1c, valor2c);
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Insertar un cliente
 INSERT INTO clientes (nombre, email, telefono) 
@@ -383,14 +383,14 @@ INSERT INTO productos (nombre, precio, stock, categoria) VALUES
 ('Teclado Mecánico', 120.00, 20, 'Accesorios');
 ```
 
-### UPDATE - Actualizar Datos
+## UPDATE - actualizar datos
 
-#### Sintaxis Básica
+### Sintaxis básica
 ```sql
 UPDATE tabla SET columna1 = valor1 WHERE condición;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Actualizar precio de un producto
 UPDATE IGNORE productos 
@@ -407,20 +407,21 @@ UPDATE IGNORE productos
 SET precio = precio * 1.10 
 WHERE categoria = 'Electrónicos';
 ```
+
 >[!NOTE]
 >El comando **opcional** `IGNORE` sirve para que no se detenga la ejecución de una consulta si se producen errores al momento de la actualización. En caso de que hayan errores no se realiza la actualización y continua con la siguiente sentencia.
 
 >[!WARNING]
 > Siempre se debe especificar con `WHERE` el registro a actualizar, de lo contrario, se actualizarán todos los registros de la tabla.
 
-### DELETE - Eliminar Datos
+## DELETE - Eliminar Datos
 
-#### Sintaxis Básica
+### Sintaxis Básica
 ```sql
 DELETE FROM tabla WHERE condición;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Eliminar un cliente específico
 DELETE FROM clientes WHERE id_cliente = 5;
@@ -435,22 +436,24 @@ WHERE id_pedido IN (
     WHERE estado = 'CANCELADO'
 );
 ```
+
 >[!WARNING]
 > Siempre se debe especificar con `WHERE` el registro a eliminar, de lo contrario, se eliminarán todos los registros de la tabla.
 
-## 7. Safe Updates
+---
+# 7. Safe Updates
 En MySQL, la opción `safe Updates (rejects UPDATEs and DELETEs with no restrictions)` en `Edit` > `SQL Editor` es un mecanismo de seguridad que previene la ejecución accidental de comandos UPDATE y DELETE que podrían modificar o eliminar datos de manera masiva e indeseada.
 
 <img width="589" alt="image" src="https://github.com/user-attachments/assets/74315518-08f1-4ad0-a0fb-7eeaef99edf6" />
 
-### ¿Qué hace exactamente?
+## ¿Qué hace exactamente?
 Cuando está habilitada, esta opción rechaza automáticamente cualquier comando UPDATE o DELETE que no incluya una cláusula WHERE con al menos una de estas condiciones:
 
 - Una cláusula `WHERE` que haga referencia a una columna con índice (KEY).
 - Una cláusula `LIMIT` que restrinja el número de filas afectadas.
 - El comando debe poder usar un índice para localizar las filas.
 
-### ¿Por qué es importante?
+## ¿Por qué es importante?
 Sin esta protección, es muy fácil cometer errores devastadores como:
 ```sql
 -- PELIGROSO: Elimina TODOS los registros de la tabla
@@ -459,9 +462,9 @@ DELETE FROM usuarios;
 -- PELIGROSO: Actualiza TODOS los salarios a 0
 UPDATE empleados SET salario = 0;
 ```
-Con Safe Updates habilitado, estos comandos serían rechazados automáticamente.
+Con `Safe Updates` habilitado, estos comandos serían rechazados automáticamente.
 
-### Comandos que serían aceptados:
+## Comandos que serían aceptados:
 ```sql
 -- SEGURO: Usa una clave primaria en WHERE
 DELETE FROM usuarios WHERE id = 123;
@@ -473,7 +476,7 @@ UPDATE empleados SET salario = 5000 WHERE email = 'juan@empresa.com';
 DELETE FROM logs ORDER BY fecha LIMIT 100;
 ```
 
-### Comandos que serían rechazados:
+## Comandos que serían rechazados:
 ```sql
 -- RECHAZADO: No tiene WHERE
 DELETE FROM usuarios;
@@ -520,10 +523,11 @@ DELETE FROM usuarios WHERE nombre_completo LIKE '%Juan%';
 UPDATE empleados SET activo = 0;
 ```
 
-## 8. Tablas Temporales
+---
+# 8. Tablas Temporales
 Las tablas temporales en MySQL son estructuras de datos que existen solo durante una sesión específica o por un tiempo determinado.
 
-### Características principales
+## Características principales
 Las tablas temporales de sesión se crean con la palabra clave `TEMPORARY` y tienen estas propiedades:
 
 - Solo son visibles para la conexión que las creó.
@@ -532,7 +536,7 @@ Las tablas temporales de sesión se crean con la palabra clave `TEMPORARY` y tie
 - Pueden tener el mismo nombre que una tabla permanente (la temporal tendrá prioridad, pero es recomendable asignarle un nombre diferente).
 - Se almacenan en memoria o en disco según su tamaño.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 CREATE TEMPORARY TABLE nombre_tabla (
     columna1 tipo_dato,
@@ -561,7 +565,7 @@ VALUES ('Laptop', 2, 1500.00, '2024-01-15');
 
 También es posible crear tablas temporales con el comando `SELECT`.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 CREATE TEMPORARY TABLE nombre_tabla AS
 SELECT columnas FROM tabla_origen WHERE condiciones;
@@ -581,7 +585,8 @@ FROM ventas
 WHERE MONTH(fecha) = 1 AND YEAR(fecha) = 2024;
 ```
 
-### Motor de Almacenamiento
+## Motor de Almacenamiento
+
 ### MEMORY Engine
 Para tablas completamente en memoria:
 ```sql
@@ -603,7 +608,7 @@ CREATE TEMPORARY TABLE temp_procesamiento (
 ) ENGINE=InnoDB;
 ```
 
-### Motor Predeterminado
+## Motor Predeterminado
 El motor de almacenamiento por defecto para las tablas temporales depende de la configuración del servidor y se controla mediante la variable `default_tmp_storage_engine`.
 
 Por defecto, las tablas temporales creadas con `CREATE TEMPORARY TABLE` utilizan el motor definido por la variable `default_tmp_storage_engine`, que por defecto es `InnoDB`.
@@ -626,7 +631,8 @@ SET default_tmp_storage_engine = 'MEMORY';
 SET GLOBAL default_tmp_storage_engine = 'MEMORY';
 ```
 
-### Para diferentes casos de uso:
+## Para diferentes casos de uso:
+
 ### InnoDB (por defecto):
 - Bueno para tablas temporales grandes.
 - Soporte completo para transacciones.
@@ -638,8 +644,7 @@ SET GLOBAL default_tmp_storage_engine = 'MEMORY';
 - No soporta columnas TEXT/BLOB
 
 ---
-
-### 9. Funciones internas de MySQL
+# 9. Funciones internas de MySQL
 MySQL cuenta con **funciones internas** para operar cadenas de textos, números y fechas. Algunas de estas son:
 
 <img width="374" alt="image" src="https://github.com/user-attachments/assets/4752a640-4ec0-43ba-bd28-0330a0118969" />
@@ -650,9 +655,10 @@ MySQL cuenta con **funciones internas** para operar cadenas de textos, números 
 ---
 <img width="452" alt="image" src="https://github.com/user-attachments/assets/7a9be808-7292-440c-8b26-0134e38b71db" />
 
-## 10. Operadores Aritméticos, de Comparación y Lógicos
+---
+# 10. Operadores Aritméticos, de Comparación y Lógicos
 
-### Operadores Aritmético
+## Operadores Aritmético
 Los operadores aritméticos permiten realizar cálculos matemáticos en consultas SQL:
 
 ### Operadores básicos:
@@ -681,19 +687,20 @@ SELECT empleado_id, salario, salario * 0.15 AS impuesto
 FROM empleados;
 ```
 
-## 11. Operadores BETWEEN e IN
+---
+# 11. Operadores BETWEEN e IN
 
-### Operador BETWEEN
+## Operador BETWEEN
 
-#### Conceptos Fundamentales
-BETWEEN filtra registros dentro de un rango específico, incluyendo los valores límite.
+### Conceptos Fundamentales
+`BETWEEN` filtra registros dentro de un rango específico, incluyendo los valores límite.
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT * FROM tabla WHERE columna BETWEEN valor1 AND valor2;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Productos en rango de precio
 SELECT * FROM productos 
@@ -708,17 +715,17 @@ SELECT * FROM productos
 WHERE precio NOT BETWEEN 100.00 AND 500.00;
 ```
 
-### Operador IN
+## Operador IN
 
-#### Conceptos Fundamentales
+### Conceptos Fundamentales
 IN permite filtrar registros que coincidan con cualquier valor de una lista.
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT * FROM tabla WHERE columna IN (valor1, valor2, valor3);
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Productos de categorías específicas
 SELECT * FROM productos 
@@ -738,21 +745,21 @@ WHERE id_cliente IN (
 
 ---
 
-## 12. Operadores LIKE e IS NULL
+# 12. Operadores LIKE e IS NULL
 
-### Operador LIKE
+## Operador LIKE
 
-#### Conceptos Fundamentales
+### Conceptos Fundamentales
 LIKE permite búsquedas con patrones usando comodines:
 - `%`: Representa cero o más caracteres
 - `_`: Representa exactamente un carácter
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT * FROM tabla WHERE columna LIKE 'patrón';
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Clientes cuyo nombre comience con 'Juan'
 SELECT * FROM clientes 
@@ -771,18 +778,18 @@ SELECT * FROM productos
 WHERE nombre NOT LIKE '%Dell%';
 ```
 
-### Operador IS NULL
+## Operador IS NULL
 
-#### Conceptos Fundamentales
+### Conceptos Fundamentales
 IS NULL identifica registros con valores nulos (vacíos).
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT * FROM tabla WHERE columna IS NULL;
 SELECT * FROM tabla WHERE columna IS NOT NULL;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Clientes sin email registrado
 SELECT * FROM clientes 
@@ -801,7 +808,7 @@ WHERE fecha_entrega IS NULL;
 
 ---
 
-## 13. Uso de ORDER BY
+# 13. Uso de ORDER BY
 
 ### Conceptos Fundamentales
 ORDER BY ordena los resultados de una consulta según una o más columnas.
@@ -840,7 +847,7 @@ FROM productos
 ORDER BY precio_descuento DESC;
 ```
 
-### Ordenamiento Avanzado
+### Ordenamiento avanzado
 ```sql
 -- Ordenar por posición de columna
 SELECT nombre, precio FROM productos 
@@ -859,17 +866,17 @@ ORDER BY
 
 ---
 
-## 14. Uso de LIMIT
+# 14. Uso de LIMIT
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 LIMIT restringe el número de filas devueltas por una consulta.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 SELECT * FROM tabla LIMIT cantidad;
 ```
 
-### Con OFFSET
+## Con OFFSET
 ```sql
 SELECT * FROM tabla LIMIT offset, cantidad;
 -- o en algunos sistemas:
@@ -902,7 +909,7 @@ ORDER BY total_vendido DESC
 LIMIT 1;
 ```
 
-### Paginación Profesional
+## Paginación Profesional
 ```sql
 -- Función para paginación
 -- Página 1: LIMIT 10 OFFSET 0
@@ -921,17 +928,17 @@ SELECT FOUND_ROWS();
 
 ## 15. Subconsultas
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 Las subconsultas son consultas anidadas dentro de otras consultas, permitiendo operaciones complejas de filtrado y análisis.
 
-### Subconsultas en SELECT
+## Subconsultas en SELECT
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT columna1, (SELECT ... FROM ...) as alias FROM tabla;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Mostrar clientes con su total de pedidos
 SELECT 
@@ -952,14 +959,14 @@ FROM productos p
 ORDER BY ranking_precio;
 ```
 
-### Subconsultas en FROM
+## Subconsultas en FROM
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT * FROM (SELECT ... FROM ...) as alias;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Análisis de ventas por mes
 SELECT 
@@ -985,9 +992,9 @@ JOIN (
 ) as top_clientes ON c.id_cliente = top_clientes.id_cliente;
 ```
 
-### Subconsultas en WHERE
+## Subconsultas en WHERE
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Clientes que han realizado pedidos
 SELECT * FROM clientes 
@@ -1018,7 +1025,7 @@ WHERE id_producto NOT IN (
 );
 ```
 
-### Subconsultas Correlacionadas
+## Subconsultas Correlacionadas
 ```sql
 -- Empleados con salario superior al promedio de su departamento
 SELECT e1.* FROM empleados e1
@@ -1031,21 +1038,21 @@ WHERE salario > (
 
 ---
 
-## 16. INNER JOIN
+# 16. INNER JOIN
 
-### Conceptos Fundamentales
+## Conceptos fundamentales
 INNER JOIN combina registros de dos o más tablas basándose en una condición de coincidencia. Solo devuelve registros que tienen coincidencias en ambas tablas.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 SELECT columnas
 FROM tabla1
 INNER JOIN tabla2 ON tabla1.columna = tabla2.columna;
 ```
 
-### Ejemplos Prácticos
+## Ejemplos prácticos
 
-#### JOIN Básico
+### JOIN básico
 ```sql
 -- Pedidos con información del cliente
 SELECT 
@@ -1057,7 +1064,7 @@ FROM pedidos p
 INNER JOIN clientes c ON p.id_cliente = c.id_cliente;
 ```
 
-#### JOIN Múltiple
+### JOIN múltiple
 ```sql
 -- Detalle completo de pedidos
 SELECT 
@@ -1073,7 +1080,7 @@ INNER JOIN detalle_pedidos dp ON p.id_pedido = dp.id_pedido
 INNER JOIN productos pr ON dp.id_producto = pr.id_producto;
 ```
 
-#### JOIN con Condiciones Adicionales
+### JOIN con condiciones adicionales
 ```sql
 -- Pedidos de electrónicos del último año
 SELECT 
@@ -1108,21 +1115,21 @@ ORDER BY ingresos_totales DESC;
 
 ---
 
-## 17. LEFT JOIN y RIGHT JOIN
+# 17. LEFT JOIN y RIGHT JOIN
 
-### LEFT JOIN
+## LEFT JOIN
 
-#### Conceptos Fundamentales
+### Conceptos Fundamentales
 LEFT JOIN devuelve todos los registros de la tabla izquierda y los registros coincidentes de la tabla derecha. Si no hay coincidencia, devuelve NULL para las columnas de la derecha.
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT columnas
 FROM tabla_izquierda
 LEFT JOIN tabla_derecha ON condición;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Todos los clientes y sus pedidos (incluso si no tienen pedidos)
 SELECT 
@@ -1153,19 +1160,19 @@ GROUP BY pr.id_producto, pr.nombre, pr.precio
 ORDER BY total_vendido DESC;
 ```
 
-### RIGHT JOIN
+## RIGHT JOIN
 
-#### Conceptos Fundamentales
+### Conceptos Fundamentales
 RIGHT JOIN es lo opuesto a LEFT JOIN: devuelve todos los registros de la tabla derecha y los coincidentes de la izquierda.
 
-#### Sintaxis
+### Sintaxis
 ```sql
 SELECT columnas
 FROM tabla_izquierda
 RIGHT JOIN tabla_derecha ON condición;
 ```
 
-#### Ejemplos Prácticos
+### Ejemplos Prácticos
 ```sql
 -- Todos los pedidos y sus clientes
 SELECT 
@@ -1186,7 +1193,7 @@ FROM pedidos p
 LEFT JOIN clientes c ON p.id_cliente = c.id_cliente;
 ```
 
-### Casos de Uso Profesionales
+### Casos de uso profesionales
 
 #### Análisis de Abandono de Clientes
 ```sql
@@ -1227,12 +1234,12 @@ LEFT JOIN (
 
 ---
 
-## 18. SELF JOIN
+# 18. SELF JOIN
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 SELF JOIN es una técnica donde una tabla se une consigo misma. Es útil para comparar registros dentro de la misma tabla o para trabajar con estructuras jerárquicas.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 SELECT columnas
 FROM tabla t1
@@ -1240,7 +1247,7 @@ JOIN tabla t2 ON condición
 WHERE t1.id != t2.id; -- Evitar comparar un registro consigo mismo
 ```
 
-### Preparación de Datos de Ejemplo
+## Preparación de datos de ejemplo
 ```sql
 -- Tabla de empleados con estructura jerárquica
 CREATE TABLE empleados (
@@ -1262,9 +1269,9 @@ INSERT INTO empleados VALUES
 (6, 'Pedro Sánchez', 'Vendedor Junior', 3500.00, 2, 'Ventas');
 ```
 
-### Ejemplos Prácticos
+## Ejemplos Prácticos
 
-#### Estructura Jerárquica (Empleados y Supervisores)
+### Estructura Jerárquica (Empleados y Supervisores)
 ```sql
 -- Empleados con sus supervisores
 SELECT 
@@ -1277,7 +1284,7 @@ LEFT JOIN empleados s ON e.id_supervisor = s.id_empleado
 ORDER BY s.nombre, e.nombre;
 ```
 
-#### Comparaciones Dentro de la Misma Tabla
+### Comparaciones Dentro de la Misma Tabla
 ```sql
 -- Empleados que ganan más que otros en el mismo departamento
 SELECT 
@@ -1292,7 +1299,7 @@ WHERE e1.salario > e2.salario
 ORDER BY e1.departamento, e1.salario DESC;
 ```
 
-#### Encontrar Duplicados o Similitudes
+### Encontrar duplicados o similitudes
 ```sql
 -- Empleados con salarios similares (diferencia menor a 1000)
 SELECT 
@@ -1307,9 +1314,9 @@ WHERE ABS(e1.salario - e2.salario) < 1000
 ORDER BY diferencia;
 ```
 
-### Casos de Uso Profesionales
+## Casos de Uso Profesionales
 
-#### Análisis de Jerarquías
+### Análisis de jerarquías
 ```sql
 -- Supervisores con el número de subordinados y salario promedio del equipo
 SELECT 
@@ -1325,7 +1332,7 @@ GROUP BY s.id_empleado, s.nombre, s.puesto
 ORDER BY num_subordinados DESC;
 ```
 
-#### Detección de Anomalías
+### Detección de anomalías
 ```sql
 -- Empleados que ganan más que su supervisor
 SELECT 
@@ -1338,20 +1345,22 @@ FROM empleados e
 JOIN empleados s ON e.id_supervisor = s.id_empleado
 WHERE e.salario > s.salario;
 ```
+
 ---
 
-## 19. Funciones de agregado
+# 19. Funciones de agregado
 Las funciones de agregado se utilizan para **operar múltiples registros y retornar un valor en específico**.
 
 <img width="388" alt="image" src="https://github.com/user-attachments/assets/cae0634a-42bd-435f-a5b2-eaab0f77ac73" />
 
 ---
-## 20. GROUP BY
 
-### Conceptos Fundamentales
+# 20. `GROUP BY`
+
+## Conceptos Fundamentales
 GROUP BY agrupa filas que tienen los mismos valores en columnas especificadas y permite aplicar funciones de agregación como COUNT, SUM, AVG, MAX, MIN.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 SELECT columnas, funcion_agregacion(columna)
 FROM tabla
@@ -1360,7 +1369,7 @@ GROUP BY columnas
 ORDER BY columnas;
 ```
 
-### Funciones de Agregación Principales
+## Funciones de agregación principales
 - **COUNT()**: Cuenta registros
 - **SUM()**: Suma valores
 - **AVG()**: Promedio
@@ -1368,9 +1377,9 @@ ORDER BY columnas;
 - **MIN()**: Valor mínimo
 - **GROUP_CONCAT()**: Concatena valores del grupo
 
-### Ejemplos Básicos
+## Ejemplos básicos
 
-#### Agrupación Simple
+### Agrupación simple
 ```sql
 -- Número de productos por categoría
 SELECT 
@@ -1395,7 +1404,7 @@ GROUP BY YEAR(fecha_pedido), MONTH(fecha_pedido)
 ORDER BY año DESC, mes DESC;
 ```
 
-#### Agrupación con JOIN
+### Agrupación con JOIN
 ```sql
 -- Resumen de compras por cliente
 SELECT 
@@ -1425,7 +1434,7 @@ GROUP BY pr.id_producto, pr.nombre, pr.categoria
 ORDER BY total_vendido DESC;
 ```
 
-### Agrupación Múltiple
+### Agrupación múltiple
 ```sql
 -- Análisis de ventas por categoría y mes
 SELECT 
@@ -1445,9 +1454,9 @@ GROUP BY pr.categoria, YEAR(p.fecha_pedido), MONTH(p.fecha_pedido)
 ORDER BY año DESC, mes DESC, ingresos DESC;
 ```
 
-### Casos de Uso Profesionales
+## Casos de Uso Profesionales
 
-#### Análisis de Cohortes de Clientes
+### Análisis de cohortes de clientes
 ```sql
 -- Análisis de retención de clientes por mes de registro
 SELECT 
@@ -1462,7 +1471,7 @@ GROUP BY DATE_FORMAT(c.fecha_registro, '%Y-%m')
 ORDER BY mes_registro;
 ```
 
-#### Análisis ABC de Productos
+### Análisis ABC de Productos
 ```sql
 -- Clasificación ABC de productos por ingresos
 SELECT 
@@ -1489,18 +1498,18 @@ ORDER BY ingresos DESC;
 
 ---
 
-## 21. HAVING
+# 21. HAVING
 
-### Conceptos Fundamentales
-HAVING es similar a WHERE, pero se usa para filtrar grupos creados por GROUP BY. Mientras WHERE filtra filas individuales antes del agrupamiento, HAVING filtra grupos después del agrupamiento.
+## Conceptos Fundamentales
+`HAVING` es similar a WHERE, pero se usa para filtrar grupos creados por GROUP BY. Mientras `WHERE` filtra filas individuales antes del agrupamiento, HAVING filtra grupos después del agrupamiento.
 
-### Diferencias Clave: WHERE vs HAVING
-- **WHERE**: Filtra filas antes de GROUP BY
-- **HAVING**: Filtra grupos después de GROUP BY
+## Diferencias Clave: `WHERE` vs `HAVING`
+- **WHERE**: Filtra filas antes de `GROUP BY`
+- **HAVING**: Filtra grupos después de `GROUP BY`
 - **HAVING**: Puede usar funciones de agregación
 - **WHERE**: No puede usar funciones de agregación
 
-### Sintaxis Básica
+## Sintaxis básica
 ```sql
 SELECT columnas, funcion_agregacion(columna)
 FROM tabla
@@ -1510,9 +1519,9 @@ HAVING condiciones_de_grupo
 ORDER BY columnas;
 ```
 
-### Ejemplos Básicos
+## Ejemplos básicos
 
-#### HAVING con Funciones de Agregación
+### HAVING con Funciones de Agregación
 ```sql
 -- Categorías con más de 5 productos
 SELECT 
@@ -1536,7 +1545,7 @@ HAVING SUM(p.total) > 2000
 ORDER BY total_gastado DESC;
 ```
 
-#### Combinando WHERE y HAVING
+### Combinando WHERE y HAVING
 ```sql
 -- Productos de electrónicos con ventas promedio altas
 SELECT 
@@ -1555,9 +1564,9 @@ HAVING AVG(dp.cantidad * dp.precio_unitario) > 100  -- Filtro después del agrup
 ORDER BY venta_promedio DESC;
 ```
 
-### Ejemplos Avanzados
+## Ejemplos avanzados
 
-#### Análisis de Tendencias
+### Análisis de tendencias
 ```sql
 -- Meses con crecimiento de ventas superior al 10%
 SELECT 
@@ -1581,7 +1590,7 @@ FROM (
 WHERE porcentaje_crecimiento > 10;
 ```
 
-#### Detección de Outliers
+### Detección de outliers
 ```sql
 -- Clientes con comportamiento de compra anómalo
 SELECT 
@@ -1599,9 +1608,9 @@ HAVING COUNT(p.id_pedido) >= 3  -- Al menos 3 compras para análisis estadístic
 ORDER BY desviacion_estandar DESC;
 ```
 
-### Casos de Uso Profesionales
+## Casos de Uso Profesionales
 
-#### Segmentación de Clientes RFM (Recency, Frequency, Monetary)
+### Segmentación de Clientes RFM (Recency, Frequency, Monetary)
 ```sql
 -- Segmentación básica de clientes
 SELECT 
@@ -1629,26 +1638,26 @@ ORDER BY valor_monetario DESC;
 
 ---
 
-## 22. WITH ROLLUP
+# 22. WITH ROLLUP
 
-### Conceptos Fundamentales
+## Conceptos Fundamentales
 WITH ROLLUP es una extensión de GROUP BY que genera automáticamente subtotales y totales generales. Crea filas adicionales que muestran agregaciones en diferentes niveles de la jerarquía de agrupamiento.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 SELECT columnas, funcion_agregacion(columna)
 FROM tabla
 GROUP BY columna1, columna2, columna3 ... WITH ROLLUP;
 ```
 
-### Cómo Funciona ROLLUP
+## Cómo Funciona `ROLLUP`
 Con *`GROUP BY col1, col2 WITH ROLLUP`* se generan estos grupos:
 1. (col1, col2, col3) - Agrupación normal
 2. (col1, col2, NULL) - Subtotales por los grupos `col1-col2`
 3. (col1, NULL, NULL) - Subtotales por los grupos `col1`
 4. (NULL, NULL, NULL) - Total general
 
-### Ejemplo:
+## Ejemplo:
 ```sql
 SELECT region, categoria, producto, SUM(cantidad)
 FROM ventas_detalladas
@@ -1661,9 +1670,9 @@ GROUP BY region, categoria, producto WITH ROLLUP;
 - `(region, NULL, NULL)` - subtotal por región.
 - `(NULL, NULL, NULL)` - gran total.
 
-### Ejemplos Básicos
+## Ejemplos básicos
 
-#### ROLLUP Simple
+### ROLLUP Simple
 ```sql
 -- Ventas por region y producto con subtotales
 SELECT region, producto, SUM(cantidad) as total_cantidad
@@ -1671,7 +1680,7 @@ FROM ventas
 GROUP BY region, producto WITH ROLLUP;
 ```
 
-#### Resultado:
+**Resultado:**
 ```sql
 +--------+----------+----------------+
 | region | producto | total_cantidad |
@@ -1688,7 +1697,7 @@ GROUP BY region, producto WITH ROLLUP;
 +--------+----------+----------------+
 ```
 
-#### ROLLUP Múltiple
+### ROLLUP Múltiple
 ```sql
 SELECT region, categoria, producto, SUM(cantidad) as total_cantidad
 FROM ventas_detalladas
@@ -1721,7 +1730,8 @@ GROUP BY region, categoria, producto WITH ROLLUP;
 +--------+-------------+-----------+----------------+
 ```
 
-#### Explicación de los niveles de agrupación:
+### Explicación de los niveles de agrupación:
+
 #### Nivel 1 - Detalle completo:
 `(region, categoria, producto)` = Filas normales con datos específicos
 
@@ -1735,6 +1745,7 @@ GROUP BY region, categoria, producto WITH ROLLUP;
 `(NULL, NULL, NULL)` = Total absoluto = 127
 
 ---
+
 ### Mejorando la Presentación con ROLLUP
 
 #### Usando COALESCE para Etiquetas
@@ -1848,21 +1859,22 @@ ORDER BY
 ```
 
 ---
-### 23. GROUPING
+
+# 23. GROUPING
 `GROUPING` es una función analítica en MySQL que se utiliza principalmente con las extensiones `ROLLUP`, `CUBE` y `GROUPING SETS` de la cláusula `GROUP BY`. Su propósito principal es identificar qué filas son resultado de operaciones de agregación y cuáles contienen valores reales de agrupación.
 
-#### ¿Qué hace GROUPING?
+## ¿Qué hace GROUPING?
 La función GROUPING devuelve:
 
 - `0` cuando el valor en esa columna proviene de los datos originales (agrupación real)
 - `1` cuando el valor es `NULL` debido a una operación `ROLLUP`, `CUBE` o `GROUPING SETS` (agregación)
 
-#### Sintaxis básica
+## Sintaxis básica
 ```sql
 GROUPING(columna)
 ```
 
-#### Funcionamiento con ROLLUP
+## Funcionamiento con ROLLUP
 ROLLUP genera subtotales jerárquicos. Veamos un ejemplo práctico:
 ```sql
 SELECT 
@@ -1892,12 +1904,13 @@ NULL      | NULL      | 4500         | 1            | 1  <- Total general
 > `GROUPING` no indica **"qué estamos resumiendo"**, sino **qué columnas fueron eliminadas** del agrupamiento. En las filas de resumen se elimina la columna `categoria` por eso `GROUPING(categoria)` devuelve `1` .
 
 ---
-## 24. CASE
 
-### Conceptos Fundamentales
+# 24. CASE
+
+## Conceptos Fundamentales
 CASE es una expresión condicional que permite implementar lógica if-then-else en SQL. Existen dos formas: CASE simple y CASE buscado.
 
-### CASE Simple
+## CASE Simple
 ```sql
 CASE columna
     WHEN valor1 THEN resultado1
@@ -1906,7 +1919,7 @@ CASE columna
 END
 ```
 
-### CASE Buscado (Más Versátil)
+## CASE Buscado (Más Versátil)
 ```sql
 CASE 
     WHEN condicion1 THEN resultado1
@@ -1915,9 +1928,9 @@ CASE
 END
 ```
 
-### Ejemplos Básicos
+## Ejemplos básicos
 
-#### Clasificación de Productos por Precio
+### Clasificación de Productos por Precio
 ```sql
 -- Clasificar productos por rango de precio
 SELECT 
@@ -1940,7 +1953,7 @@ FROM productos
 ORDER BY precio;
 ```
 
-#### Análisis de Clientes
+### Análisis de Clientes
 ```sql
 -- Segmentación de clientes por comportamiento
 SELECT 
@@ -1967,9 +1980,9 @@ GROUP BY c.id_cliente, c.nombre
 ORDER BY total_gastado DESC;
 ```
 
-### CASE en Agregaciones
+### CASE en agregaciones
 
-#### Conteos Condicionales
+#### Conteos condicionales
 ```sql
 -- Análisis de pedidos por estado y mes
 SELECT 
@@ -2006,9 +2019,9 @@ GROUP BY pr.categoria
 ORDER BY ventas_totales DESC;
 ```
 
-### CASE Anidado y Complejo
+### CASE anidado y complejo
 
-#### Sistema de Descuentos Dinámico
+#### Sistema de descuentos dinámico
 ```sql
 -- Calcular descuentos basados en múltiples criterios
 SELECT 
@@ -2090,10 +2103,12 @@ ORDER BY
     fecha_pedido DESC;
 ```
 
-## 25. Expresiones Comunes de Tablas
+---
+
+# 25. Expresiones Comunes de Tablas
 Las expresiones comunes de tabla (CTE - Common Table Expressions) en MySQL son una característica poderosa que permite crear conjuntos de resultados temporales y nombrados que pueden ser referenciados dentro de una consulta SELECT, INSERT, UPDATE o DELETE.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 WITH nombre_cte [(columna1, columna2, ...)] AS (
     -- Consulta que define el CTE
@@ -2103,7 +2118,8 @@ WITH nombre_cte [(columna1, columna2, ...)] AS (
 SELECT ... FROM nombre_cte;
 ```
 
-### Características Principales
+## Características Principales
+
 >[!IMPORTANT]
 > - **Visibilidad y Alcance**: Los CTE **solo existen durante la ejecución de la consulta que los define**. No se almacenan permanentemente como las tablas o vistas.
 > - **Alternativa a subconsultas**: A menudo son más claros que subconsultas anidadas complejas.
@@ -2111,9 +2127,9 @@ SELECT ... FROM nombre_cte;
 - **Reutilización**: Un CTE puede ser referenciado múltiples veces en la consulta principal, lo que evita duplicar código complejo.
 - **Nomenclatura**: Puedes especificar nombres de columnas explícitamente o dejar que MySQL use los nombres de las columnas del SELECT interno.
 
-### Tipos de CTE
+## Tipos de CTE
 
-#### CTE No Recursivos
+### CTE No Recursivos
 Son los más comunes y funcionan como subconsultas nombradas:
 ```sql
 WITH ventas_por_region AS (
@@ -2128,7 +2144,7 @@ FROM ventas_por_region
 ORDER BY total_ventas DESC;
 ```
 
-#### CTE Recursivos
+### CTE Recursivos
 Utilizan la palabra clave RECURSIVE y pueden hacer referencia a sí mismos:
 ```sql
 WITH RECURSIVE jerarquia_empleados AS (
@@ -2147,7 +2163,7 @@ WITH RECURSIVE jerarquia_empleados AS (
 SELECT * FROM jerarquia_empleados;
 ```
 
-#### CTE Múltiples
+### CTE Múltiples
 Puedes definir varios CTE en una sola consulta:
 ```sql
 WITH 
@@ -2168,7 +2184,7 @@ JOIN productos_top pt ON p.id = pt.producto_id
 JOIN ventas_2024 v ON p.id = v.producto_id;
 ```
 
-#### Limitaciones Importantes
+## Limitaciones Importantes
 Los CTE en MySQL tienen algunas restricriciones que debes conocer:
 
 - No se pueden indexar (a diferencia de las tablas temporales).
@@ -2177,10 +2193,11 @@ Los CTE en MySQL tienen algunas restricriciones que debes conocer:
 - No pueden contener ciertas cláusulas como **ORDER BY** en el nivel superior del CTE recursivo.
 
 ---
-## 26. UNION ALL y UNION
+
+# 26. UNION ALL y UNION
 `UNION ALL` es un operador SQL que combina los resultados de dos o más consultas SELECT en un solo conjunto de resultados.
 
-### Funcionalidad Básica
+## Funcionalidad Básica
 Toma todas las filas de múltiples consultas SELECT y las apila una encima de la otra, creando un conjunto de resultados unificado.
 ```sql
 SELECT columna1, columna2 FROM tabla1
@@ -2188,7 +2205,7 @@ UNION ALL
 SELECT columna1, columna2 FROM tabla2;
 ```
 
-### Diferencia con `UNION`
+## Diferencia con `UNION`
 La diferencia clave entre `UNION` y `UNION ALL`:
 
 - **`UNION`**: Elimina filas duplicadas del resultado final.
@@ -2207,9 +2224,9 @@ SELECT nombre FROM empleados_barcelona;
 ```
 Si hay un empleado llamado "Juan" en ambas ciudades, UNION mostraría "Juan" una sola vez, mientras que UNION ALL lo mostraría dos veces.
 
-### Reglas Importantes
+## Reglas Importantes
 
-#### 1. Compatibilidad de Columnas
+### 1. Compatibilidad de Columnas
 Las consultas deben tener:
 
 - Mismo número de columnas.
@@ -2226,7 +2243,7 @@ UNION ALL
 SELECT codigo, apellido, salario FROM contratistas;
 ```
 
-#### 2. Nombres de Columnas
+### 2. Nombres de Columnas
 Los nombres de las columnas finales se toman de la primera consulta SELECT:
 ```sql
 SELECT nombre as empleado, salario as sueldo FROM empleados
@@ -2234,9 +2251,9 @@ UNION ALL
 SELECT apellido, ingreso FROM freelancers;
 -- Las columnas del resultado se llamarán "empleado" y "sueldo"
 ```
-### Casos de Uso Comunes
+## Casos de Uso Comunes
 
-#### 1. Combinar Datos de Tablas Similares
+### 1. Combinar Datos de Tablas Similares
 ```sql
 SELECT 'Ventas' as tipo, fecha, monto FROM ventas
 UNION ALL
@@ -2244,7 +2261,7 @@ SELECT 'Devoluciones' as tipo, fecha, -monto FROM devoluciones
 ORDER BY fecha;
 ```
 
-#### 2. Crear Reportes Consolidados
+### 2. Crear Reportes Consolidados
 ```sql
 SELECT region, 'Q1' as trimestre, SUM(ventas) as total
 FROM ventas_q1 GROUP BY region
@@ -2263,7 +2280,7 @@ FROM ventas_q3 GROUP BY region;
 > - No requiere ordenamiento interno para comparar filas.
 > - Procesa los datos de forma más directa.
 
-### Limitaciones
+## Limitaciones
 
 - No puedes usar `ORDER BY` en las consultas individuales del `UNION ALL`, solo al final.
 - El `LIMIT` en consultas individuales puede comportarse de manera inesperada.
@@ -2272,27 +2289,28 @@ FROM ventas_q3 GROUP BY region;
 `UNION ALL` es especialmente útil cuando necesitas combinar datos de múltiples fuentes manteniendo todos los registros, o cuando estás seguro de que no hay duplicados y quieres el mejor rendimiento posible.
 
 ---
-## 27. OVER (Funciones de Ventana)
 
-### Conceptos Fundamentales
+# 27. OVER (Funciones de Ventana)
+
+## Conceptos fundamentales
 Las **funciones de ventana** (window functions) son una característica avanzada de SQL que permite realizar cálculos sobre un conjunto de filas relacionadas con la fila actual, sin colapsar el resultado como lo haría `GROUP BY`.
 
-### Tipos de Funciones de Ventana
+## Tipos de funciones de ventana
 
-#### 1. Funciones de Agregación
+### 1. Funciones de Agregación
 - SUM(), AVG(), COUNT(), MIN(), MAX()
 
-#### 2. Funciones de Ranking
+### 2. Funciones de Ranking
 - ROW_NUMBER(), RANK(), DENSE_RANK(), NTILE()
 
-#### 3. Funciones de Valor
+### 3. Funciones de Valor
 - FIRST_VALUE(), LAST_VALUE(), NTH_VALUE()
 - LAG(), LEAD()
 
-### ¿Qué es `OVER`?
+## ¿Qué es `OVER`?
 `OVER` es parte fundamental de las funciones ventana, define una "ventana" de filas sobre las cuales se aplica una función. A diferencia de `GROUP BY` que colapsa filas en grupos, las funciones de ventana mantienen todas las filas mientras realizan cálculos sobre un conjunto específico de filas relacionadas.
 
-### Sintaxis Básica
+## Sintaxis Básica
 ```sql
 funcion_ventana() OVER (
     [PARTITION BY columna(s)]
@@ -2301,12 +2319,12 @@ funcion_ventana() OVER (
 )
 ```
 
-### Componentes de OVER
+## Componentes de OVER
 
-#### 1. `PARTITION BY` y `ORDER BY`
+### 1. `PARTITION BY` y `ORDER BY`
 Divide el conjunto de resultados en particiones. La función de ventana se aplica a cada partición. Es similar a `GROUP BY`, pero sin colapsar las filas.
 
-#### Datos de ejemplo en la tabla `empleados`:
+### Datos de ejemplo en la tabla `empleados`:
 
 | id | empleado | departamento | salario |
 |----|----------|--------------|---------|
@@ -2320,7 +2338,7 @@ Divide el conjunto de resultados en particiones. La función de ventana se aplic
 | 8  | Miguel   | RRHH         | 42000   |
 | 9  | Elena    | RRHH         | 55000   |
 
-#### Consulta ejecutada:
+### Consulta ejecutada:
 ```sql
 SELECT 
     empleado,
@@ -2330,7 +2348,7 @@ SELECT
 FROM empleados;
 ```
 
-#### Ordenamiento interno con `OVER`:
+### Ordenamiento interno con `OVER`:
 
 >[!NOTE]
 > Aquí se muestra cómo se ordenan internamente o en **"segundo plano"** las filas con las sentencias `PARTITION BY` y `ORDER BY` dentro de `OVER` para finalmente asignar los valores del campo  `ranking`. Este no es el orden real del resultado final.
@@ -2349,7 +2367,7 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 | 1  | Juan     | Ventas       | 45000   | 2       |
 | 3  | Carlos   | Ventas       | 38000   | 3       |
 
-#### Resultado REAL de la consulta:
+### Resultado REAL de la consulta:
 
 | id | empleado | departamento | salario | ranking |
 |----|----------|--------------|---------|---------|
@@ -2389,9 +2407,9 @@ Cada departamento tiene su propio ranking independiente, donde el empleado con m
 >[!IMPORTANT]
 > Todas las cláusulas dentro de `OVER`, ese decir, `PARTITION BY` y `ORDER BY` son para hacer cálculos en "segundo plano" sin alterar el orden de presentación de los datos.
 
-### Ejemplo únicamente con `ORDER BY` en `OVER`
+## Ejemplo únicamente con `ORDER BY` en `OVER`
 
-#### Consulta:
+### Consulta:
 ```sql
 SELECT 
     nombre,
@@ -2400,7 +2418,7 @@ SELECT
 FROM empleados;
 ```
 
-#### Datos de ejemplo en la tabla `empleados`:
+### Datos de ejemplo en la tabla `empleados`:
 
 | id | nombre          | salario |
 |----|-----------------|---------|
@@ -2411,7 +2429,7 @@ FROM empleados;
 | 5  | Laura Martín    | 90000   |
 | 6  | Pedro Sánchez   | 65000   |
 
-#### Ordenamiento interno con `OVER`:
+### Ordenamiento interno con `OVER`:
 
 | id | nombre           | salario | posicion |
 |----|------------------|---------|----------|
@@ -2422,7 +2440,7 @@ FROM empleados;
 | 2  | Carlos López     | 65000   | 5        |
 | 6  | Pedro Sánchez    | 65000   | 6        |
 
-#### Resultado real (orden original de la tabla):
+### Resultado real (orden original de la tabla):
 
 | id | nombre          | salario | posicion |
 |----|-----------------|---------|----------|
@@ -2433,7 +2451,7 @@ FROM empleados;
 | 5  | Laura Martín    | 90000   | 1        |
 | 6  | Pedro Sánchez   | 65000   | 6        |
 
-#### Para ordenar el resultado final necesitarías:
+### Para ordenar el resultado final necesitarías:
 ```sql
 SELECT 
     nombre,
@@ -2444,13 +2462,14 @@ ORDER BY salario DESC;  -- Esto SÍ ordena el resultado final
 ```
 
 ---
-## 28. Vistas
+
+# 28. Vistas
 Las vistas en MySQL son objetos de base de datos que funcionan como "tablas virtuales" basadas en el resultado de una consulta SQL. No almacenan datos físicamente, sino que representan una consulta almacenada que se ejecuta cada vez que se referencia la vista.
 
-### ¿Qué es una vista?
+## ¿Qué es una vista?
 Una vista es esencialmente una consulta `SELECT` guardada con un nombre específico. Cuando consultas una vista, MySQL ejecuta automáticamente la consulta subyacente y devuelve los resultados como si fuera una tabla real.
 
-### Creación de vistas
+## Creación de vistas
 La sintaxis básica para crear una vista es:
 ```sql
 CREATE VIEW nombre_vista AS
@@ -2459,7 +2478,7 @@ FROM tabla
 WHERE condición;
 ```
 
-#### Ejemplo práctico:
+## Ejemplo práctico:
 ```sql
 -- Supongamos que tenemos una tabla empleados
 CREATE VIEW empleados_activos AS
@@ -2468,9 +2487,9 @@ FROM empleados
 WHERE estado = 'activo' AND fecha_contratacion >= '2020-01-01';
 ```
 
-### Tipos de vistas
+## Tipos de vistas
 
-#### 1. Vistas simples
+### 1. Vistas simples
 Basadas en una sola tabla, generalmente permiten operaciones DML (`INSERT`, `UPDATE`, `DELETE`).
 ```sql
 CREATE VIEW empleados_ventas AS
@@ -2479,7 +2498,7 @@ FROM empleados
 WHERE departamento = 'Ventas';
 ```
 
-#### 2. Vistas complejas
+### 2. Vistas complejas
 Involucran múltiples tablas, funciones agregadas, `GROUP BY`, etc. Generalmente son de solo lectura.
 ```sql
 CREATE VIEW resumen_departamentos AS
@@ -2491,15 +2510,15 @@ LEFT JOIN empleados e ON d.id = e.departamento_id
 GROUP BY d.id, d.nombre;
 ```
 
-### Operaciones con vistas
+## Operaciones con vistas
 
-#### Consultar una vista
+### Consultar una vista
 ```sql
 SELECT * FROM empleados_activos;
 SELECT nombre, salario FROM empleados_activos WHERE salario > 50000;
 ```
 
-#### Modificar una vista
+### Modificar una vista
 ```sql
 ALTER VIEW empleados_activos AS
 SELECT id, nombre, apellido, salario, departamento, fecha_contratacion
@@ -2507,12 +2526,12 @@ FROM empleados
 WHERE estado = 'activo';
 ```
 
-#### Eliminar una vista
+### Eliminar una vista
 ```sql
 DROP VIEW empleados_activos;
 ```
 
-### Vistas actualizables
+## Vistas actualizables
 Una vista es actualizable si cumple ciertas condiciones:
 
 - Basada en una sola tabla.
@@ -2532,16 +2551,16 @@ UPDATE empleados_it SET salario = 60000 WHERE id = 1;
 INSERT INTO empleados_it (nombre, salario) VALUES ('Juan Pérez', 55000);
 ```
 
-### `ALGORITHM`
+## `ALGORITHM`
 Este parámetro controla cómo MySQL procesa internamente la vista cuando es consultada.
 
-#### Sintaxis:
+### Sintaxis:
 ```sql
 CREATE ALGORITHM = {MERGE | TEMPTABLE | UNDEFINED} VIEW nombre_vista AS
 SELECT ...
 ```
 
-#### 1. ALGORITHM = MERGE
+### 1. ALGORITHM = MERGE
 MySQL combina la definición de la vista directamente con la consulta que la referencia, creando una sola consulta optimizada.
 
 ```sql
@@ -2560,19 +2579,19 @@ FROM empleados
 WHERE estado = 'activo' AND salario > 50000;
 ```
 
-#### Ventajas de `MERGE`:
+### Ventajas de `MERGE`:
 
 - Mejor rendimiento porque evita crear tablas temporales.
 - Permite usar índices de las tablas base eficientemente.
 - Consume menos memoria.
 
-#### Cuándo usar `MERGE`:
+### Cuándo usar `MERGE`:
 
 - Vistas simples basadas en una tabla.
 - Consultas que no usan funciones agregadas complejas.
 - Cuando necesitas máximo rendimiento.
 
-#### 2. ALGORITHM = TEMPTABLE
+### 2. ALGORITHM = TEMPTABLE
 MySQL ejecuta primero la vista, almacena los resultados en una tabla temporal, y luego ejecuta la consulta externa sobre esa tabla temporal. 
 
 La necesidad de crear tablas temporales surge de limitaciones fundamentales en el orden de cómo SQL procesa las consultas y las reglas del lenguaje SQL estándar.
@@ -2608,7 +2627,7 @@ Con `ALGORITHM = TEMPTABLE`, la tabla temporal **se crea cada vez que se ejecuta
 - Subconsultas correlacionadas.
 - Funciones de ventana (window functions).
 
-#### Desventajas de TEMPTABLE:
+### Desventajas de TEMPTABLE:
 
 - Mayor uso de memoria y E/O de disco.
 - No puede ser actualizable.
@@ -2618,7 +2637,7 @@ Con `ALGORITHM = TEMPTABLE`, la tabla temporal **se crea cada vez que se ejecuta
 > En resumen, la tabla temporal es un mecanismo necesario para mantener la correctitud sintáctica y semántica de SQL cuando las operaciones no se pueden fusionar directamente sin cambiar el significado de la consulta.
 
 
-#### 3. ALGORITHM = UNDEFINED (Predeterminado)
+### 3. ALGORITHM = UNDEFINED (Predeterminado)
 MySQL decide automáticamente entre MERGE y TEMPTABLE basándose en la complejidad de la vista.
 
 ```sql
@@ -2629,16 +2648,16 @@ FROM empleados e
 JOIN departamentos d ON e.departamento_id = d.id;
 ```
 
-### `DEFINER`
+## `DEFINER`
 Especifica qué usuario se considera el "propietario" de la vista para propósitos de permisos y seguridad.
 
-#### Sintaxis:
+### Sintaxis:
 ```sql
 CREATE DEFINER = usuario@host VIEW nombre_vista AS
 SELECT ...
 ```
 
-#### Comportamiento predeterminado:
+### Comportamiento predeterminado:
 ```sql
 -- Sin especificar DEFINER (usa el usuario actual)
 CREATE VIEW empleados_publicos AS
@@ -2649,14 +2668,14 @@ CREATE DEFINER = CURRENT_USER VIEW empleados_publicos AS
 SELECT nombre, apellido, departamento FROM empleados;
 ```
 
-#### Especificar un DEFINER diferente:
+### Especificar un DEFINER diferente:
 ```sql
 -- Solo usuarios con privilegios SUPER pueden hacer esto
 CREATE DEFINER = admin@localhost VIEW datos_sensibles AS
 SELECT id, nombre, salario FROM empleados WHERE nivel_acceso >= 3;
 ```
 
-#### Opciones de `DEFINER`:
+### Opciones de `DEFINER`:
 
 ```sql
 -- Usuario específico
@@ -2669,11 +2688,10 @@ CREATE DEFINER = CURRENT_USER VIEW mi_vista AS SELECT ...;
 CREATE DEFINER = INVOKER VIEW mi_vista AS SELECT ...;
 ```
 
-
-### SQL SECURITY
+## SQL SECURITY
 Controla con qué privilegios se ejecuta la vista cuando es accedida.
 
-#### Sintaxis:
+### Sintaxis:
 
 ```sql
 CREATE SQL SECURITY {DEFINER | INVOKER} VIEW nombre_vista AS
@@ -2685,9 +2703,9 @@ SELECT ...
 - `SQL SECURITY DEFINER`: Se ejecuta con los permisos del creador de la vista.
 - `SQL SECURITY INVOKER`: Se ejecuta con los permisos del usuario que consulta la vista.
 
-#### Ejemplos prácticos paso a paso:
+### Ejemplos prácticos paso a paso:
 
-#### Configuración inicial:
+### Configuración inicial:
 
 ```sql
 -- Tabla con información sensible (solo admin puede acceder)
@@ -2707,7 +2725,7 @@ CREATE USER juan@localhost IDENTIFIED BY 'password';
 -- juan NO tiene acceso a empleados_completos
 ````
 
-#### Ejemplo 1: `SQL SECURITY DEFINER` (Predeterminado)
+### Ejemplo 1: `SQL SECURITY DEFINER` (Predeterminado)
 La vista se ejecuta con los privilegios del usuario definido en `DEFINER`.
 
 ```sql
@@ -2722,7 +2740,7 @@ WHERE departamento = 'Marketing';
 GRANT SELECT ON empleados_publicos TO juan@localhost;
 ```
 
-#### ¿Qué pasa cuando juan consulta la vista?
+### ¿Qué pasa cuando juan consulta la vista?
 ```sql
 -- Juan ejecuta:
 SELECT * FROM empleados_publicos;
@@ -2739,7 +2757,7 @@ SELECT * FROM empleados_publicos;
 Resultado: ✅ Juan puede ver los datos, aunque **NO** tiene permisos directos sobre la tabla `empleados_completos`.
 
 
-#### Ejemplo 2: `SQL SECURITY INVOKER`
+### Ejemplo 2: `SQL SECURITY INVOKER`
 La vista se ejecuta con los privilegios del usuario que la está consultando.
 
 ```sql
@@ -2753,7 +2771,7 @@ WHERE departamento = 'Marketing';
 GRANT SELECT ON empleados_invoker TO juan@localhost; 
 ```
 
-#### ¿Qué pasa cuando juan consulta esta vista?
+### ¿Qué pasa cuando juan consulta esta vista?
 ```sql
 -- Juan ejecuta:
 SELECT * FROM empleados_invoker;
