@@ -5,7 +5,7 @@
 
 Fuente: [Curso de Next.js](https://nextjs.org/learn/dashboard-app/getting-started)
 
-## Tabla de Contenido
+# Tabla de Contenido
 1. [¿Qué es Next.js?](#1-qué-es-nextjs)
 2. [Creando un nuevo proyecto](#2-creando-un-nuevo-proyecto)
 3. [Estructura de carpetas](#3-estructura-de-carpetas)
@@ -20,11 +20,11 @@ Fuente: [Curso de Next.js](https://nextjs.org/learn/dashboard-app/getting-starte
 12. [Agregar búsqueda y paginación](#12-agregar-búsqueda-y-paginación)
 
 ---
-## 1. ¿Qué es Next.js?
+# 1. ¿Qué es Next.js?
 Next.js es un framework de React de código abierto desarrollado por Vercel.  Mientras que React es una librería para construir interfaces de usuario, Next.js es un framework completo que añade funcionalidades esenciales para aplicaciones web en producción, como renderizado del lado del servidor, enrutamiento automático, optimización de rendimiento y mucho más.
 
 ---
-## 2. Creando un nuevo proyecto
+# 2. Creando un nuevo proyecto
 Se recomienda utilizar `pnpm` como gestor de paquetes, ya que es más rápido y eficiente que npm o yarn. Si no lo tiene instalado, se puede instalar globalmente ejecutando:
 ```bash
 npm install -g pnpm
@@ -38,7 +38,7 @@ npx create-next-app@latest nextjs-dashboard --example "https://github.com/vercel
 Este comando usa `create-next-app`, una herramienta de interfaz de línea de comandos (CLI) que configura automáticamente una aplicación Next.js. En el comando anterior, también se usa la bandera `--example` con un ejemplo de inicio.
 
 ---
-## 3. Estructura de carpetas
+# 3. Estructura de carpetas
 
 Después de la instalación, abra el proyecto en su editor de código y navegue hasta nextjs-dashboard.
 ```bash
@@ -55,7 +55,7 @@ Notará que el proyecto tiene la siguiente estructura de carpetas:
 - **Archivos de configuración** : También encontrará archivos de configuración, como los que next.config.tsse encuentran en la raíz de su aplicación. La mayoría de estos archivos se crean y preconfiguran al iniciar un nuevo proyecto con create-next-app.
 
 ---
-## 4. Ejecución del servidor de desarrollo
+# 4. Ejecución del servidor de desarrollo
 
 Instale los paquetes del proyecto:
 ```bash
@@ -68,16 +68,16 @@ pnpm dev
 El servidor de desarrollo se ha iniciado en el puerto `3000`, compruebe si funciona abriendo `http://localhost:3000` en su navegador.
 
 ---
-## 5. Optimización de fuentes e imágenes
+# 5. Optimización de fuentes e imágenes
 
-### ¿Por qué optimizar las fuentes?
+## ¿Por qué optimizar las fuentes?
 `Cambio de diseño acumulativo` es una métrica que Google utiliza para evaluar el rendimiento y la experiencia del usuario de un sitio web. En el caso de las fuentes, el cambio de diseño se produce cuando el navegador inicialmente muestra el texto en una fuente de respaldo o del sistema y, una vez cargado, la reemplaza por una fuente personalizada. Este cambio puede provocar cambios en el tamaño, el espaciado o el diseño del texto, desplazando los elementos a su alrededor.
 
 <img width="709" alt="image" src="https://github.com/user-attachments/assets/0b5542f6-3719-4d10-80a4-606b10c74bcc" />
 
 Next.js optimiza automáticamente las fuentes de la aplicación al usar el módulo `next/font`. Descarga los archivos de fuentes durante la compilación y los aloja con el resto de tus recursos estáticos. Esto significa que, cuando un usuario visita tu aplicación, no hay solicitudes de red adicionales para las fuentes que afecten al rendimiento.
 
-### Agregar una fuente principal
+## Agregar una fuente principal
 Agreguemos una fuente de Google personalizada a su aplicación para ver cómo funciona. En la carpeta `/app/ui`, crea un archivo llamado `fonts.ts`.
 
 Importe la fuente `Inter` del módulo `next/font/google`: esta será la fuente principal. Luego, especifique el subconjunto que desea cargar, en este caso 'latin':
@@ -113,7 +113,7 @@ Con HTML normal, agregarías una imagen de la siguiente manera:
   alt="Screenshots of the dashboard project showing desktop version"
 />
 ```
-### El componente `<Image />`
+## El componente `<Image />`
 El componente `<Image>` es una extensión de la etiqueta `<img>` HTML y viene con optimización automática de imágenes, como:
 
 - Evitar el cambio de diseño automático cuando se cargan las imágenes.
@@ -141,7 +141,7 @@ export default function Page() {
 ```
 Aquí, se configuran los valores de `width` a 1000 y `height` a 760 en píxeles. Es recomendable configurar los valores de `width` y `height` en las imágenes para evitar cambios de diseño. Estos valores deben tener una relación de aspecto idéntica a la de la imagen original. Estos valores *no* representan el tamaño de la imagen renderizada, sino el tamaño del archivo de imagen real utilizado para comprender la relación de aspecto.
 
-### Lectura recomendada
+## Lectura recomendada
 Hay mucho más que aprender sobre estos temas, como la optimización de imágenes remotas y el uso de archivos de fuentes locales. Si desea profundizar en el tema de las fuentes y las imágenes, consulte:
 - [Documentos de optimización de imágenes](https://nextjs.org/docs/app/building-your-application/optimizing/images)
 - [Documentos de optimización de fuentes](https://nextjs.org/docs/app/building-your-application/optimizing/fonts)
@@ -151,7 +151,7 @@ Hay mucho más que aprender sobre estos temas, como la optimización de imágene
 - [Cómo gestiona Google Javascript durante el proceso de indexación](https://vercel.com/blog/how-google-handles-javascript-throughout-the-indexing-process)
 
 ---
-## 6. Enrutamiento
+# 6. Enrutamiento
 Cada carpeta representa un segmento de URL.
 
 <img width="706" alt="image" src="https://github.com/user-attachments/assets/aef06dc4-42cc-49b8-9ca0-1040d9ebdf82" />
@@ -170,7 +170,7 @@ Usando diseños (`layout.tsx`) en Next, durante la navegación, solo se actualiz
 <img width="704" alt="image" src="https://github.com/user-attachments/assets/9b21f52f-1294-44ab-8cc7-b7ef6fa58ada" />
 
 ---
-## 7. Navegando entre páginas
+# 7. Navegando entre páginas
 
 Next.js divide automáticamente el código de la aplicación por segmentos de ruta. Según la ruta que se visite se cargará el código correspondiente. 
 
@@ -181,7 +181,7 @@ En producción, siempre que los componentes `<Link>` aparecen en la ventana grá
 Next proporciona el hook `usePathname()` para obtener la URL actual. Para utilizarlo, el componente debe contener la directiva `"use client"` al inicio.
 
 ---
-## 8. Obteniendo datos
+# 8. Obteniendo datos
 
 De forma predeterminada, las aplicaciones Next.js usan componentes de servidor de React.
 
@@ -196,14 +196,14 @@ Una "cascada" es una secuencia de solicitudes de red que dependen de la finaliza
 <img width="710" alt="image" src="https://github.com/user-attachments/assets/47be0143-06fb-478d-98a2-2db616517bda" />
 
 ---
-## 9. Renderizado estático y dinámico
+# 9. Renderizado estático y dinámico
 
 Con la representación estática, la obtención y representación de datos se realiza en el servidor en el momento de la **compilación** (cuando se implementa) o al revalidar los datos. Cada vez que un usuario visita la aplicación, se muestra el resultado almacenado en caché.
 
 Con la renderización dinámica, el contenido se renderiza en el **servidor** para cada usuario en el **momento de la solicitud** (cuando el usuario visita la página). 
 
 ---
-## 10. Streaming
+# 10. Streaming
 
 La transmisión es una técnica de transferencia de datos que permite dividir una ruta en "fragmentos" más pequeños y transmitirlos progresivamente desde el servidor al cliente a medida que estén listos.
 
@@ -218,10 +218,10 @@ Hay dos formas de implementar la transmisión en Next.js:
 - A nivel de página, con el archivo `loading.tsx`  (crea `<Suspense>` automáticamente).
 - A nivel de componentes, con <Suspense> para un control más granular.
 
-### Transmitiendo una página completa con `loading.tsx`
+## Transmitiendo una página completa con `loading.tsx`
 `loading.tsx` es un archivo especial de Next.js basado en React Suspense. Al agregarlo en un segmento de ruta. Permite crear una interfaz de usuario alternativa para un segmento de URL mientras se carga el contenido de la página.
 
-### Grupos de rutas
+## Grupos de rutas
 Dado que `loading.tsx` esta en un nivel superior a `/invoices/page.tsx` y `/customers/page.tsx` en el sistema de archivos, también se aplica a esas páginas.
 
 Podemos cambiar esto con **Grupos de Rutas**. Cree una nueva carpeta `/(overview)` dentro de la carpeta del panel. Luego, mueva sus archivos `loading.tsx` y `page.tsx` dentro de ella:
@@ -232,7 +232,7 @@ Ahora, el archivo `loading.tsx` solo se aplicará a la página de descripción g
 Los grupos de rutas permiten organizar archivos en grupos lógicos sin afectar la estructura de la ruta URL. Al crear una carpeta nueva con paréntesis (), el nombre no se incluirá en la ruta URL. Por lo tanto, `/dashboard/(overview)/page.tsx` se convierte en `/dashboard`.
 <img width="709" alt="image" src="https://github.com/user-attachments/assets/ae047828-1289-4358-91d0-e1fdada3c153" />
 
-### Transmisión de un componente
+## Transmisión de un componente
 Hasta ahora, se transmitió una página completa. Pero también puedes ser más específico y transmitir componentes específicos con React `Suspense`.
 
 `Suspense` permite aplazar la renderización de partes de la aplicación hasta que se cumpla una condición (por ejemplo, la carga de datos). Puedes encapsular tus componentes dinámicos en Suspense. Luego, pásale un componente de reserva para que se muestre mientras se carga el componente dinámico.
@@ -254,7 +254,7 @@ export default Page(){
 La ubicación de los límites de suspense variará según la aplicación. En general, se recomienda mover las búsquedas de datos a los componentes que las necesitan y luego encapsularlos en Suspense. Sin embargo, no hay problema en transmitir las secciones o la página completa si así lo requiere la aplicación.
 
 ---
-## 11. Prerrenderizado parcial
+# 11. Prerrenderizado parcial
 La prerenderización parcial es una función experimental introducida en Next.js 14. El contenido de esta página puede actualizarse a medida que la función se estabilice. La prerenderización parcial solo está disponible con las versiones canarias de Next.js ( next@canary), no en la versión estable. Aún no recomendamos su uso en producción.
 
 Para instalar la versión Canary de Next.js, ejecute:
@@ -262,12 +262,12 @@ Para instalar la versión Canary de Next.js, ejecute:
 pnpm install next@canary
 ```
 
-### Rutas estáticas vs. dinámicas
+## Rutas estáticas vs. dinámicas
 En la mayoría de las aplicaciones web desarrolladas hoy en día, se puede elegir entre renderizado estático o dinámico para toda la aplicación o para una ruta específica . En Next.js, si se llama a una función dinámica en una ruta (como al consultar la base de datos), toda la ruta se vuelve dinámica.
 
 Sin embargo, la mayoría de las rutas no son completamente estáticas ni dinámicas. Por ejemplo, considere un sitio de comercio electrónico.Es posible que desees renderizar estáticamente la mayor parte de la página de información del producto, pero también puedes querer obtener el carrito del usuario y los productos recomendados dinámicamente; esto te permite mostrar contenido personalizado a tus usuarios.
 
-### ¿Qué es la pre-renderización parcial?
+## ¿Qué es la pre-renderización parcial?
 Next.js 14 introdujo una versión experimental de Prerenderizado Parcial : un nuevo modelo de renderizado que permite combinar las ventajas del renderizado estático y dinámico en una misma ruta. Por ejemplo:
 
 <img width="707" alt="image" src="https://github.com/user-attachments/assets/01fc6cac-9ebf-4e57-8531-896c0857dc2b" />
@@ -277,14 +277,14 @@ Se proporciona un shell de ruta estática que incluye la barra de navegación y 
 El shell deja espacios donde el contenido dinámico, como el carrito y los productos recomendados, se cargarán de forma asincrónica.
 Los agujeros asincrónicos se transmiten en paralelo, lo que reduce el tiempo de carga general de la página.
 
-### ¿Cómo funciona la pre-renderización parcial?
+## ¿Cómo funciona la pre-renderización parcial?
 La prerenderización parcial utiliza `Suspense` de React(que aprendiste en el capítulo anterior) para diferir la representación de partes de tu aplicación hasta que se cumpla alguna condición (por ejemplo, se carguen los datos).
 
-El respaldo de Suspense se integra en el archivo HTML inicial junto con el contenido estático. Durante la compilación (o la revalidación), el contenido estático se pre-renderiza para crear un shell estático. La renderización del contenido dinámico se pospone hasta que el usuario solicita la ruta.
+El respaldo de `Suspense` se integra en el archivo HTML inicial junto con el contenido estático. Durante la compilación (o la revalidación), el contenido estático se pre-renderiza para crear un shell estático. La renderización del contenido dinámico se pospone hasta que el usuario solicita la ruta.
 
-Envolver un componente en `Suspense` no hace que el componente en sí sea dinámico, sino que Suspense se utiliza como un límite entre su código estático y dinámico.
+Envolver un componente en `Suspense` no hace que el componente en sí sea dinámico, sino que `Suspense` se utiliza como un límite entre su código estático y dinámico.
 
-### Implementación de prerenderizado parcial
+## Implementación de prerenderizado parcial
 Habilite PPR para su aplicación Next.js agregando la opción `ppr` a su archivo `next.config.ts`:
 ```javascript
 import type { NextConfig } from 'next';
@@ -312,9 +312,9 @@ Eso es todo. Puede que no notes ninguna diferencia en tu aplicación durante el 
 Lo mejor del prerenderizado parcial es que no necesitas modificar el código para usarlo. Mientras uses Suspense para encapsular las partes dinámicas de tu ruta, Next.js sabrá qué partes de tu ruta son estáticas y cuáles dinámicas.
 
 ---
-## 12. Agregar búsqueda y paginación
+# 12. Agregar búsqueda y paginación
 
-### ¿Por qué utilizar parámetros de búsqueda de URL?
+## ¿Por qué utilizar parámetros de búsqueda de URL?
 Usará parámetros de búsqueda de URL para administrar el estado de la búsqueda. Este patrón puede ser nuevo si está acostumbrado a hacerlo con el estado del lado del cliente.
 
 Implementar la búsqueda con parámetros de URL tiene un par de beneficios:
@@ -323,7 +323,7 @@ Implementar la búsqueda con parámetros de URL tiene un par de beneficios:
 - **Representación del lado del servidor**: los parámetros de URL se pueden consumir directamente en el servidor para representar el estado inicial, lo que facilita el manejo de la representación del servidor.
 - **Análisis y seguimiento**: tener consultas de búsqueda y filtros directamente en la URL facilita el seguimiento del comportamiento del usuario sin necesidad de lógica adicional del lado del cliente.
 
-### Añadiendo la funcionalidad de búsqueda
+## Añadiendo la funcionalidad de búsqueda
 Estos son los ganchos de cliente Next.js para implementar la funcionalidad de búsqueda:
 
 - `useSearchParams` permite acceder a los parámetros de la URL actual. Por ejemplo, los parámetros de búsqueda para esta URL `/dashboard/invoices?page=1&query=pending` serían los siguientes: `{page: '1', query: 'pending'}`.
@@ -337,7 +337,7 @@ A continuación se ofrece una descripción general rápida de los pasos de imple
 - Mantenga la URL sincronizada con el campo de entrada.
 - Actualice la tabla para reflejar la consulta de búsqueda.
 
-### 1. Capturar la entrada del usuario
+## 1. Capturar la entrada del usuario
 Para usar escuchas y ganchos de eventos se debe escribir `"use client"` al inicio de un componente.
 
 Poe ejemplo al crear una nueva función y agrega un detector `onChange` al elemento `<input>`. `onChange` se invocará siempre que cambie el valor de entrada.
@@ -361,7 +361,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
 }
 ```
 
-### 2. Actualice la URL con los parámetros de búsqueda.
+## 2. Actualice la URL con los parámetros de búsqueda.
 Importe el hook `useSearchParams` desde `next/navigation` y asígnalo a una variable:
 ```javascript
 'use client';
@@ -465,7 +465,7 @@ Para garantizar que el campo de entrada esté sincronizado con la URL y se compl
 />
 ```
 
-### 4. Actualización de la tabla
+## 4. Actualización de la tabla
 Por último, debe actualizar una tabla para reflejar la consulta de búsqueda.
 
 Los componentes de página (`page.tsx`) aceptan una propiedad llamada `searchParams` , por lo que puedes pasar los parámetros de la URL actual al `<Table>` componente.
@@ -502,7 +502,7 @@ export default async function Page(props: {
 }
 ```
 
-### ¿Cuándo utilizar el hook `useSearchParams()` frente a la propiedad `searchParams`de `page.tsx`?
+## ¿Cuándo utilizar el hook `useSearchParams()` frente a la propiedad `searchParams`de `page.tsx`?
 Quizás hayas notado que usaste dos métodos diferentes para extraer los parámetros de búsqueda. Usar uno u otro depende de si trabajas en el cliente o en el servidor.
 
 - `<Search>` es un componente de cliente, por lo que se usó el gancho `useSearchParams()` para acceder a los parámetros del cliente.
@@ -557,7 +557,7 @@ Al eliminar el rebote, puede reducir la cantidad de solicitudes enviadas a su ba
 > - Al cambiar la URL, tambien debe cambiar el contenido, el componente `page.tsx` recibe automáticamente una propiedad llamada `searchParams` que son los parámetros de búsqueda de la URL actual en este formato: `{ page: 1, query: "sometext" }`.
 > - Los parámetros de búsqueda se pasan al componente `<Table />` para consultar la base datos.
 
-### Añadiendo Paginación
+## Añadiendo Paginación
 
 Añadir paginación permite a los usuarios navegar por las diferentes páginas para ver todas las facturas. Veamos cómo implementar la paginación mediante parámetros de URL, igual que con la búsqueda.
 
