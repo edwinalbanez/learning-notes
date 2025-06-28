@@ -524,6 +524,7 @@ UPDATE empleados SET activo = 0;
 ```
 
 ---
+
 # 8. Tablas Temporales
 Las tablas temporales en MySQL son estructuras de datos que existen solo durante una sesión específica o por un tiempo determinado.
 
@@ -644,6 +645,7 @@ SET GLOBAL default_tmp_storage_engine = 'MEMORY';
 - No soporta columnas TEXT/BLOB
 
 ---
+
 # 9. Funciones internas de MySQL
 MySQL cuenta con **funciones internas** para operar cadenas de textos, números y fechas. Algunas de estas son:
 
@@ -656,9 +658,10 @@ MySQL cuenta con **funciones internas** para operar cadenas de textos, números 
 <img width="452" alt="image" src="https://github.com/user-attachments/assets/7a9be808-7292-440c-8b26-0134e38b71db" />
 
 ---
+
 # 10. Operadores Aritméticos, de Comparación y Lógicos
 
-## Operadores Aritmético
+## Operadores Aritméticos
 Los operadores aritméticos permiten realizar cálculos matemáticos en consultas SQL:
 
 ### Operadores básicos:
@@ -687,12 +690,129 @@ SELECT empleado_id, salario, salario * 0.15 AS impuesto
 FROM empleados;
 ```
 
+## Operadores de comparación
+Estos operadores comparan valores y devuelven un resultado booleano (1 para verdadero, 0 para falso):
+
+### Operadores principales:
+
+- `=` (igual): Comprueba si dos valores son iguales.
+- `!=` o <> (diferente): Comprueba si dos valores son diferentes.
+- `<` (menor que): El primer valor es menor que el segundo.
+- `>` (mayor que): El primer valor es mayor que el segundo.
+- `<=` (menor o igual): El primer valor es menor o igual que el segundo.
+- `>=` (mayor o igual): El primer valor es mayor o igual que el segundo.
+
+### Operadores especiales:
+
+- `BETWEEN`: Verifica si un valor está dentro de un rango.
+- `IN`: Verifica si un valor está en una lista de valores.
+- `LIKE`: Busca un patrón específico en texto.
+- `IS NULL` / `IS NOT NULL`: Verifica valores nulos.
+- `REGEXP` o `RLIKE`: Coincidencia con expresiones regulares.
+
+### Ejemplos:
+```sql
+-- Operadores básicos
+SELECT * FROM productos WHERE precio = 100;
+SELECT * FROM empleados WHERE edad > 30;
+SELECT * FROM clientes WHERE ciudad != 'Madrid';
+
+-- BETWEEN
+SELECT * FROM productos WHERE precio BETWEEN 50 AND 200;
+
+-- IN
+SELECT * FROM empleados WHERE departamento IN ('Ventas', 'Marketing');
+
+-- LIKE (% = cualquier número de caracteres, _ = un carácter)
+SELECT * FROM clientes WHERE nombre LIKE 'Juan%';
+SELECT * FROM productos WHERE codigo LIKE 'PR_001';
+
+-- IS NULL
+SELECT * FROM empleados WHERE telefono IS NULL;
+```
+
+## Operadores lógicos
+Los operadores lógicos combinan o modifican condiciones booleanas.
+
+### Operadores principales:
+
+- `AND` (&&): Devuelve verdadero si ambas condiciones son verdaderas.
+- `OR` (||): Devuelve verdadero si al menos una condición es verdadera.
+- `NOT` (!): Invierte el valor lógico de una condición.
+- `XOR`: Devuelve verdadero si exactamente una de las condiciones es verdadera.
+
+## Tablas de verdad:
+
+### `AND`:
+- TRUE `AND` TRUE = TRUE
+- TRUE `AND` FALSE = FALSE
+- FALSE `AND` TRUE = FALSE
+- FALSE `AND` FALSE = FALSE
+
+### `OR`:
+- TRUE `OR` TRUE = TRUE
+- TRUE `OR` FALSE = TRUE
+- FALSE `OR` TRUE = TRUE
+- FALSE `OR` FALSE = FALSE
+
+### `NOT`:
+- `NOT` TRUE = FALSE
+- `NOT` FALSE = TRUE
+
+## Ejemplos prácticos:
+```sql
+-- AND
+SELECT * FROM empleados 
+WHERE edad > 25 AND salario > 3000;
+
+-- OR
+SELECT * FROM productos 
+WHERE categoria = 'Electrónicos' OR precio < 100;
+
+-- NOT
+SELECT * FROM clientes 
+WHERE NOT ciudad = 'Barcelona';
+
+-- Combinación de operadores
+SELECT * FROM empleados 
+WHERE (departamento = 'Ventas' OR departamento = 'Marketing') 
+AND salario BETWEEN 2000 AND 5000;
+
+-- XOR
+SELECT * FROM productos 
+WHERE (precio > 100) XOR (categoria = 'Libros');
+```
+
+## Orden de operadores:
+MySQL evalúa los operadores en el siguiente orden (de mayor a menor precedencia):
+
+1. Paréntesis `()`
+2. Operadores aritméticos: `*`, `/`, `%`
+3. Operadores aritméticos: `+`, `-`
+4. Operadores de comparación: `=`, `!=`, `<`, `>`, `<=`, `>=`
+5. `NOT`
+6. `AND`
+7. `OR`, `XOR`
+
+### Ejemplo de precedencia:
+```sql
+-- Sin paréntesis (AND tiene mayor precedencia que OR)
+SELECT * FROM empleados 
+WHERE departamento = 'Ventas' OR departamento = 'IT' AND salario > 3000;
+-- Equivale a: departamento = 'Ventas' OR (departamento = 'IT' AND salario > 3000)
+
+-- Con paréntesis para cambiar precedencia
+SELECT * FROM empleados 
+WHERE (departamento = 'Ventas' OR departamento = 'IT') AND salario > 3000;
+```
+
 ---
+
 # 11. Operadores BETWEEN e IN
 
-## Operador BETWEEN
+## Operador `BETWEEN`
 
-### Conceptos Fundamentales
+### Conceptos fundamentales
 `BETWEEN` filtra registros dentro de un rango específico, incluyendo los valores límite.
 
 ### Sintaxis
@@ -700,7 +820,7 @@ FROM empleados;
 SELECT * FROM tabla WHERE columna BETWEEN valor1 AND valor2;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Productos en rango de precio
 SELECT * FROM productos 
@@ -715,9 +835,9 @@ SELECT * FROM productos
 WHERE precio NOT BETWEEN 100.00 AND 500.00;
 ```
 
-## Operador IN
+## Operador `IN`
 
-### Conceptos Fundamentales
+### Conceptos fundamentales
 IN permite filtrar registros que coincidan con cualquier valor de una lista.
 
 ### Sintaxis
@@ -725,7 +845,7 @@ IN permite filtrar registros que coincidan con cualquier valor de una lista.
 SELECT * FROM tabla WHERE columna IN (valor1, valor2, valor3);
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Productos de categorías específicas
 SELECT * FROM productos 
@@ -745,11 +865,11 @@ WHERE id_cliente IN (
 
 ---
 
-# 12. Operadores LIKE e IS NULL
+# 12. Operadores `LIKE` e `IS NULL`
 
 ## Operador LIKE
 
-### Conceptos Fundamentales
+### Conceptos fundamentales
 LIKE permite búsquedas con patrones usando comodines:
 - `%`: Representa cero o más caracteres
 - `_`: Representa exactamente un carácter
@@ -759,7 +879,7 @@ LIKE permite búsquedas con patrones usando comodines:
 SELECT * FROM tabla WHERE columna LIKE 'patrón';
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Clientes cuyo nombre comience con 'Juan'
 SELECT * FROM clientes 
@@ -778,7 +898,7 @@ SELECT * FROM productos
 WHERE nombre NOT LIKE '%Dell%';
 ```
 
-## Operador IS NULL
+## Operador `IS NULL`
 
 ### Conceptos Fundamentales
 IS NULL identifica registros con valores nulos (vacíos).
@@ -789,7 +909,7 @@ SELECT * FROM tabla WHERE columna IS NULL;
 SELECT * FROM tabla WHERE columna IS NOT NULL;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Clientes sin email registrado
 SELECT * FROM clientes 
@@ -808,22 +928,22 @@ WHERE fecha_entrega IS NULL;
 
 ---
 
-# 13. Uso de ORDER BY
+# 13. Uso de `ORDER BY`
 
-### Conceptos Fundamentales
+### Conceptos fundamentales
 ORDER BY ordena los resultados de una consulta según una o más columnas.
 
-### Sintaxis Básica
+### Sintaxis básica
 ```sql
 SELECT * FROM tabla ORDER BY columna [ASC|DESC];
 ```
 
-### Ordenamiento Múltiple
+### Ordenamiento múltiple
 ```sql
 SELECT * FROM tabla ORDER BY columna1 ASC, columna2 DESC;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Productos ordenados por precio (menor a mayor)
 SELECT * FROM productos 
@@ -866,24 +986,24 @@ ORDER BY
 
 ---
 
-# 14. Uso de LIMIT
+# 14. Uso de `LIMIT`
 
-## Conceptos Fundamentales
+## Conceptos fundamentales
 LIMIT restringe el número de filas devueltas por una consulta.
 
-## Sintaxis Básica
+## Sintaxis básica
 ```sql
 SELECT * FROM tabla LIMIT cantidad;
 ```
 
-## Con OFFSET
+## Con `OFFSET`
 ```sql
 SELECT * FROM tabla LIMIT offset, cantidad;
 -- o en algunos sistemas:
 SELECT * FROM tabla LIMIT cantidad OFFSET offset;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Los 5 productos más caros
 SELECT * FROM productos 
@@ -909,7 +1029,7 @@ ORDER BY total_vendido DESC
 LIMIT 1;
 ```
 
-## Paginación Profesional
+## Paginación profesional
 ```sql
 -- Función para paginación
 -- Página 1: LIMIT 10 OFFSET 0
@@ -928,17 +1048,17 @@ SELECT FOUND_ROWS();
 
 ## 15. Subconsultas
 
-## Conceptos Fundamentales
+## Conceptos fundamentales
 Las subconsultas son consultas anidadas dentro de otras consultas, permitiendo operaciones complejas de filtrado y análisis.
 
-## Subconsultas en SELECT
+## Subconsultas en `SELECT`
 
 ### Sintaxis
 ```sql
 SELECT columna1, (SELECT ... FROM ...) as alias FROM tabla;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Mostrar clientes con su total de pedidos
 SELECT 
@@ -959,14 +1079,14 @@ FROM productos p
 ORDER BY ranking_precio;
 ```
 
-## Subconsultas en FROM
+## Subconsultas en `FROM`
 
 ### Sintaxis
 ```sql
 SELECT * FROM (SELECT ... FROM ...) as alias;
 ```
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Análisis de ventas por mes
 SELECT 
@@ -992,9 +1112,9 @@ JOIN (
 ) as top_clientes ON c.id_cliente = top_clientes.id_cliente;
 ```
 
-## Subconsultas en WHERE
+## Subconsultas en `WHERE`
 
-### Ejemplos Prácticos
+### Ejemplos prácticos
 ```sql
 -- Clientes que han realizado pedidos
 SELECT * FROM clientes 
@@ -1025,7 +1145,7 @@ WHERE id_producto NOT IN (
 );
 ```
 
-## Subconsultas Correlacionadas
+## Subconsultas correlacionadas
 ```sql
 -- Empleados con salario superior al promedio de su departamento
 SELECT e1.* FROM empleados e1
@@ -1038,12 +1158,12 @@ WHERE salario > (
 
 ---
 
-# 16. INNER JOIN
+# 16. `INNER JOIN`
 
 ## Conceptos fundamentales
 INNER JOIN combina registros de dos o más tablas basándose en una condición de coincidencia. Solo devuelve registros que tienen coincidencias en ambas tablas.
 
-## Sintaxis Básica
+## Sintaxis básica
 ```sql
 SELECT columnas
 FROM tabla1
