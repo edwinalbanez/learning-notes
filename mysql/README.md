@@ -2560,7 +2560,7 @@ CREATE ALGORITHM = {MERGE | TEMPTABLE | UNDEFINED} VIEW nombre_vista AS
 SELECT ...
 ```
 
-### 1. ALGORITHM = MERGE
+### 1. `ALGORITHM = MERGE`
 MySQL combina la definición de la vista directamente con la consulta que la referencia, creando una sola consulta optimizada.
 
 ```sql
@@ -2579,19 +2579,19 @@ FROM empleados
 WHERE estado = 'activo' AND salario > 50000;
 ```
 
-### Ventajas de `MERGE`:
+#### Ventajas de `MERGE`:
 
 - Mejor rendimiento porque evita crear tablas temporales.
 - Permite usar índices de las tablas base eficientemente.
 - Consume menos memoria.
 
-### Cuándo usar `MERGE`:
+#### Cuándo usar `MERGE`:
 
 - Vistas simples basadas en una tabla.
 - Consultas que no usan funciones agregadas complejas.
 - Cuando necesitas máximo rendimiento.
 
-### 2. ALGORITHM = TEMPTABLE
+### 2. `ALGORITHM = TEMPTABLE`
 MySQL ejecuta primero la vista, almacena los resultados en una tabla temporal, y luego ejecuta la consulta externa sobre esa tabla temporal. 
 
 La necesidad de crear tablas temporales surge de limitaciones fundamentales en el orden de cómo SQL procesa las consultas y las reglas del lenguaje SQL estándar.
@@ -2619,7 +2619,7 @@ SELECT * FROM resumen_ventas WHERE total_empleados > 5;
 
 Con `ALGORITHM = TEMPTABLE`, la tabla temporal **se crea cada vez que se ejecuta la vista** y **se elimina inmediatamente después de completar la consulta**. No persiste durante la sesión como las tablas temporales comunes.
 
-### Cuándo MySQL fuerza `TEMPTABLE`:
+#### Cuándo MySQL fuerza `TEMPTABLE`:
 
 - Vistas con funciones agregadas (`COUNT`, `SUM`, `AVG`, etc.).
 - Uso de `GROUP BY`, `HAVING`.
@@ -2627,7 +2627,7 @@ Con `ALGORITHM = TEMPTABLE`, la tabla temporal **se crea cada vez que se ejecuta
 - Subconsultas correlacionadas.
 - Funciones de ventana (window functions).
 
-### Desventajas de TEMPTABLE:
+#### Desventajas de TEMPTABLE:
 
 - Mayor uso de memoria y E/O de disco.
 - No puede ser actualizable.
@@ -2740,7 +2740,7 @@ WHERE departamento = 'Marketing';
 GRANT SELECT ON empleados_publicos TO juan@localhost;
 ```
 
-### ¿Qué pasa cuando juan consulta la vista?
+#### ¿Qué pasa cuando juan consulta la vista?
 ```sql
 -- Juan ejecuta:
 SELECT * FROM empleados_publicos;
@@ -2771,7 +2771,7 @@ WHERE departamento = 'Marketing';
 GRANT SELECT ON empleados_invoker TO juan@localhost; 
 ```
 
-### ¿Qué pasa cuando juan consulta esta vista?
+#### ¿Qué pasa cuando juan consulta esta vista?
 ```sql
 -- Juan ejecuta:
 SELECT * FROM empleados_invoker;
