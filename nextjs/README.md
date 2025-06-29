@@ -599,6 +599,54 @@ const createPageURL = (pageNumber: number | string) => {
 };
 ```
 
+---
+# 13. Datos mutantes
+
+## Conceptos importantes
+
+### "use client"
+Se coloca al inicio de un archivo para indicar que es un `Client Component` que se ejecuta en el navegador. Necesitas usarlo cuando:
+
+- Usas hooks de React (`useState`, `useEffect`, etc.).
+- Manejas eventos del usuario (`onClick`, `onChange`, etc.).
+- Accedes a APIs del navegador (`localStorage`, `window`, etc.).
+- Usas librerías que solo funcionan en el cliente.
+```javascript
+"use client"
+import { useState } from 'react'
+
+export default function Counter() {
+  const [count, setCount] = useState(0)
+  
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Contador: {count}
+    </button>
+  )
+}
+```
+
+### "use server"
+Marca funciones que se ejecutan exclusivamente en el servidor. Se usa para:
+
+- Server Actions (funciones que manejan formularios).
+- Operaciones que requieren acceso a bases de datos.
+- Funciones que manejan datos sensibles
+```javascript
+"use server"
+import { db } from './db'
+
+export async function createUser(formData) {
+  const name = formData.get('name')
+  await db.user.create({ data: { name } })
+}
+```
+
+## Comportamiento por defecto
+Por defecto, los componentes en el App Router son Server Components (se ejecutan en el servidor), lo que ofrece mejor rendimiento y SEO. Solo necesitas "use client" cuando requieres interactividad específica del navegador.
+
+La clave está en usar cada uno según dónde necesites que se ejecute tu código: servidor para mejor rendimiento y SEO, cliente para interactividad.
+
 
 ## TEMAS PENDIENTES
 
