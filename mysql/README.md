@@ -30,7 +30,7 @@
 27. [OVER (Funciones de Ventana)](#27-over-funciones-de-ventana)
 28. [Vistas](#28-vistas)
 29. [Procedimientos Almacenados](#29-procedimientos-almacenados)
-30. [DECLARE HANDLER en Procedimientos almacenados](#declare-handler-en-procedimientos-almacenados)
+30. [DECLARE HANDLER en Procedimientos almacenados](#30-declare-handler-en-procedimientos-almacenados)
 
 ---
 # ¿Qué es SQL?
