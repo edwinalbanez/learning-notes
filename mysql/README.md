@@ -3275,6 +3275,11 @@ END //
 DELIMITER ;
 ```
 
+> [!NOTE]
+> - `ROLLBACK` y `COMMIT` solo funcionan dentro de transacciones (`START TRANSACTION`).
+> - `ROLLBACK` deshace **TODA** la transacción.
+
+
 ## Ejemplo con handler `EXIT`:
 
 ```sql
@@ -3331,9 +3336,9 @@ END //
 DELIMITER ;
 ```
 
-## Puntos importantes sobre `DECLARE HANDLER`:
+## `Puntos importantes`:
 
-1.** Orden de declaración**: Los handlers deben declararse antes de las demás declaraciones en el bloque **BEGIN-END**.
+1. **Orden de declaración**: Los handlers deben declararse antes de las demás declaraciones en el bloque **BEGIN-END**.
 2. **Jerarquía**: Los handlers más específicos tienen prioridad sobre los generales.
 3. **Ámbito**: Los handlers solo son válidos dentro del bloque donde se declaran.
 4. **Múltiples** condiciones: Un handler puede manejar múltiples condiciones separadas por comas.
