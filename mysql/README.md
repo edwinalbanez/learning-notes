@@ -2754,7 +2754,7 @@ Con `ALGORITHM = TEMPTABLE`, la tabla temporal **se crea cada vez que se ejecuta
 - Rendimiento potencialmente menor.
 
 >[!IMPORTANT]
-> En resumen, la tabla temporal es un mecanismo necesario para mantener la correctitud sintáctica y semántica de SQL cuando las operaciones no se pueden fusionar directamente sin cambiar el significado de la consulta.
+> En resumen, la tabla temporal es un mecanismo necesario para mantener la sintaxis y semántica correcta de SQL cuando las operaciones de la vista no se pueden fusionar directamente con consultas externas.
 
 
 ### 3. ALGORITHM = UNDEFINED (Predeterminado)
@@ -2820,7 +2820,7 @@ SELECT ...
 
 **Hay dos opciones:**
 
-- `SQL SECURITY DEFINER`: Se ejecuta con los permisos del creador de la vista.
+- `SQL SECURITY DEFINER` (predeterminado): Se ejecuta con los permisos del creador de la vista.
 - `SQL SECURITY INVOKER`: Se ejecuta con los permisos del usuario que consulta la vista.
 
 ### Ejemplos prácticos paso a paso:
@@ -2905,10 +2905,228 @@ SELECT * FROM empleados_invoker;
 
 Resultado: ❌ Juan `NO` puede ver los datos porque no tiene permisos sobre la tabla `empleados_completos`.
 
+---
 
+# 29. Procedimientos almacenados
 
+## ¿Qué son los procedimientos almacenados?
+Un procedimiento almacenado es un conjunto de declaraciones SQL que se compilan y almacenan en el servidor de base de datos. Una vez creado, puede ser invocado por su nombre, lo que permite reutilizar el código y ejecutar operaciones complejas con una sola llamada.
 
+## Ventajas principales
+- `Rendimiento mejorado`: Los procedimientos se compilan una vez y se almacenan en forma ejecutable, lo que reduce el tiempo de procesamiento en ejecuciones posteriores.
+- `Seguridad`: Permiten controlar el acceso a los datos mediante la concesión de permisos específicos para ejecutar el procedimiento sin dar acceso directo a las tablas.
+- `Reducción del tráfico de red`: En lugar de enviar múltiples consultas SQL, se envía una sola llamada al procedimiento.
+- `Mantenimiento centralizado`: Los cambios en la lógica de negocio se pueden realizar en un solo lugar.
 
+## Sintaxis básica
+
+```sql
+DELIMITER //
+CREATE DEFINER = 'usuario@host' PROCEDURE nombre_procedimiento (
+    [IN | OUT | INOUT] parametro1 tipo_dato,
+    [IN | OUT | INOUT] parametro2 tipo_dato
+)
+SQL SECURITY { DEFINER | INVOKER }
+BEGIN
+    -- Cuerpo del procedimiento
+    -- Declaraciones SQL
+END //
+DELIMITER ;
+```
+
+## Tipos de parámetros
+
+- `IN`: Parámetros de entrada (valor por defecto).
+- `OUT`: Parámetros de salida.
+- `INOUT`: Parámetros que pueden ser tanto de entrada como de salida.
+
+## Ejemplo:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE ObtenerEmpleadosPorDepartamento(
+    IN dept_id INT,
+    OUT total_empleados INT
+)
+BEGIN
+    SELECT COUNT(*) INTO total_empleados
+    FROM empleados
+    WHERE departamento_id = dept_id;
+    
+    SELECT nombre, apellido, salario
+    FROM empleados
+    WHERE departamento_id = dept_id;
+END //
+DELIMITER ;
+```
+
+## Ejecución de procedimientos
+Para ejecutar un procedimiento almacenado:
+
+```sql
+CALL ObtenerEmpleadosPorDepartamento(5, @total);
+SELECT @total;
+```
+
+## Parámetros `INOUT`
+Los parámetros `INOUT` permiten que una variable funcione tanto como entrada (`IN`) como salida (`OUT`) en el mismo procedimiento.
+
+### Características de `INOUT`
+
+- `Bidireccional`: Puede recibir un valor inicial y devolver un valor modificado.
+- `Eficiencia`: Evita la necesidad de declarar parámetros separados `IN` y `OUT`.
+- `Flexibilidad`: Permite operaciones complejas sobre el mismo valor.
+
+### Ejemplo básico de `INOUT`
+
+```sql
+DELIMITER //
+CREATE PROCEDURE CalcularBonificacion(
+    INOUT salario DECIMAL(10,2),
+    IN porcentaje DECIMAL(5,2)
+)
+BEGIN
+    -- El salario entra como valor inicial
+    -- y sale modificado con la bonificación
+    SET salario = salario + (salario * porcentaje / 100);
+END //
+DELIMITER ;
+```
+
+ Uso del ejemplo anterior:
+
+```sql
+-- Establecer el salario inicial
+SET @salario_empleado = 5000.00;
+
+-- Ejecutar el procedimiento
+CALL CalcularBonificacion(@salario_empleado, 15.0);
+
+-- Ver el resultado modificado
+SELECT @salario_empleado; -- Resultado: 5750.00
+```
+
+### Ejemplo más complejo con `INOUT`
+
+```sql
+DELIMITER //
+CREATE PROCEDURE ProcesarInventario(
+    INOUT cantidad_producto INT,
+    IN operacion VARCHAR(10),
+    IN ajuste INT,
+    OUT mensaje VARCHAR(100)
+)
+BEGIN
+    DECLARE cantidad_original INT;
+    
+    -- Guardar la cantidad original
+    SET cantidad_original = cantidad_producto;
+    
+    -- Procesar según la operación
+    IF operacion = 'AGREGAR' THEN
+        SET cantidad_producto = cantidad_producto + ajuste;
+        SET mensaje = CONCAT('Agregado: ', ajuste, ' unidades');
+        
+    ELSEIF operacion = 'RETIRAR' THEN
+        IF cantidad_producto >= ajuste THEN
+            SET cantidad_producto = cantidad_producto - ajuste;
+            SET mensaje = CONCAT('Retirado: ', ajuste, ' unidades');
+        ELSE
+            SET mensaje = 'Stock insuficiente';
+            SET cantidad_producto = cantidad_original; -- Revertir
+        END IF;
+        
+    ELSE
+        SET mensaje = 'Operación no válida';
+        SET cantidad_producto = cantidad_original; -- Revertir
+    END IF;
+    
+END //
+DELIMITER ;
+```
+
+Uso del ejemplo complejo:
+
+```sql
+-- Establecer inventario inicial
+SET @stock_actual = 100;
+
+-- Procesar una operación
+CALL ProcesarInventario(@stock_actual, 'RETIRAR', 25, @resultado);
+
+-- Ver los resultados
+SELECT @stock_actual AS 'Stock Final', @resultado AS 'Mensaje';
+-- Resultado: Stock Final: 75, Mensaje: 'Retirado: 25 unidades'
+```
+
+>[!IMPORTANT]
+> - **Inicialización**: Los parámetros `INOUT` deben tener un valor inicial antes de llamar al procedimiento.
+> - **Tipo de datos**: El tipo debe ser compatible tanto para entrada como para salida.
+> - **Variables de sesión**: Se suelen usar variables de sesión (`@variable`) para pasar valores `INOUT`.
+
+## `DEFINER`
+El parámetro `DEFINER` especifica qué usuario se considera el "propietario" o "definidor" del procedimiento almacenado. Este concepto es crucial para el control de acceso y la seguridad.
+
+### Sintaxis
+
+```sql
+CREATE DEFINER = 'usuario'@'host' PROCEDURE nombre_procedimiento()
+BEGIN
+    -- código del procedimiento
+END;
+```
+
+## `SQL SECURITY`
+Cuando se ejecuta un procedimiento almacenado, MySQL determina qué permisos usar basándose en la característica `SQL SECURITY`:
+
+`SQL SECURITY DEFINER` (por defecto):
+
+- El procedimiento se ejecuta con los privilegios del usuario especificado en `DEFINER`.
+- Es el comportamiento por defecto.
+- Permite que usuarios con permisos limitados ejecuten operaciones que requieren más privilegios.
+
+`SQL SECURITY INVOKER`:
+
+- El procedimiento se ejecuta con los privilegios del usuario que lo invoca.
+- Más restrictivo pero más seguro en ciertos contextos.
+
+## Ejemplo de `DEFINER` y `SQL SECURITY`
+
+```sql
+-- Crear un procedimiento con DEFINER específico
+DELIMITER //
+CREATE DEFINER = 'admin'@'localhost' PROCEDURE ConsultarSalarios()
+SQL SECURITY DEFINER
+BEGIN
+    SELECT empleado_id, nombre, salario 
+    FROM empleados_confidenciales;
+END //
+DELIMITER ;
+
+-- Un usuario con permisos limitados puede ejecutar este procedimiento
+-- y acceder a datos que normalmente no podría ver
+CALL ConsultarSalarios();
+```
+
+En este ejemplo, aunque el usuario actual no tenga permisos para leer la tabla `empleados_confidenciales`, puede ejecutar el procedimiento porque se ejecuta con los privilegios del usuario 'admin'.
+
+## Características adicionales
+Los procedimientos almacenados en MySQL pueden incluir estructuras de control como `IF-ELSE`, `WHILE`, `FOR`, `CASE`, manejo de excepciones con `DECLARE HANDLER`, y declaración de variables locales con `DECLARE`.
+
+También pueden llamar a otros procedimientos almacenados y funciones, lo que permite crear lógica compleja y modular.
+
+## Gestión de procedimientos
+Para ver los procedimientos existentes:
+
+```sql
+SHOW PROCEDURE STATUS;
+```
+
+Para eliminar un procedimiento:
+
+```sql
+DROP PROCEDURE IF EXISTS nombre_procedimiento;
+```
 
 
 
