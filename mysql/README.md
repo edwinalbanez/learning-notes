@@ -29,6 +29,8 @@
 26. [UNION y UNION ALL](#26-union-all-y-union)
 27. [OVER (Funciones de Ventana)](#27-over-funciones-de-ventana)
 28. [Vistas](#28-vistas)
+29. [Procedimientos Almacenados](#29-procedimientos-almacenados)
+30. [DECLARE HANDLER en Procedimientos almacenados](#declare-handler-en-procedimientos-almacenados)
 
 ---
 # ¿Qué es SQL?
@@ -3127,6 +3129,216 @@ Para eliminar un procedimiento:
 ```sql
 DROP PROCEDURE IF EXISTS nombre_procedimiento;
 ```
+
+---
+
+# 30. DECLARE HANDLER en Procedimientos almacenados
+`DECLARE HANDLER` es un mecanismo para manejar errores y excepciones en procedimientos almacenados. Permite capturar y responder a condiciones específicas que pueden ocurrir durante la ejecución.
+
+Permite definir código SQL que se ejecutará cuando ocurra una excepción específica.
+
+## Sintaxis básica:
+
+```sql
+DECLARE {CONTINUE | EXIT} HANDLER FOR condición
+    declaración_handler;
+```
+
+## Tipos de `HANDLER`:
+
+- `CONTINUE`: Continúa la ejecución después de manejar la condición.
+- `EXIT`: Sale del bloque `BEGIN-END` actual después de manejar la condición.
+
+## Condiciones que se pueden manejar:
+
+- **Códigos de error MySQL**: Números específicos de error.
+- **Estados SQL**: Códigos de estado `SQLSTATE`.
+- **Condiciones predefinidas**: `SQLWARNING`, `NOT FOUND`, `SQLEXCEPTION`.
+
+## Ejemplo básico con `NOT FOUND`:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE BuscarEmpleado(
+    IN empleado_id INT,
+    OUT nombre_completo VARCHAR(100),
+    OUT encontrado BOOLEAN
+)
+BEGIN
+    -- Declarar el handler para cuando no se encuentra registro
+    DECLARE CONTINUE HANDLER FOR NOT FOUND 
+        SET encontrado = FALSE;
+    
+    -- Inicializar variable
+    SET encontrado = TRUE;
+    
+    -- Intentar buscar el empleado
+    SELECT CONCAT(nombre, ' ', apellido) INTO nombre_completo
+    FROM empleados 
+    WHERE id = empleado_id;
+    
+    -- Si no se encontró, el handler se ejecutará automáticamente
+    
+END //
+DELIMITER ;
+```
+
+## Ejemplo con manejo de errores SQL:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE InsertarEmpleado(
+    IN p_nombre VARCHAR(50),
+    IN p_email VARCHAR(100),
+    IN p_departamento_id INT,
+    OUT resultado VARCHAR(100)
+)
+BEGIN
+    -- Handler para clave duplicada (error 1062)
+    DECLARE CONTINUE HANDLER FOR 1062
+        SET resultado = 'Error: El email ya existe en el sistema';
+    
+    -- Handler para violación de clave foránea (error 1452)
+    DECLARE CONTINUE HANDLER FOR 1452
+        SET resultado = 'Error: El departamento especificado no existe';
+    
+    -- Handler para cualquier otro error SQL
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+        SET resultado = 'Error: Ocurrió un problema inesperado';
+    
+    -- Inicializar resultado exitoso
+    SET resultado = 'Empleado insertado correctamente';
+    
+    -- Intentar insertar
+    INSERT INTO empleados (nombre, email, departamento_id)
+    VALUES (p_nombre, p_email, p_departamento_id);
+    
+END //
+DELIMITER ;
+```
+
+## Ejemplo complejo con múltiples handlers:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE TransferirSaldo(
+    IN cuenta_origen INT,
+    IN cuenta_destino INT,
+    IN monto DECIMAL(10,2),
+    OUT resultado VARCHAR(200)
+)
+BEGIN
+    DECLARE saldo_actual DECIMAL(10,2);
+    DECLARE operacion_exitosa BOOLEAN DEFAULT TRUE;
+    
+    -- Handler para registro no encontrado
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        SET operacion_exitosa = FALSE;
+        SET resultado = 'Error: Una de las cuentas no existe';
+    END;
+    
+    -- Handler para errores SQL generales
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET operacion_exitosa = FALSE;
+        SET resultado = 'Error: Problema durante la transacción';
+        ROLLBACK;
+    END;
+    
+    -- Iniciar transacción
+    START TRANSACTION;
+    
+    -- Verificar saldo de cuenta origen
+    SELECT saldo INTO saldo_actual 
+    FROM cuentas 
+    WHERE id = cuenta_origen;
+    
+    -- Verificar que hay suficiente saldo
+    IF operacion_exitosa AND saldo_actual < monto THEN
+        SET operacion_exitosa = FALSE;
+        SET resultado = 'Error: Saldo insuficiente';
+    END IF;
+    
+    -- Realizar transferencia si todo está bien
+    IF operacion_exitosa THEN
+        UPDATE cuentas SET saldo = saldo - monto WHERE id = cuenta_origen;
+        UPDATE cuentas SET saldo = saldo + monto WHERE id = cuenta_destino;
+        
+        COMMIT;
+        SET resultado = CONCAT('Transferencia exitosa de $', monto);
+    ELSE
+        ROLLBACK;
+    END IF;
+    
+END //
+DELIMITER ;
+```
+
+## Ejemplo con handler `EXIT`:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE EliminarEmpleado(
+    IN empleado_id INT,
+    OUT mensaje VARCHAR(100)
+)
+BEGIN
+    -- Handler EXIT - sale del procedimiento inmediatamente
+    DECLARE EXIT HANDLER FOR NOT FOUND
+    BEGIN
+        SET mensaje = 'Error: Empleado no encontrado';
+    END;
+    
+    -- Handler para violación de integridad referencial
+    DECLARE EXIT HANDLER FOR 1451
+    BEGIN
+        SET mensaje = 'Error: No se puede eliminar, tiene registros dependientes';
+    END;
+    
+    -- Si llegamos aquí, el empleado existe
+    DELETE FROM empleados WHERE id = empleado_id;
+    SET mensaje = 'Empleado eliminado correctamente';
+    
+END //
+DELIMITER ;
+```
+
+## Usar condiciones nombradas:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE ProcedimientoConCondiciones()
+BEGIN
+    -- Declarar condiciones personalizadas
+    DECLARE empleado_no_encontrado CONDITION FOR SQLSTATE '02000';
+    DECLARE error_salario CONDITION FOR SQLSTATE '45000';
+    
+    -- Handlers para condiciones nombradas
+    DECLARE EXIT HANDLER FOR empleado_no_encontrado
+    BEGIN
+        SELECT 'Empleado no encontrado' AS mensaje;
+    END;
+    
+    DECLARE EXIT HANDLER FOR error_salario
+    BEGIN
+        SELECT 'Error en el cálculo del salario' AS mensaje;
+    END;
+    
+    -- Código del procedimiento...
+    
+END //
+DELIMITER ;
+```
+
+## Puntos importantes sobre `DECLARE HANDLER`:
+
+1.** Orden de declaración**: Los handlers deben declararse antes de las demás declaraciones en el bloque **BEGIN-END**.
+2. **Jerarquía**: Los handlers más específicos tienen prioridad sobre los generales.
+3. **Ámbito**: Los handlers solo son válidos dentro del bloque donde se declaran.
+4. **Múltiples** condiciones: Un handler puede manejar múltiples condiciones separadas por comas.
+
+
 
 
 
