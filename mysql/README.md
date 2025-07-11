@@ -32,6 +32,7 @@
 29. [Procedimientos Almacenados](#29-procedimientos-almacenados)
 30. [DECLARE HANDLER en Procedimientos almacenados](#30-declare-handler-en-procedimientos-almacenados)
 31. [IF](#31-if)
+32. [LOOP, WHILE, REPEAT y FOR](#32-iteraciones)
 
 ---
 # ¿Qué es SQL?
@@ -3385,7 +3386,134 @@ END //
 DELIMITER ;
 ```
 
+---
 
+# 32. LOOP, WHILE, REPEAT y FOR
+
+## `LOOP`
+La sentencia `LOOP` crea un bucle infinito que debe ser terminado explícitamente con `LEAVE`.
+
+### Sintaxis
+```sql
+[etiqueta:] LOOP
+    -- declaraciones
+    IF condición THEN
+        LEAVE etiqueta;
+    END IF;
+END LOOP [etiqueta];
+```
+
+### Ejemplo práctico:
+```sql
+DELIMITER $$
+CREATE PROCEDURE ejemplo_loop()
+BEGIN
+    DECLARE contador INT DEFAULT 0;
+    
+    mi_loop: LOOP
+        SET contador = contador + 1;
+        SELECT CONCAT('Iteración: ', contador) AS mensaje;
+        
+        IF contador >= 5 THEN
+            LEAVE mi_loop;
+        END IF;
+    END LOOP mi_loop;
+END$$
+DELIMITER ;
+```
+
+## `WHILE`
+El bucle `WHILE` ejecuta las declaraciones mientras la condición sea verdadera. La condición se evalúa al inicio de cada iteración.
+
+### Sintaxis
+```sql
+[etiqueta:] WHILE condición DO
+    -- declaraciones
+END WHILE [etiqueta];
+```
+
+### Ejemplo práctico:
+```sql
+DELIMITER $$
+CREATE PROCEDURE ejemplo_while()
+BEGIN
+    DECLARE contador INT DEFAULT 1;
+    
+    WHILE contador <= 5 DO
+        SELECT CONCAT('Número: ', contador) AS resultado;
+        SET contador = contador + 1;
+    END WHILE;
+END$$
+DELIMITER ;
+```
+
+## `REPEAT`
+`REPEAT` define la condición al final de la sentencia. Primero se ejecuta el bloque de código y luego evalúa la condición. Esto permite ejecutar al menos una vez el bloque de código aunque no se cumpla la condición. Es similar a un do-while en otros lenguajes.
+
+### Sintaxis
+```sql
+[etiqueta:] REPEAT
+    -- declaraciones
+UNTIL condición
+END REPEAT [etiqueta];
+```
+
+### Ejemplo práctico:
+```sql
+DELIMITER $$
+CREATE PROCEDURE ejemplo_repeat()
+BEGIN
+    DECLARE contador INT DEFAULT 1;
+    
+    REPEAT
+        SELECT CONCAT('Valor: ', contador) AS salida;
+        SET contador = contador + 1;
+    UNTIL contador > 5
+    END REPEAT;
+END$$
+DELIMITER ;
+```
+
+## `FOR` (MySQL 8.0+)
+La sentencia FOR es más reciente y permite iterar sobre un rango de valores o sobre el resultado de un cursor.
+
+### Sintaxis para rango:
+```sql
+FOR variable IN inicio..fin DO
+    -- declaraciones
+END FOR;
+```
+
+### Sintaxis para cursor:
+```sql
+FOR registro IN cursor_name DO
+    -- declaraciones
+END FOR;
+```
+
+### Ejemplo con `rango`:
+```sql
+DELIMITER $$
+CREATE PROCEDURE ejemplo_for()
+BEGIN
+    FOR i IN 1..5 DO
+        SELECT CONCAT('Iteración FOR: ', i) AS mensaje;
+    END FOR;
+END$$
+DELIMITER ;
+```
+
+### Ejemplo con cursor:
+```sql
+DELIMITER $$
+CREATE PROCEDURE ejemplo_for_cursor()
+BEGIN
+    FOR registro IN (SELECT id, nombre FROM usuarios LIMIT 3) DO
+        SELECT CONCAT('Usuario: ', registro.nombre, ' ID: ', registro.id) AS info;
+    END FOR;
+END$$
+DELIMITER ;
+```
 
 
 
