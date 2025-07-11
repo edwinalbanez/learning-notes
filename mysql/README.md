@@ -35,6 +35,7 @@
 32. [LOOP, WHILE, REPEAT y FOR](#32-loop-while-repeat-y-for)
 
 ---
+
 # ¿Qué es SQL?
 El lenguaje de consulta estructurada (SQL, por sus siglas en inglés) permite la interacción con bases de datos desde el almacenamiento y manipulación hasta la recuperación de los datos.
 
@@ -3484,14 +3485,7 @@ FOR variable IN inicio..fin DO
 END FOR;
 ```
 
-### Sintaxis para cursor:
-```sql
-FOR registro IN cursor_name DO
-    -- declaraciones
-END FOR;
-```
-
-### Ejemplo con `rango`:
+#### Ejemplo con `rango`:
 ```sql
 DELIMITER $$
 CREATE PROCEDURE ejemplo_for()
@@ -3503,7 +3497,14 @@ END$$
 DELIMITER ;
 ```
 
-### Ejemplo con cursor:
+### Sintaxis para cursor:
+```sql
+FOR registro IN cursor_name DO
+    -- declaraciones
+END FOR;
+```
+
+#### Ejemplo con cursor:
 ```sql
 DELIMITER $$
 CREATE PROCEDURE ejemplo_for_cursor()
@@ -3514,6 +3515,209 @@ BEGIN
 END$$
 DELIMITER ;
 ```
+
+---
+
+# 33. Cursores
+
+Un cursor en MySQL es una estructura que permite recorrer fila por fila el resultado de una consulta `SELECT`. Es como un "puntero" que te permite navegar a través de un conjunto de resultados de manera secuencial.
+
+## ¿Qué es un cursor?
+Un cursor es especialmente útil cuando necesitas procesar cada fila de un resultado individualmente, en lugar de trabajar con todo el conjunto de datos de una vez.
+
+## Sintaxis tradicional de cursores (MySQL 5.x y superior)
+```sql
+-- 1. Declarar el cursor
+DECLARE cursor_nombre CURSOR FOR SELECT columna1, columna2 FROM tabla WHERE condicion;
+
+-- 2. Declarar handler para el final del cursor
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET variable_fin = TRUE;
+
+-- 3. Abrir el cursor
+OPEN cursor_nombre;
+
+-- 4. Leer datos del cursor
+FETCH cursor_nombre INTO variable1, variable2;
+
+-- 5. Cerrar el cursor
+CLOSE cursor_nombre;
+```
+
+## Ejemplo:
+```sql
+DELIMITER $$
+CREATE PROCEDURE ejemplo_cursor_detallado()
+BEGIN
+    DECLARE emp_id INT;
+    DECLARE emp_nombre VARCHAR(100);
+    DECLARE terminado INT DEFAULT FALSE;
+    
+    -- PASO 1: Solo definimos la consulta (no se ejecuta)
+    DECLARE mi_cursor CURSOR FOR 
+        SELECT id, nombre FROM empleados LIMIT 3;
+    
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET terminado = TRUE;
+    
+    SELECT 'Cursor declarado pero no abierto' AS estado;
+    
+    -- PASO 2: AQUÍ se ejecuta la consulta y se reservan recursos
+    OPEN mi_cursor;
+    SELECT 'Cursor abierto - Consulta ejecutada y recursos reservados' AS estado;
+    
+    -- PASO 3: Leemos datos
+    bucle: LOOP
+        FETCH mi_cursor INTO emp_id, emp_nombre;
+        
+        IF terminado THEN
+            LEAVE bucle;
+        END IF;
+        
+        SELECT CONCAT('Leído: ', emp_nombre) AS resultado;
+    END LOOP;
+    
+    -- PASO 4: Liberamos recursos
+    CLOSE mi_cursor;
+    SELECT 'Cursor cerrado - Recursos liberados' AS estado;
+END$$
+DELIMITER ;
+```
+
+## ¿Por qué hay que abrir y cerrar el cursor?
+
+### Qué sucede internamente con `OPEN`:
+Cuando declaras un cursor, simplemente estás definiendo **qué consulta SQL** va a ejecutar, pero **no se ejecuta todavía**.
+
+```sql
+-- Esto NO ejecuta la consulta, solo la define
+DECLARE cursor_empleados CURSOR FOR 
+    SELECT id, nombre, salario FROM empleados WHERE departamento = 'Ventas';
+```
+
+### Cuando usas `OPEN`, MySQL:
+
+1. Ejecuta la consulta SQL definida en el cursor.
+2. Crea un conjunto de resultados en memoria.
+3. Posiciona el puntero ANTES de la primera fila.
+4. Reserva recursos del sistema (memoria, conexiones, etc.).
+
+```sql
+-- AQUÍ es cuando MySQL realmente ejecuta el SELECT
+OPEN cursor_empleados;
+```
+
+### Qué sucede internamente con `CLOSE`:
+
+`CLOSE` es crucial porque:
+
+1. Libera la memoria ocupada por el conjunto de resultados.
+2. Libera recursos del sistema (conexiones, buffers, etc.).
+3. Marca el cursor como no utilizable hasta que se vuelva a abrir.
+
+```sql
+-- Libera todos los recursos asociados
+CLOSE cursor_empleados;
+```
+
+## ¿Exactamente qué pasa en la sentencia `FETCH - INTO`?
+
+### Funcionamiento interno de `FETCH`:
+`FETCH` es como mover un puntero a través de los resultados y copiar los datos de la fila actual a variables.
+
+### Estado inicial del cursor (después de `OPEN`):
+```sql
+Posición del puntero: [ANTES DE LA PRIMERA FILA]
+Resultados en memoria:
+  Fila 1: id=1, nombre='Juan'
+  Fila 2: id=2, nombre='María'  
+  Fila 3: id=3, nombre='Carlos'
+```
+
+### Primera ejecución de `FETCH`:
+```sql
+FETCH mi_cursor INTO emp_id, emp_nombre;
+```
+
+Lo que sucede internamente:
+
+1. Avanza el puntero a la siguiente fila (Fila 1).
+2. Copia los valores de la fila actual a las variables.
+3. Verifica si hay más filas disponibles
+
+```sql
+Posición del puntero: [FILA 1] ← Aquí está ahora
+Resultados en memoria:
+  Fila 1: id=1, nombre='Juan'     ← Datos copiados a variables
+  Fila 2: id=2, nombre='María'  
+  Fila 3: id=3, nombre='Carlos'
+
+Variables después del FETCH:
+  emp_id = 1
+  emp_nombre = 'Juan'
+```
+
+
+### Segunda ejecución de `FETCH`:
+```sql
+FETCH mi_cursor INTO emp_id, emp_nombre;
+```
+---
+```sql
+Posición del puntero: [FILA 2] ← Ahora aquí
+Resultados en memoria:
+  Fila 1: id=1, nombre='Juan'     
+  Fila 2: id=2, nombre='María'    ← Datos copiados a variables
+  Fila 3: id=3, nombre='Carlos'
+
+Variables después del FETCH:
+  emp_id = 2
+  emp_nombre = 'María'
+```
+
+## ¿Qué pasa cuando no hay más filas?
+Cuando `FETCH` intenta leer más allá de la última fila:
+
+1. **No copia ningún dato** a las variables.
+2. **Activa la excepción** `NOT FOUND`.
+3. Las variables **mantienen sus valores anteriores**.
+
+```sql
+-- Última fila leída exitosamente
+FETCH mi_cursor INTO emp_id, emp_nombre;  -- emp_id=3, emp_nombre='Carlos'
+
+-- Intento de leer una fila que no existe
+FETCH mi_cursor INTO emp_id, emp_nombre;  -- Activa NOT FOUND
+                                          -- emp_id sigue siendo 3
+                                          -- emp_nombre sigue siendo 'Carlos'
+```
+
+## Correspondencia entre `SELECT` y `FETCH` `INTO`
+Hay una correspondencia **posicional** y **obligatoria** entre las columnas del `SELECT` usado para crear el cursor y las variables del `FETCH` `INTO`.
+
+### Reglas:
+1. **Mismo número de elementos**: `SELECT` debe tener el mismo número de columnas que variables en `INTO`.
+2. **Mismo orden**: La primera columna del `SELECT` va a la primera variable del `INTO`, la segunda columna a la segunda variable, etc.
+3. **Compatibilidad de tipos**: Los tipos deben ser compatibles (MySQL hace conversiones automáticas cuando es posible).
+
+>[!IMPORTANT]
+> Los cursores solo se pueden usar en:
+> 1. Procedimientos almacenados.
+> 2. Funciones almacenadas.
+> 3. Triggers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
