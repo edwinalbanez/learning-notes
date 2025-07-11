@@ -32,7 +32,7 @@
 29. [Procedimientos Almacenados](#29-procedimientos-almacenados)
 30. [DECLARE HANDLER en Procedimientos almacenados](#30-declare-handler-en-procedimientos-almacenados)
 31. [IF](#31-if)
-32. [LOOP, WHILE, REPEAT y FOR](#32-iteraciones)
+32. [LOOP, WHILE, REPEAT y FOR](#32-loop-while-repeat-y-for)
 
 ---
 # ¿Qué es SQL?
