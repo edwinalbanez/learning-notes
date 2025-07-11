@@ -31,6 +31,7 @@
 28. [Vistas](#28-vistas)
 29. [Procedimientos Almacenados](#29-procedimientos-almacenados)
 30. [DECLARE HANDLER en Procedimientos almacenados](#30-declare-handler-en-procedimientos-almacenados)
+31. [IF](#31-if)
 
 ---
 # ¿Qué es SQL?
@@ -3342,6 +3343,48 @@ DELIMITER ;
 2. **Jerarquía**: Los handlers más específicos tienen prioridad sobre los generales.
 3. **Ámbito**: Los handlers solo son válidos dentro del bloque donde se declaran.
 4. **Múltiples** condiciones: Un handler puede manejar múltiples condiciones separadas por comas.
+
+---
+
+# 31. IF
+La declaración `IF` en MySQL es una estructura de control que permite ejecutar código condicionalmente basado en una expresión booleana.
+
+## Sintaxis básica
+```sql
+IF(condición, valor_si_verdadero, valor_si_falso)
+```
+
+## Tipos de `IF` en MySQL
+
+### 1. `IF` como función (en `SELECT`)
+La forma más común es usar `IF` como función dentro de consultas `SELECT`:
+
+```sql
+SELECT 
+    nombre,
+    edad,
+    IF(edad >= 18, 'Mayor de edad', 'Menor de edad') AS categoria
+FROM usuarios;
+```
+
+### 2. `IF` en procedimientos almacenados
+Dentro de procedimientos almacenados puedes usar la estructura IF-THEN-ELSE:
+
+```sql
+DELIMITER //
+CREATE PROCEDURE ejemplo_if(IN edad INT)
+BEGIN
+    IF edad >= 18 THEN
+        SELECT 'Mayor de edad' AS resultado;
+    ELSEIF edad >= 13 THEN
+        SELECT 'Adolescente' AS resultado;
+    ELSE
+        SELECT 'Niño' AS resultado;
+    END IF;
+END //
+DELIMITER ;
+```
+
 
 
 
