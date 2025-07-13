@@ -3799,10 +3799,10 @@ END FROM tabla;
 # 35. Funciones almacenadas
 Las funciones almacenadas en MySQL son bloques de código SQL reutilizables que se almacenan en la base de datos y pueden ser invocados desde cualquier parte de una consulta.
 
-## ¿Qué son las Funciones Almacenadas?
+## ¿Qué son las funciones almacenadas?
 Son subrutinas que aceptan parámetros de entrada, ejecutan un conjunto de instrucciones SQL y devuelven un único valor. Son similares a las funciones en lenguajes de programación tradicionales, pero operan dentro del contexto de la base de datos.
 
-## Sintaxis Básica
+## Sintaxis básica
 ```sql
 DELIMITER $$
 CREATE FUNCTION nombre_funcion(parametros)
@@ -3815,7 +3815,7 @@ END$$
 DELIMITER ;
 ```
 
-## Tipos de Parámetros
+## Tipos de parámetros
 Las funciones MySQL solo aceptan parámetros de entrada (`IN`), a diferencia de los procedimientos almacenados que pueden tener parámetros `IN`, `OUT` e `INOUT`.
 
 ## Características opcionales:
@@ -3950,7 +3950,7 @@ END$$
 DELIMITER ;
 ```
 
-## Gestión de Funciones
+## Gestión de funciones
 
 ### Crear función:
 ```sql
@@ -3973,7 +3973,7 @@ SHOW FUNCTION STATUS;
 SHOW CREATE FUNCTION nombre_funcion;
 ```
 
-### Verificación de Características:
+### Verificación de características:
 ```sql
 -- Ver las características de una función
 SHOW CREATE FUNCTION nombre_funcion;
@@ -3988,7 +3988,7 @@ FROM information_schema.ROUTINES
 WHERE ROUTINE_TYPE = 'FUNCTION';
 ```
 
-## Diferencias con Procedimientos Almacenados
+## Diferencias con procedimientos almacenados
 
 ### `Funciones`:
 
