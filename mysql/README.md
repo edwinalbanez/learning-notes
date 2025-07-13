@@ -34,6 +34,7 @@
 31. [IF](#31-if)
 32. [LOOP, WHILE, REPEAT y FOR](#32-loop-while-repeat-y-for)
 33. [Cursores](#33-cursores)
+34. [COALESCE](#34-coalesce)
 
 ---
 
@@ -3705,7 +3706,92 @@ Hay una correspondencia **posicional** y **obligatoria** entre las columnas del 
 > 2. Funciones almacenadas.
 > 3. Triggers.
 
+---
 
+# 34. COALESCE
+`COALESCE` es una función muy útil en MySQL que devuelve el primer valor no nulo de una lista de expresiones.
+
+## Sintaxis básica
+```sql
+COALESCE(expresión1, expresión2, expresión3, ...)
+```
+
+## Funcionamiento
+`COALESCE` evalúa las expresiones de izquierda a derecha y devuelve el primer valor que no sea `NULL`. Si todas las expresiones son `NULL`, entonces devuelve `NULL`.
+
+### Ejemplo básico
+```sql
+SELECT COALESCE(NULL, NULL, 'Hola', 'Mundo');
+-- Resultado: 'Hola'
+
+SELECT COALESCE(NULL, 'Primera', 'Segunda');
+-- Resultado: 'Primera'
+
+SELECT COALESCE(NULL, NULL, NULL);
+-- Resultado: NULL
+```
+
+### Uso con columnas de tabla
+Supongamos que tienes una tabla de usuarios:
+```sql
+CREATE TABLE usuarios (
+    id INT PRIMARY KEY,
+    nombre VARCHAR(50),
+    apellido VARCHAR(50),
+    nickname VARCHAR(50),
+    email VARCHAR(100)
+);
+
+INSERT INTO usuarios VALUES 
+(1, 'Juan', 'Pérez', NULL, 'juan@email.com'),
+(2, NULL, 'García', 'jgarcia', 'garcia@email.com'),
+(3, 'María', NULL, 'mary123', NULL);
+```
+
+Puedes usar `COALESCE` para mostrar el primer nombre disponible:
+```sql
+SELECT id, 
+       COALESCE(nickname, nombre, 'Sin nombre') AS nombre_mostrar
+FROM usuarios;
+```
+
+Resultado:
+
+| id | nombre         |
+-----|----------------|
+| 1  | Juan           |
+| 2  | jgarcia        | 
+| 3  | mary123        |
+
+## Diferencias con otras funciones
+
+### `COALESCE` vs `ISNULL`
+
+- `ISNULL(expresión, reemplazo)` solo acepta 2 parámetros.
+- `COALESCE` puede aceptar múltiples parámetros.
+
+### `COALESCE` vs `IFNULL`
+
+- `IFNULL(expresión, reemplazo)` es específico de MySQL y acepta 2 parámetros.
+- `COALESCE` es estándar SQL y más flexible.
+
+### `COALESCE` vs `CASE`
+```sql
+-- Estos son equivalentes:
+SELECT COALESCE(col1, col2, 'default') FROM tabla;
+
+SELECT CASE 
+    WHEN col1 IS NOT NULL THEN col1
+    WHEN col2 IS NOT NULL THEN col2
+    ELSE 'default'
+END FROM tabla;
+```
+
+## Consideraciones `importantes`
+1. **Tipos de datos**: Todos los argumentos deben ser del mismo tipo o convertibles entre sí.
+2. **Rendimiento**: `COALESCE` se evalúa de forma lazy (se detiene en el primer valor no nulo).
+3. **Índices**: `COALESCE` en `WHERE` puede afectar el uso de índices.
+4. **NULL vs valores vacíos**: `COALESCE` solo maneja `NULL`, no cadenas vacías o espacios.
 
 
 
