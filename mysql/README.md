@@ -35,6 +35,7 @@
 32. [LOOP, WHILE, REPEAT y FOR](#32-loop-while-repeat-y-for)
 33. [Cursores](#33-cursores)
 34. [COALESCE](#34-coalesce)
+35. [Funciones Almacenadas](#35-funciones-almacenadas)
 
 ---
 
@@ -3793,14 +3794,219 @@ END FROM tabla;
 3. **Índices**: `COALESCE` en `WHERE` puede afectar el uso de índices.
 4. **NULL vs valores vacíos**: `COALESCE` solo maneja `NULL`, no cadenas vacías o espacios.
 
+---
 
+# 35. Funciones almacenadas
+Las funciones almacenadas en MySQL son bloques de código SQL reutilizables que se almacenan en la base de datos y pueden ser invocados desde cualquier parte de una consulta.
 
+## ¿Qué son las Funciones Almacenadas?
+Son subrutinas que aceptan parámetros de entrada, ejecutan un conjunto de instrucciones SQL y devuelven un único valor. Son similares a las funciones en lenguajes de programación tradicionales, pero operan dentro del contexto de la base de datos.
 
+## Sintaxis Básica
+```sql
+DELIMITER $$
+CREATE FUNCTION nombre_funcion(parametros)
+RETURNS tipo_dato
+[caracteristicas]
+BEGIN
+    -- Código de la función
+    RETURN valor;
+END$$
+DELIMITER ;
+```
 
+## Tipos de Parámetros
+Las funciones MySQL solo aceptan parámetros de entrada (`IN`), a diferencia de los procedimientos almacenados que pueden tener parámetros `IN`, `OUT` e `INOUT`.
 
+## Características opcionales:
+Las características de las funciones en MySQL son fundamentales para la **optimización del rendimiento** y el **correcto funcionamiento** de la base de datos. 
 
+### 1. `DETERMINISTIC`
+Indica que la función siempre devuelve el mismo resultado con los mismos parámetros.
 
+```sql
+CREATE FUNCTION calcular_iva(precio DECIMAL(10,2))
+RETURNS DECIMAL(10,2)
+DETERMINISTIC  -- Siempre devuelve lo mismo con el mismo precio
+BEGIN
+    RETURN precio * 0.19;
+END
+```
 
+### 2. `NOT DETERMINISTIC` (por defecto):
+El resultado puede variar aunque los parámetros sean iguales.
+
+```sql
+CREATE FUNCTION obtener_timestamp_actual()
+RETURNS DATETIME
+NOT DETERMINISTIC  -- Cada llamada devuelve un tiempo diferente
+BEGIN
+    RETURN NOW();
+END
+```
+
+Estas características informan al optimizador sobre qué tipo de operaciones SQL realiza la función:
+
+### 3. `READS SQL DATA`:
+La función lee datos pero no los modifica.
+
+```sql
+CREATE FUNCTION contar_productos_categoria(categoria VARCHAR(50))
+RETURNS INT
+READS SQL DATA  -- Solo lee, no modifica
+BEGIN
+    DECLARE total INT;
+    SELECT COUNT(*) INTO total FROM productos WHERE categoria_id = categoria;
+    RETURN total;
+END
+```
+
+### 4. `MODIFIES SQL DATA`: 
+La función modifica datos (`INSERT`, `UPDATE`, `DELETE`).
+
+```sql
+CREATE FUNCTION actualizar_stock(producto_id INT, cantidad INT)
+RETURNS INT
+MODIFIES SQL DATA  -- Modifica datos
+BEGIN
+    UPDATE productos SET stock = stock - cantidad WHERE id = producto_id;
+    RETURN ROW_COUNT();
+END
+```
+
+### 5. `NO SQL`: 
+No contiene declaraciones SQL.
+
+```sql
+CREATE FUNCTION calcular_potencia(base INT, exponente INT)
+RETURNS INT
+NO SQL  -- Solo cálculos matemáticos
+BEGIN
+    DECLARE resultado INT DEFAULT 1;
+    DECLARE i INT DEFAULT 1;
+    
+    WHILE i <= exponente DO
+        SET resultado = resultado * base;
+        SET i = i + 1;
+    END WHILE;
+    
+    RETURN resultado;
+END
+```
+
+### 6. `CONTAINS SQL`: 
+Contiene SQL pero no lee ni modifica datos (declaraciones, variables, etc.).
+
+```sql
+CREATE FUNCTION formatear_mensaje(texto VARCHAR(100))
+RETURNS VARCHAR(150)
+CONTAINS SQL  -- Usa SQL pero no accede a datos
+BEGIN
+    DECLARE resultado VARCHAR(150);
+    SET resultado = CONCAT('[INFO] ', UPPER(texto));
+    RETURN resultado;
+END
+```
+
+## Ejemplo práctico:
+```sql
+DELIMITER $$
+
+-- Función determinística para cálculos
+CREATE FUNCTION calcular_comision(venta DECIMAL(10,2), tasa DECIMAL(5,2))
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+NO SQL
+COMMENT 'Calcula comisión basada en venta y tasa'
+BEGIN
+    RETURN venta * (tasa / 100);
+END$$
+
+-- Función que lee datos
+CREATE FUNCTION obtener_promedio_ventas(vendedor_id INT)
+RETURNS DECIMAL(10,2)
+READS SQL DATA
+DETERMINISTIC
+COMMENT 'Promedio de ventas de un vendedor'
+BEGIN
+    DECLARE promedio DECIMAL(10,2);
+    SELECT AVG(monto) INTO promedio 
+    FROM ventas 
+    WHERE vendedor = vendedor_id;
+    RETURN IFNULL(promedio, 0);
+END$$
+
+-- Función no determinística
+CREATE FUNCTION log_actividad(mensaje VARCHAR(255))
+RETURNS INT
+MODIFIES SQL DATA
+NOT DETERMINISTIC
+COMMENT 'Registra actividad con timestamp'
+BEGIN
+    INSERT INTO log_sistema (mensaje, fecha) VALUES (mensaje, NOW());
+    RETURN LAST_INSERT_ID();
+END$$
+
+DELIMITER ;
+```
+
+## Gestión de Funciones
+
+### Crear función:
+```sql
+CREATE FUNCTION nombre_funcion...
+```
+
+### Eliminar función:
+```sql
+DROP FUNCTION IF EXISTS nombre_funcion;
+```
+
+### Modificar función
+```sql
+ALTER FUNCTION nombre_funcion [caracteristicas];
+```
+
+### Ver funciones existentes:
+```sql
+SHOW FUNCTION STATUS;
+SHOW CREATE FUNCTION nombre_funcion;
+```
+
+### Verificación de Características:
+```sql
+-- Ver las características de una función
+SHOW CREATE FUNCTION nombre_funcion;
+
+-- Ver todas las funciones y sus características
+SELECT 
+    ROUTINE_NAME,
+    IS_DETERMINISTIC,
+    SQL_DATA_ACCESS,
+    SECURITY_TYPE
+FROM information_schema.ROUTINES 
+WHERE ROUTINE_TYPE = 'FUNCTION';
+```
+
+## Diferencias con Procedimientos Almacenados
+
+### `Funciones`:
+
+- Retornan un solo valor.
+- Solo parámetros de entrada.
+- Pueden usarse en expresiones SQL.
+- No pueden contener transacciones.
+
+### `Procedimientos`:
+
+- Pueden retornar múltiples valores o ninguno.
+- Parámetros `IN`, `OUT`, `INOUT`.
+- Se ejecutan con `CALL`.
+- Pueden manejar transacciones.
+
+>[!IMPORTANT]
+> Definir correctamente las características de las funciones es crucial para que MySQL pueda optimizar su ejecución, manejar la replicación apropiadamente y aplicar las
+> restricciones de seguridad correctas.
 
 
 
