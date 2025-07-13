@@ -36,6 +36,7 @@
 33. [Cursores](#33-cursores)
 34. [COALESCE](#34-coalesce)
 35. [Funciones Almacenadas](#35-funciones-almacenadas)
+36. [Triggers](#36-triggers)
 
 ---
 
@@ -4007,6 +4008,11 @@ WHERE ROUTINE_TYPE = 'FUNCTION';
 >[!IMPORTANT]
 > Definir correctamente las características de las funciones es crucial para que MySQL pueda optimizar su ejecución, manejar la replicación apropiadamente y aplicar las
 > restricciones de seguridad correctas.
+
+---
+
+# 36. Triggers
+Los triggers en MySQL son procedimientos almacenados especiales que se ejecutan automáticamente en respuesta a eventos específicos que ocurren en una tabla o vista de la base de datos. A diferencia de los procedimientos almacenados regulares, los triggers no se pueden invocar directamente, sino que se activan automáticamente cuando se producen ciertos eventos.
 
 
 
