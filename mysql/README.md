@@ -4012,9 +4012,120 @@ WHERE ROUTINE_TYPE = 'FUNCTION';
 ---
 
 # 36. Triggers
-Los triggers en MySQL son procedimientos almacenados especiales que se ejecutan automáticamente en respuesta a eventos específicos que ocurren en una tabla o vista de la base de datos. A diferencia de los procedimientos almacenados regulares, los triggers no se pueden invocar directamente, sino que se activan automáticamente cuando se producen ciertos eventos.
+Los triggers en MySQL son procedimientos almacenados especiales que se ejecutan automáticamente cuando ocurren eventos específicos en una tabla o vista de la base de datos. A diferencia de los procedimientos almacenados regulares, los triggers no se pueden invocar directamente, sino que se activan automáticamente cuando se producen ciertos eventos.
+
+## Tipos de triggers
+MySQL admite varios tipos de triggers basados en el evento que los activa:
+
+### Por evento `DML` (`Data Manipulation Language`):
+
+- `INSERT`: Se activa cuando se insertan nuevos registros.
+- `UPDATE`: Se activa cuando se modifican registros existentes.
+- `DELETE`: Se activa cuando se eliminan registros.
+
+### Por momento de ejecución:
+
+- `BEFORE`: Se ejecuta antes de que ocurra el evento.
+- `AFTER`: Se ejecuta después de que ocurra el evento.
+
+Esto nos da seis combinaciones posibles: 
+
+1. `BEFORE` - `INSERT`
+2. `AFTER` - `INSERT`
+3. `BEFORE` - `UPDATE`
+4. `AFTER` - `UPDATE`
+5. `BEFORE` - `DELETE`
+6. `AFTER` - `DELETE`
 
 
+## Sintaxis Básica
+```sql
+CREATE TRIGGER nombre_trigger
+    {BEFORE | AFTER} {INSERT | UPDATE | DELETE}
+    ON nombre_tabla
+    FOR EACH ROW
+BEGIN
+    -- Código del trigger
+END;
+```
+
+## Características `importantes`
+
+### 1. Acceso a los datos:
+
+- `NEW`: Referencia a los nuevos valores en operaciones `INSERT` y `UPDATE`.
+- `OLD`: Referencia a los valores anteriores en operaciones `UPDATE` y `DELETE`.
+
+### 2. `FOR EACH ROW`:
+Esta cláusula indica que el trigger se ejecutará **una vez por cada fila** que sea afectada por la operación que lo activa (`INSERT`, `UPDATE` o `DELETE`), teniendo acceso a los valores `OLD` y `NEW` específicos de cada fila.
+
+#### Comparación con otros sistemas
+Aunque MySQL solo admite `FOR EACH ROW`, otros sistemas de bases de datos como `PostgreSQL`, `Oracle` y `SQL Server` también admiten `FOR EACH STATEMENT`, que funciona diferente:
+
+- `FOR EACH ROW`: Se ejecuta N veces (una por cada fila afectada).
+- `FOR EACH STATEMENT`: Se ejecuta solo 1 vez por toda la operación, sin importar cuántas filas se vean afectadas.
+
+### 3. Limitaciones:
+
+- No se pueden crear triggers en tablas temporales.
+- Un trigger no puede modificar la tabla que lo activó (previene recursión infinita).
+- No se pueden usar sentencias que generen o modifiquen triggers dentro del trigger.
+- Los triggers `BEFORE` pueden modificar los valores `NEW` antes de la inserción/actualización
+
+## Ejemplos
+
+### Trigger para auditoría:
+```sql
+CREATE TRIGGER auditoria_empleados
+    AFTER UPDATE ON empleados
+    FOR EACH ROW
+BEGIN
+    INSERT INTO log_cambios (tabla, accion, usuario, fecha, valores_anteriores, valores_nuevos)
+    VALUES ('empleados', 'UPDATE', USER(), NOW(), 
+            CONCAT('salario:', OLD.salario), 
+            CONCAT('salario:', NEW.salario));
+END;
+```
+
+### Trigger para validación:
+```sql
+CREATE TRIGGER validar_salario
+    BEFORE INSERT ON empleados
+    FOR EACH ROW
+BEGIN
+    IF NEW.salario < 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El salario no puede ser negativo';
+    END IF;
+END;
+```
+
+### Trigger para cálculos automáticos:
+```sql
+CREATE TRIGGER calcular_total
+    BEFORE INSERT ON facturas
+    FOR EACH ROW
+BEGIN
+    SET NEW.total = NEW.subtotal + (NEW.subtotal * NEW.impuesto / 100);
+END;
+```
+
+## Gestión de triggers
+
+### Listar triggers:
+```sql
+SHOW TRIGGERS;
+SHOW TRIGGERS FROM nombre_base_datos;
+```
+
+### Ver definición específica:
+```sql
+SHOW CREATE TRIGGER nombre_trigger;
+```
+
+### Eliminar trigger:
+```sql
+DROP TRIGGER nombre_trigger;
+```
 
 
 
