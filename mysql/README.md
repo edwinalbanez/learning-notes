@@ -4038,7 +4038,7 @@ Esto nos da seis combinaciones posibles:
 6. `AFTER` - `DELETE`
 
 
-## Sintaxis Básica
+## Sintaxis básica
 ```sql
 CREATE TRIGGER nombre_trigger
     {BEFORE | AFTER} {INSERT | UPDATE | DELETE}
@@ -4098,6 +4098,13 @@ BEGIN
     END IF;
 END;
 ```
+
+`SIGNAL`: Es la instrucción que permite lanzar una excepción de forma manual en MySQL. Es equivalente a un "throw" en otros lenguajes de programación.
+
+`SQLSTATE '45000'`: Es el código de estado SQL que identifica el tipo de error. El código '45000' es un código genérico para errores definidos por el usuario (user-defined exceptions). MySQL reserva este código específicamente para que los desarrolladores puedan crear sus propias excepciones personalizadas.
+
+`SET MESSAGE_TEXT`: Define el mensaje de error que se mostrará al usuario cuando se lance la excepción. En este caso, el mensaje será "El salario no puede ser negativo".
+
 
 ### Trigger para cálculos automáticos:
 ```sql
