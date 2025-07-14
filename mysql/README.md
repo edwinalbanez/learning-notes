@@ -3816,6 +3816,9 @@ END$$
 DELIMITER ;
 ```
 
+>[!IMPORTANT]
+> Las funciones siempre deben retornar un valor. Si intentas crear una función sin especificar `RETURNS` o sin incluir una declaración `RETURN`, MySQL generará un error.
+
 ## Tipos de parámetros
 Las funciones MySQL solo aceptan parámetros de entrada (`IN`), a diferencia de los procedimientos almacenados que pueden tener parámetros `IN`, `OUT` e `INOUT`.
 
@@ -3951,6 +3954,10 @@ END$$
 DELIMITER ;
 ```
 
+>[!IMPORTANT]
+> Definir correctamente las características de las funciones es crucial para que MySQL pueda optimizar su ejecución, manejar la replicación apropiadamente y aplicar las
+> restricciones de seguridad correctas.
+
 ## Gestión de funciones
 
 ### Crear función:
@@ -4004,10 +4011,6 @@ WHERE ROUTINE_TYPE = 'FUNCTION';
 - Parámetros `IN`, `OUT`, `INOUT`.
 - Se ejecutan con `CALL`.
 - Pueden manejar transacciones.
-
->[!IMPORTANT]
-> Definir correctamente las características de las funciones es crucial para que MySQL pueda optimizar su ejecución, manejar la replicación apropiadamente y aplicar las
-> restricciones de seguridad correctas.
 
 ---
 
