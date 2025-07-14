@@ -3817,7 +3817,7 @@ DELIMITER ;
 ```
 
 >[!IMPORTANT]
-> Las funciones siempre deben retornar un valor. Si intentas crear una función sin especificar `RETURNS` o sin incluir una declaración `RETURN`, MySQL generará un error.
+> Las funciones **siempre deben retornar un valor**. Si intentas crear una función sin especificar `RETURNS` o sin incluir una declaración `RETURN`, MySQL generará un error.
 
 ## Tipos de parámetros
 Las funciones MySQL solo aceptan parámetros de entrada (`IN`), a diferencia de los procedimientos almacenados que pueden tener parámetros `IN`, `OUT` e `INOUT`.
