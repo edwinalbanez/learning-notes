@@ -37,6 +37,7 @@
 34. [COALESCE](#34-coalesce)
 35. [Funciones Almacenadas](#35-funciones-almacenadas)
 36. [Triggers](#36-triggers)
+37. [Transacciones](#37-transacciones)
 
 ---
 
@@ -4136,6 +4137,238 @@ SHOW CREATE TRIGGER nombre_trigger;
 ```sql
 DROP TRIGGER nombre_trigger;
 ```
+
+---
+
+# 37. Transacciones
+Las transacciones en MySQL son un mecanismo fundamental para garantizar la integridad y consistencia de los datos.
+
+## ¿Qué es una transacción?
+Una transacción es un conjunto de operaciones de base de datos que se ejecutan como una unidad atómica. Esto significa que todas las operaciones se completan exitosamente o ninguna se ejecuta en absoluto.
+
+## Propiedades ACID
+Las transacciones en MySQL siguen las propiedades `ACID`:
+
+- **Atomicidad (Atomicity)**: Todas las operaciones de la transacción se ejecutan completamente o no se ejecuta ninguna. No hay estados intermedios.
+- **Consistencia (Consistency)**: La transacción lleva la base de datos de un estado válido a otro estado válido, respetando todas las reglas de integridad.
+- **Aislamiento (Isolation)**: Las transacciones concurrentes no interfieren entre sí. Cada transacción se ejecuta como si fuera la única en el sistema.
+- **Durabilidad (Durability)**: Una vez que una transacción se confirma, los cambios persisten permanentemente, incluso ante fallos del sistema.
+
+## Sintaxis básica
+```sql
+-- Iniciar una transacción
+START TRANSACTION;
+-- o también
+BEGIN;
+
+-- Ejecutar operaciones
+INSERT INTO cuentas (id, saldo) VALUES (1, 1000);
+UPDATE cuentas SET saldo = saldo - 100 WHERE id = 1;
+INSERT INTO movimientos (cuenta_id, monto, tipo) VALUES (1, -100, 'retiro');
+
+-- Confirmar la transacción
+COMMIT;
+
+-- O cancelar la transacción
+ROLLBACK;
+```
+
+## Comandos principales
+
+- `START TRANSACTION` o `BEGIN`: Inicia una nueva transacción.
+- `COMMIT`: Confirma todos los cambios realizados en la transacción actual.
+- `ROLLBACK`: Cancela todos los cambios realizados en la transacción actual.
+- `SAVEPOINT`: Crea un punto de guardado dentro de la transacción.
+- `ROLLBACK TO SAVEPOINT`: Deshace cambios hasta un punto específico.
+
+## Ejemplo práctico: transferencia bancaria
+```sql
+START TRANSACTION;
+
+-- Verificar saldo suficiente
+SELECT saldo FROM cuentas WHERE id = 1;
+
+-- Si hay saldo suficiente, continuar
+UPDATE cuentas SET saldo = saldo - 500 WHERE id = 1;
+UPDATE cuentas SET saldo = saldo + 500 WHERE id = 2;
+
+-- Registrar la transferencia
+INSERT INTO transferencias (cuenta_origen, cuenta_destino, monto, fecha) 
+VALUES (1, 2, 500, NOW());
+
+-- Si todo está correcto
+COMMIT;
+
+-- Si hay algún error
+-- ROLLBACK;
+```
+
+## Uso de savepoints
+Los savepoints permiten crear puntos de control dentro de una transacción:
+
+```sql
+START TRANSACTION;
+
+INSERT INTO usuarios (nombre, email) VALUES ('Juan', 'juan@email.com');
+
+SAVEPOINT sp1;
+
+UPDATE usuarios SET email = 'nuevo@email.com' WHERE nombre = 'Juan';
+
+SAVEPOINT sp2;
+
+DELETE FROM usuarios WHERE nombre = 'Juan';
+
+-- Volver al savepoint 2
+ROLLBACK TO SAVEPOINT sp2;
+
+-- Volver al savepoint 1
+ROLLBACK TO SAVEPOINT sp1;
+
+COMMIT;
+```
+
+## Autocommit
+Por defecto, MySQL tiene habilitado el autocommit, lo que significa que cada sentencia SQL se ejecuta automáticamente como una transacción:
+```sql
+-- Verificar estado del autocommit
+SELECT @@autocommit;
+
+-- Deshabilitar autocommit
+SET autocommit = 0;
+
+-- Habilitar autocommit
+SET autocommit = 1;
+```
+
+## Manejo de errores
+```sql
+START TRANSACTION;
+
+-- Usar bloques de manejo de errores
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+BEGIN
+    ROLLBACK;
+    RESIGNAL;
+END;
+
+-- Operaciones que pueden fallar
+UPDATE cuentas SET saldo = saldo - 1000 WHERE id = 1;
+UPDATE cuentas SET saldo = saldo + 1000 WHERE id = 2;
+
+COMMIT;
+```
+
+## Niveles de aislamiento
+MySQL soporta cuatro niveles de aislamiento:
+
+### 1. `READ UNCOMMITTED` (Lectura No Confirmada)
+Es el nivel más permisivo. Las transacciones pueden leer datos que aún no han sido confirmados por otras transacciones. Esto permite:
+
+- **Dirty reads**: Leer datos modificados pero no confirmados.
+- **Non-repeatable reads**: Obtener resultados diferentes en lecturas repetidas.
+- **Phantom reads**: Ver filas nuevas que aparecen entre consultas.
+
+### 2. `READ COMMITTED` (Lectura Confirmada)
+Solo permite leer datos que han sido confirmados por otras transacciones. Evita **dirty reads** pero permite:
+
+- **Non-repeatable reads**: Los datos pueden cambiar entre lecturas dentro de la misma transacción.
+- **Phantom reads**: Pueden aparecer o desaparecer filas entre consultas.
+
+### 3. `REPEATABLE READ` (Lectura Repetible)
+Es el nivel por defecto en MySQL. Garantiza que las lecturas repetidas dentro de una transacción devuelvan los mismos resultados. Evita dirty reads y non-repeatable reads, pero en teoría permite:
+
+- **Phantom reads**: Aunque MySQL InnoDB los previene en la mayoría de casos.
+
+### 4. `SERIALIZABLE` (Serializable)
+El nivel más restrictivo. Las transacciones se ejecutan como si fueran completamente secuenciales. Evita todos los fenómenos de concurrencia pero puede causar más bloqueos y reducir el rendimiento.
+
+## Configuración de aislamiento
+
+### Establecer el nivel de aislamiento
+```sql
+-- Para la sesión actual
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+-- Para todas las nuevas conexiones
+SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+-- Para una transacción específica
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+START TRANSACTION;
+-- ... comandos de la transacción
+COMMIT;
+```
+
+### Verificar el nivel actual
+```sql
+-- Nivel de la sesión
+SELECT @@SESSION.transaction_isolation;
+
+-- Nivel global
+SELECT @@GLOBAL.transaction_isolation;
+```
+
+## Comportamiento práctico
+
+### En `REPEATABLE READ` (por defecto):
+
+- La primera lectura en una transacción establece el punto de vista
+- Las lecturas subsecuentes ven la misma instantánea
+- Los cambios de otras transacciones no son visibles hasta que se confirmen y se inicie una nueva transacción
+
+### Ejemplo de funcionamiento:
+```sql
+-- Transacción A
+START TRANSACTION;
+SELECT balance FROM accounts WHERE id = 1; -- Resultado: 1000
+
+-- Transacción B (en otra conexión)
+START TRANSACTION;
+UPDATE accounts SET balance = 1500 WHERE id = 1;
+COMMIT;
+
+-- Transacción A (continuación)
+SELECT balance FROM accounts WHERE id = 1; -- Sigue siendo: 1000
+COMMIT;
+
+-- Nueva consulta fuera de transacción
+SELECT balance FROM accounts WHERE id = 1; -- Ahora: 1500
+```
+
+>[!IMPORTANT]
+> En MySQL las transacciones se ejecutan en **paralelo (muchas a la vez)**, no en serie (una a la vez).
+
+## Conflictos y resolución
+
+### Cuando las transacciones paralelas entran en conflicto:
+
+Ejemplo de conflicto:
+```sql
+-- Transacción A
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 50 WHERE id = 1;
+
+-- Transacción B (paralela)
+START TRANSACTION;
+UPDATE accounts SET balance = balance + 100 WHERE id = 1;  -- Debe esperar
+```
+
+### Mecanismos de resolución:
+
+1. **Bloqueo temporal**: Una transacción espera a que la otra libere el recurso
+2. **Timeout**: Si la espera es muy larga, se produce un timeout
+3. **Deadlock detection**: MySQL detecta y resuelve automáticamente los deadlocks
+
+>[!NOTE]
+> Los `deadlocks` son situaciones en las que dos o más transacciones se bloquean mutuamente, creando un ciclo de espera donde ninguna puede continuar. Es como un "callejón sin salida" en el mundo de las bases de datos.
+
+
+
+
+
+
+
 
 
 
