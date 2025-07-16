@@ -38,6 +38,7 @@
 35. [Funciones Almacenadas](#35-funciones-almacenadas)
 36. [Triggers](#36-triggers)
 37. [Transacciones](#37-transacciones)
+38. [Creación de usuarios](#38-creación-de-usuarios)
 
 ---
 
@@ -4362,6 +4363,125 @@ UPDATE accounts SET balance = balance + 100 WHERE id = 1;  -- Debe esperar
 
 >[!NOTE]
 > Los `deadlocks` son situaciones en las que dos o más transacciones se bloquean mutuamente, creando un ciclo de espera donde ninguna puede continuar. Es como un "callejón sin salida" en el mundo de las bases de datos.
+
+---
+
+# 38. Creación de usuarios
+
+## Sintaxis básica:
+```sql
+CREATE USER 'nombre_usuario'@'host' IDENTIFIED BY 'contraseña';
+```
+## Componentes de la creación de usuarios
+
+### 1. Nombre de usuario y host
+- **'nombre_usuario'**: El nombre que identificará al usuario
+- **'host'**: Especifica desde dónde puede conectarse el usuario:
+    - `'localhost'`: Solo conexiones locales
+    - `'%'`: Desde cualquier host (menos seguro)
+    - `'192.168.1.%'`: Desde una subred específica
+    - `'ejemplo.com'`: Desde un dominio específico
+
+### 2. Métodos de autenticación
+
+#### Contraseña tradicional:
+```sql
+CREATE USER 'usuario1'@'localhost' IDENTIFIED BY 'mi_contraseña_segura';
+```
+
+#### Plugin de autenticación específico:
+```sql
+CREATE USER 'usuario2'@'localhost' IDENTIFIED WITH mysql_native_password BY 'contraseña';
+```
+
+#### Sin contraseña (no recomendado):
+```sql
+CREATE USER 'usuario3'@'localhost';
+```
+
+## Ejemplos prácticos
+
+### Crear usuario para acceso local solamente
+```sql
+CREATE USER 'admin_local'@'localhost' IDENTIFIED BY 'Admin123!';
+```
+
+### Crear usuario para acceso remoto
+```sql
+CREATE USER 'usuario_remoto'@'%' IDENTIFIED BY 'ContraseñaSegura456!';
+```
+
+### Crear usuario para una IP específica
+```sql
+CREATE USER 'app_user'@'192.168.1.100' IDENTIFIED BY 'AppPassword789!';
+```
+
+## Otorgar permisos después de crear el usuario
+Después de crear un usuario, necesitas otorgarle permisos:
+
+```sql
+-- Permisos completos en una base de datos específica
+GRANT ALL PRIVILEGES ON nombre_bd.* TO 'usuario'@'localhost';
+
+-- Permisos específicos
+GRANT SELECT, INSERT, UPDATE ON nombre_bd.tabla TO 'usuario'@'localhost';
+
+-- Permisos de administrador (cuidado con esto)
+GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
+
+-- Aplicar los cambios
+FLUSH PRIVILEGES;
+```
+
+## Opciones adicionales al crear usuarios
+
+### Expiración de contraseña
+```sql
+CREATE USER 'usuario_temp'@'localhost' 
+IDENTIFIED BY 'contraseña' 
+PASSWORD EXPIRE INTERVAL 90 DAY;
+```
+
+### Bloquear cuenta después de intentos fallidos
+```sql
+CREATE USER 'usuario_seguro'@'localhost' 
+IDENTIFIED BY 'contraseña' 
+FAILED_LOGIN_ATTEMPTS 3 
+PASSWORD_LOCK_TIME 2;
+```
+
+### Requerir SSL
+```sql
+CREATE USER 'usuario_ssl'@'%' 
+IDENTIFIED BY 'contraseña' 
+REQUIRE SSL;
+```
+
+## Verificar usuarios creados
+```sql
+-- Ver todos los usuarios
+SELECT User, Host FROM mysql.user;
+
+-- Ver información detallada de un usuario específico
+SHOW GRANTS FOR 'nombre_usuario'@'host';
+````
+
+## Mejores prácticas de seguridad
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
