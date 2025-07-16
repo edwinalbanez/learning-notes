@@ -4459,17 +4459,32 @@ GRANT ALL PRIVILEGES ON nombre_bd.* TO 'usuario'@'localhost';
 -- Permisos específicos
 GRANT SELECT, INSERT, UPDATE ON nombre_bd.tabla TO 'usuario'@'localhost';
 
--- Permisos de administrador (cuidado con esto)
+-- Permisos a campos específicos
+GRANT SELECT (campo1, campo2) ON nombre_bd.tabla TO 'usuario'@'localhost'
+
+-- Todos los permisos a todas las bases de datos (cuidado con esto)
 GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
+
+-- Permisos para ejecutar funciones
+GRANT EXECUTE ON FUNCTION nombre_funcion TO 'usuario'@'host'
+
+-- Permisos para procedimientos almacenados
+GRANT EXECUTE ON PROCEDURE nombre_procedimiento TO 'usuario'@'host'
 
 -- Aplicar los cambios
 FLUSH PRIVILEGES;
 ```
 
+### Ver permisos de un usuario
+```sql
+SHOW GRANTS FOR 'usuario'@'host';
+```
+
 >[!IMPORTANT]
 > No olvides aplicar los cambios con `FLUSH PRIVILEGES`
 
-## Mejores prácticas de seguridad
+
+### Mejores prácticas de seguridad
 
 1. **Usa contraseñas fuertes**: Mínimo 12 caracteres con mayúsculas, minúsculas, números y símbolos
 2. **Principio de menor privilegio**: Otorga solo los permisos mínimos necesarios
@@ -4477,7 +4492,7 @@ FLUSH PRIVILEGES;
 4. **Nombres descriptivos**: Usa nombres que indiquen el propósito del usuario
 5. **Auditoría regular**: Revisa periódicamente los usuarios existentes
 
-## Ejemplo completo paso a paso
+### Ejemplo completo paso a paso
 ```sql
 -- 1. Crear el usuario
 CREATE USER 'app_ventas'@'192.168.1.%' IDENTIFIED BY 'VentasSecure2024!';
@@ -4502,34 +4517,38 @@ REVOKE privilegios ON base_datos.tabla FROM 'usuario'@'host';
 
 ### Quitar permisos específicos
 ```sql
--- Quitar permiso de SELECT
-REVOKE SELECT ON tienda.productos FROM 'usuario'@'localhost';
+-- Quitar permiso específico
+REVOKE DELETE ON nombre_bd.tabla FROM 'usuario'@'localhost';
+
+-- Quitar todos los permisos de una base de datos
+REVOKE ALL PRIVILEGES ON nombre_bd.* FROM 'usuario'@'localhost';
 
 -- Quitar múltiples permisos específicos
-REVOKE SELECT, INSERT, UPDATE ON tienda.ventas FROM 'usuario'@'localhost';
+REVOKE SELECT, INSERT, UPDATE ON nombre_bd.tabla FROM 'usuario'@'localhost';
 
--- Quitar permiso de DELETE
-REVOKE DELETE ON tienda.* FROM 'usuario'@'localhost';
-```
-
-### Quitar todos los permisos de una base de datos
-```sql
-REVOKE ALL PRIVILEGES ON nombre_bd.* FROM 'usuario'@'localhost';
-```
-
-### Quitar todos los permisos globales
-```sql
+-- Quitar todos los permisos globales
 REVOKE ALL PRIVILEGES ON *.* FROM 'usuario'@'localhost';
+
+--  Quitar permisos de procedimientos almacenados
+REVOKE EXECUTE ON FUNCTION nombre_bd.procedimento FROM 'usuario'@'localhost';
+
+--  Quitar permisos de funciones
+REVOKE EXECUTE ON FUNCTION nombre_bd.funcion FROM 'usuario'@'localhost';
+
+-- Aplicar los cambios
+FLUSH PRIVILEGES;
 ```
 
-### Quitar permisos de `procedimientos almacenados`
+### Ver permisos de un usuario
 ```sql
--- Quitar ejecución de procedimientos
-REVOKE EXECUTE ON tienda.* FROM 'usuario'@'localhost';
-
--- Quitar ejecución de una función específica
-REVOKE EXECUTE ON FUNCTION tienda.calcular_descuento FROM 'usuario'@'localhost';
+SHOW GRANTS FOR 'usuario'@'host';
 ```
+
+>[!IMPORTANT]
+> Después de `quitar` u `otorgar` permisos, es importante aplicar los cambios:
+> ```sql
+> FLUSH PRIVILEGES;
+>```
 
 ### Ejemplo completo paso a paso
 ```sql
@@ -4546,12 +4565,6 @@ FLUSH PRIVILEGES;
 -- 4. Verificar que se quitaron
 SHOW GRANTS FOR 'empleado'@'localhost';
 ```
-
->[!IMPORTANT]
-> Después de `quitar` u `otorgar` permisos, es importante aplicar los cambios:
-> ```sql
-> FLUSH PRIVILEGES;
->```
 
 ## Eliminar usuarios (por si es necesario)
 ```sql
