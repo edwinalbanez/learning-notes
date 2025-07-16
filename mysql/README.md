@@ -4416,23 +4416,6 @@ CREATE USER 'usuario_remoto'@'%' IDENTIFIED BY 'ContraseñaSegura456!';
 CREATE USER 'app_user'@'192.168.1.100' IDENTIFIED BY 'AppPassword789!';
 ```
 
-## Otorgar permisos después de crear el usuario
-Después de crear un usuario, necesitas otorgarle permisos:
-
-```sql
--- Permisos completos en una base de datos específica
-GRANT ALL PRIVILEGES ON nombre_bd.* TO 'usuario'@'localhost';
-
--- Permisos específicos
-GRANT SELECT, INSERT, UPDATE ON nombre_bd.tabla TO 'usuario'@'localhost';
-
--- Permisos de administrador (cuidado con esto)
-GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
-
--- Aplicar los cambios
-FLUSH PRIVILEGES;
-```
-
 ## Opciones adicionales al crear usuarios
 
 ### Expiración de contraseña
@@ -4466,8 +4449,114 @@ SELECT User, Host FROM mysql.user;
 SHOW GRANTS FOR 'nombre_usuario'@'host';
 ````
 
+## Otorgar permisos
+Después de crear un usuario, necesitas otorgarle permisos:
+
+```sql
+-- Permisos completos en una base de datos específica
+GRANT ALL PRIVILEGES ON nombre_bd.* TO 'usuario'@'localhost';
+
+-- Permisos específicos
+GRANT SELECT, INSERT, UPDATE ON nombre_bd.tabla TO 'usuario'@'localhost';
+
+-- Permisos de administrador (cuidado con esto)
+GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
+
+-- Aplicar los cambios
+FLUSH PRIVILEGES;
+```
+
+>[!IMPORTANT]
+> No olvides aplicar los cambios con `FLUSH PRIVILEGES`
+
 ## Mejores prácticas de seguridad
 
+1. **Usa contraseñas fuertes**: Mínimo 12 caracteres con mayúsculas, minúsculas, números y símbolos
+2. **Principio de menor privilegio**: Otorga solo los permisos mínimos necesarios
+3. **Especifica hosts**: Evita usar '%' a menos que sea absolutamente necesario
+4. **Nombres descriptivos**: Usa nombres que indiquen el propósito del usuario
+5. **Auditoría regular**: Revisa periódicamente los usuarios existentes
+
+## Ejemplo completo paso a paso
+```sql
+-- 1. Crear el usuario
+CREATE USER 'app_ventas'@'192.168.1.%' IDENTIFIED BY 'VentasSecure2024!';
+
+-- 2. Otorgar permisos específicos
+GRANT SELECT, INSERT, UPDATE ON tienda.productos TO 'app_ventas'@'192.168.1.%';
+GRANT SELECT, INSERT ON tienda.ventas TO 'app_ventas'@'192.168.1.%';
+
+-- 3. Aplicar cambios
+FLUSH PRIVILEGES;
+
+-- 4. Verificar
+SHOW GRANTS FOR 'app_ventas'@'192.168.1.%';
+```
+
+## Quitar permisos
+
+### Sintaxis básica
+```sql
+REVOKE privilegios ON base_datos.tabla FROM 'usuario'@'host';
+```
+
+### Quitar permisos específicos
+```sql
+-- Quitar permiso de SELECT
+REVOKE SELECT ON tienda.productos FROM 'usuario'@'localhost';
+
+-- Quitar múltiples permisos específicos
+REVOKE SELECT, INSERT, UPDATE ON tienda.ventas FROM 'usuario'@'localhost';
+
+-- Quitar permiso de DELETE
+REVOKE DELETE ON tienda.* FROM 'usuario'@'localhost';
+```
+
+### Quitar todos los permisos de una base de datos
+```sql
+REVOKE ALL PRIVILEGES ON nombre_bd.* FROM 'usuario'@'localhost';
+```
+
+### Quitar todos los permisos globales
+```sql
+REVOKE ALL PRIVILEGES ON *.* FROM 'usuario'@'localhost';
+```
+
+### Quitar permisos de `procedimientos almacenados`
+```sql
+-- Quitar ejecución de procedimientos
+REVOKE EXECUTE ON tienda.* FROM 'usuario'@'localhost';
+
+-- Quitar ejecución de una función específica
+REVOKE EXECUTE ON FUNCTION tienda.calcular_descuento FROM 'usuario'@'localhost';
+```
+
+### Ejemplo completo paso a paso
+```sql
+-- 1. Ver permisos actuales
+SHOW GRANTS FOR 'empleado'@'localhost';
+
+-- 2. Quitar permisos específicos
+REVOKE DELETE ON tienda.productos FROM 'empleado'@'localhost';
+REVOKE DROP ON tienda.* FROM 'empleado'@'localhost';
+
+-- 3. Aplicar cambios
+FLUSH PRIVILEGES;
+
+-- 4. Verificar que se quitaron
+SHOW GRANTS FOR 'empleado'@'localhost';
+```
+
+>[!IMPORTANT]
+> Después de `quitar` u `otorgar` permisos, es importante aplicar los cambios:
+> ```sql
+> FLUSH PRIVILEGES;
+>```
+
+## Eliminar usuarios (por si es necesario)
+```sql
+DROP USER 'nombre_usuario'@'host';
+```
 
 
 
