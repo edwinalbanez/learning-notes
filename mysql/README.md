@@ -4466,10 +4466,10 @@ GRANT SELECT (campo1, campo2) ON nombre_bd.tabla TO 'usuario'@'localhost'
 GRANT ALL PRIVILEGES ON *.* TO 'admin'@'localhost' WITH GRANT OPTION;
 
 -- Permisos para ejecutar funciones
-GRANT EXECUTE ON FUNCTION nombre_funcion TO 'usuario'@'host'
+GRANT EXECUTE ON FUNCTION nombre_bd.funcion TO 'usuario'@'host'
 
 -- Permisos para procedimientos almacenados
-GRANT EXECUTE ON PROCEDURE nombre_procedimiento TO 'usuario'@'host'
+GRANT EXECUTE ON PROCEDURE nombre_bd.procedimiento TO 'usuario'@'host'
 
 -- Aplicar los cambios
 FLUSH PRIVILEGES;
