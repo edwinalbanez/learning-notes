@@ -39,6 +39,7 @@
 36. [Triggers](#36-triggers)
 37. [Transacciones](#37-transacciones)
 38. [Creación de usuarios](#38-creación-de-usuarios)
+39. [Respaldos](#39-respaldos)
 
 ---
 
@@ -4571,29 +4572,107 @@ SHOW GRANTS FOR 'empleado'@'localhost';
 DROP USER 'nombre_usuario'@'host';
 ```
 
+---
 
+# 39. Respaldos
+Los respaldos (backups) en MySQL son fundamentales para proteger la integridad de los datos y garantizar la continuidad del negocio.
 
+## Tipos de respaldos en MySQL
 
+### Respaldos lógicos
+Los respaldos lógicos exportan los datos como **declaraciones SQL** que pueden **recrear la estructura y contenido de la base de datos**.
 
+#### Herramientas principales:
 
+- `mysqldump`: La herramienta más común para respaldos lógicos
+- `mysqlpump`: Versión mejorada con procesamiento paralelo
+- `SELECT INTO OUTFILE`: Para exportar datos específicos
 
+#### Ventajas:
 
+- Portables entre diferentes versiones de MySQL
+- Fáciles de leer y modificar
+- Permiten respaldos selectivos (tablas específicas)
 
+#### Desventajas:
 
+- Más lentos para bases de datos grandes
+- Mayor uso de recursos durante la restauración
 
+### Respaldos físicos
+Los respaldos físicos copian directamente los archivos de datos del sistema de archivos.
 
+#### Herramientas principales:
 
+- MySQL Enterprise Backup (comercial)
+- Percona XtraBackup (gratuito)
+- Copia directa de archivos (con precauciones)
 
+#### Ventajas:
 
+- Más rápidos para bases de datos grandes
+- Menor overhead durante el respaldo
+- Respaldos incrementales disponibles
 
+#### Desventajas:
 
+- Menos portables entre versiones
+- Requieren que el motor de almacenamiento soporte este tipo de respaldo
 
+## Estrategias de respaldo
 
+### Respaldos completos (Full Backups)
+Respaldan toda la base de datos cada vez. Son el punto de partida para cualquier estrategia de respaldo.
 
+### Respaldos incrementales
+Solo respaldan los cambios realizados desde el último respaldo. Requieren menos espacio y tiempo, pero la restauración es más compleja.
 
+### Respaldos diferenciales
+Respaldan todos los cambios desde el último respaldo completo. Balance entre espacio requerido y complejidad de restauración.
 
+## Herramientas detalladas
 
+### mysqldump
+La herramienta más utilizada para respaldos lógicos:
 
+```sql
+# Respaldo completo de todas las bases de datos
+mysqldump --all-databases > backup_completo.sql
 
+# Respaldo de una base de datos específica
+mysqldump nombre_bd > respaldo_bd.sql
+
+# Respaldo con opciones avanzadas
+mysqldump --single-transaction --routines --triggers --all-databases > backup.sql
+```
+
+#### Percona XtraBackup
+Excelente opción gratuita para respaldos físicos:
+
+```sql
+# Respaldo completo
+xtrabackup --backup --target-dir=/backup/full
+
+# Preparar el respaldo para restauración
+xtrabackup --prepare --target-dir=/backup/full
+
+# Respaldo incremental
+xtrabackup --backup --target-dir=/backup/inc1 --incremental-basedir=/backup/full
+```
+
+## Consideraciones de rendimiento
+
+### Durante el respaldo
+
+- Los respaldos lógicos pueden bloquear tablas temporalmente
+- Los respaldos físicos generalmente tienen menor impacto
+- Programar respaldos durante períodos de baja actividad
+- Considerar el uso de réplicas para respaldos
+
+### Almacenamiento
+
+- Comprimir respaldos para ahorrar espacio
+- Considerar la velocidad de los discos donde se almacenan
+- Implementar rotación de respaldos antiguos
 
 
