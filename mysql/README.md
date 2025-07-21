@@ -4646,7 +4646,57 @@ mysqldump nombre_bd > respaldo_bd.sql
 mysqldump --single-transaction --routines --triggers --all-databases > backup.sql
 ```
 
-#### Percona XtraBackup
+### `SELECT INTO OUTFILE `
+Esta es la forma más directa de hacer respaldos con SQL puro:
+
+#### Sintaxis básica
+```sql
+SELECT * FROM tabla 
+INTO OUTFILE '/ruta/del/archivo.txt'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+```
+
+#### `INTO OUTFILE '/ruta/del/archivo.txt'`:
+
+- `INTO OUTFILE`: Directiva que indica que los resultados se exportarán a un archivo
+- `'/ruta/del/archivo.txt'`: Ruta completa donde se guardará el archivo
+- El archivo no debe existir previamente o MySQL dará error
+- El servidor MySQL debe tener permisos de escritura en esa ubicación
+
+#### `ENCLOSED BY '"'`:
+
+- `ENCLOSED BY`: Define el carácter que encerrará cada campo
+- `'"'`: Usa comillas dobles para envolver los valores
+- Útil cuando los datos contienen el separador de campos
+- Ejemplo: si un campo contiene "Pérez, Juan", se guardará como "Pérez, Juan"
+
+#### `LINES TERMINATED BY '\n'`:
+
+-` LINES TERMINATED BY`: Define el terminador de cada fila
+- '`\n'`: Usa salto de línea Unix/Linux
+- En Windows podrías usar '\r\n'
+
+#### Ejemplo práctico
+```sql
+SELECT nombre, apellido, salario FROM empleados 
+WHERE departamento = 'Ventas'
+INTO OUTFILE '/tmp/empleados_ventas.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+```
+
+El archivo resultante sería:
+
+```sql
+"Juan","Pérez","3500.00"
+"María","González","4200.00"
+"Carlos","López","3800.00"
+```
+
+### Percona XtraBackup
 Excelente opción gratuita para respaldos físicos:
 
 ```sql
@@ -4674,5 +4724,6 @@ xtrabackup --backup --target-dir=/backup/inc1 --incremental-basedir=/backup/full
 - Comprimir respaldos para ahorrar espacio
 - Considerar la velocidad de los discos donde se almacenan
 - Implementar rotación de respaldos antiguos
+
 
 
