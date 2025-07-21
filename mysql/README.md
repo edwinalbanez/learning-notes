@@ -4674,11 +4674,12 @@ LINES TERMINATED BY '\n';
 
 #### `LINES TERMINATED BY '\n'`:
 
--` LINES TERMINATED BY`: Define el terminador de cada fila
+- `LINES TERMINATED BY`: Define el terminador de cada fila
 - '`\n'`: Usa salto de línea Unix/Linux
 - En Windows podrías usar '\r\n'
 
 #### Ejemplo práctico
+
 ```sql
 SELECT nombre, apellido, salario FROM empleados 
 WHERE departamento = 'Ventas'
