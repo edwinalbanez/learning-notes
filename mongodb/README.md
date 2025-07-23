@@ -129,19 +129,19 @@ Identificador único de 12 bytes que MongoDB genera automáticamente para el cam
 
 ## Tipos de datos especializados
 
-### Binary Data
+### `Binary Data`
 Para almacenar datos binarios como imágenes o archivos.
 
-### Regular Expression
+### `Regular Expression`
 Expresiones regulares para búsquedas de patrones.
 
-### JavaScript Code
+### `JavaScript Code`
 Código JavaScript que puede ejecutarse en el servidor.
 
-### Null
+### `Null`
 Representa valores nulos o campos sin valor.
 
-### Undefined
+### `Undefined`
 Similar a null, pero indica que el campo no está definido.
 
 >[!IMPORTANT]
