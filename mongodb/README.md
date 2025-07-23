@@ -22,7 +22,7 @@
 
 ## Pasos de instalación
 
-1. Para habilitar el entorno de desarrollo, primero debes [descargar MongoDB](https://www.mongodb.com/try/download/community).
+1. [Descargar MongoDB](https://www.mongodb.com/try/download/community).
 2. Ejecuta el instalador y acepta el acuerdo de la licencia gratuita. > [Next]
 3. Da click en `Complete` para realizar la instalación completa de la base de datos.
 4. Descarca la opción `Install DB as a Service` para evitar que el programa se ejecute permanentemente. > [Next]
@@ -34,7 +34,7 @@
 1. Busca en la barra de tareas `Editar las variables de entorno del sistema`.
 2. Click en `Variables de entorno...`.
 3. Busca la carpeta donde se instalaron las librerias de la base de datos y tambien la ruta de la shell `mongosh` y copia ambas rutas. Las direcciones suelen ser:
-  - Para el servidor: `C:\Program Files\MongoDB\Server\8.0\bin`.
+  - Para el servidor: `C:\Program Files\MongoDB\Server\8.0\bin`
   - Para **mongosh**: `C:\Program Files\MongoDB\mongosh-2.2.5-win32-x64\bin`
 5. En el área de `Variables de usuario`, da doble click en la variable `Path`
 6. Da click en `Nuevo` y pega una de las rutas que copiaste y repite el paso para la otra ruta.
