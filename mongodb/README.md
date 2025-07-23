@@ -72,28 +72,28 @@ Para verificar que la configuración funciona, abre el `Simbolo del sistema` y e
 
 ## Tipos de datos básicos
 
-### String (Cadena)
+### `String (Cadena)`
 Texto codificado en UTF-8. Es el tipo más común para almacenar texto.
 
 ```json
 { "nombre": "Juan Pérez" }
 ```
 
-### Number
+### `Number`
 MongoDB maneja números de diferentes formas:
 
 - **Int32**: Enteros de 32 bits
 - **Int64**: Enteros de 64 bits
 - **Double**: Números de punto flotante de 64 bits (tipo por defecto)
 
-### Boolean
+### `Boolean`
 Valores verdadero o falso.
 
 ```json
 { "activo": true }
 ```
 
-### Date
+### `Date`
 Fechas almacenadas como milisegundos desde la época Unix (1 enero 1970).
 
 ```json
