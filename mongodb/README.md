@@ -10,6 +10,10 @@
    - [Colecciones](#colecciones)
    - [Documentos y propiedades](#documentos-y-propiedades)
    - [Documentos embebidos](#documentos-embebidos)
+3. [Tipos de datos](#3-tipos-de-datos)
+   - [Datos básicos](#tipos-de-datos-básicos)
+   - [Datos complejos](#tipos-de-datos-complejos)
+   - [Datos especializados](#tipos-de-datos-especializados)
 
 
 ---
@@ -63,7 +67,7 @@ Para verificar que la configuración funciona, abre el `Simbolo del sistema` y e
 
 ---
 
-# Tipos de datos
+# 3. Tipos de datos
 
 ## Tipos de datos básicos
 
