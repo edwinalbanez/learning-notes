@@ -10,6 +10,7 @@
    - [Colecciones](#colecciones)
    - [Documentos y propiedades](#documentos-y-propiedades)
    - [Documentos embebidos](#documentos-embebidos)
+     
 3. [Tipos de datos](#3-tipos-de-datos)
    - [Datos básicos](#tipos-de-datos-básicos)
    - [Datos complejos](#tipos-de-datos-complejos)
@@ -22,7 +23,7 @@
 
 ## Pasos de instalación
 
-1. [Descargar MongoDB](https://www.mongodb.com/try/download/community).
+1. [Descargar MongoDB Community Server](https://www.mongodb.com/try/download/community).
 2. Ejecuta el instalador y acepta el acuerdo de la licencia gratuita. > [Next]
 3. Da click en `Complete` para realizar la instalación completa de la base de datos.
 4. Descarca la opción `Install DB as a Service` para evitar que el programa se ejecute permanentemente. > [Next]
