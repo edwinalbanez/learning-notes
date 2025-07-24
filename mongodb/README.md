@@ -44,7 +44,7 @@
    - Para el servidor: `C:\Program Files\MongoDB\Server\8.0\bin`
    - Para **mongosh**: `C:\Program Files\MongoDB\mongosh-2.2.5-win32-x64\bin`
 4. En el área de `Variables de usuario`, da doble click en la variable `Path`
-5. Da click en `Nuevo` y pega una de las rutas que copiaste y repite el paso para la otra ruta.
+5. Da click en `Nuevo`, pega una de las rutas que copiaste y repite el paso para la otra ruta.
 6. Ahora, haz click en `Aceptar` en todas las ventanas emergentes.
 7. En la raiz `C:\` crea una carpeta llamada `data` y dentro crea otra llamada `db`.
 
