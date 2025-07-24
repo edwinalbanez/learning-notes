@@ -32,7 +32,7 @@
 1. Descargar [MongoDB Community Server](https://www.mongodb.com/try/download/community).
 2. Ejecuta el instalador y acepta el acuerdo de la licencia gratuita. > [Next]
 3. Da click en `Complete` para realizar la instalación completa de la base de datos.
-4. Descarca la opción `Install DB as a Service` para evitar que el programa se ejecute permanentemente. > [Next]
+4. Desmarca la opción `Install DB as a Service` para evitar que el programa se ejecute permanentemente. > [Next]
 5. Verifica que la opción `Install DB Compass` este marcada. > [Next]
 6. Click en `Install`.
 
