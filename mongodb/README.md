@@ -41,8 +41,8 @@
 1. Busca en la barra de tareas `Editar las variables de entorno del sistema`.
 2. Click en `Variables de entorno...`.
 3. Busca la carpeta donde se instalaron las librerias de la base de datos y tambien la ruta de la shell `mongosh` y copia ambas rutas. Las direcciones suelen ser:
-  - Para el servidor: `C:\Program Files\MongoDB\Server\8.0\bin`
-  - Para **mongosh**: `C:\Program Files\MongoDB\mongosh-2.2.5-win32-x64\bin`
+   - Para el servidor: `C:\Program Files\MongoDB\Server\8.0\bin`
+   - Para **mongosh**: `C:\Program Files\MongoDB\mongosh-2.2.5-win32-x64\bin`
 4. En el área de `Variables de usuario`, da doble click en la variable `Path`
 5. Da click en `Nuevo` y pega una de las rutas que copiaste y repite el paso para la otra ruta.
 6. Ahora, haz click en `Aceptar` en todas las ventanas emergentes.
