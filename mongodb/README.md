@@ -406,9 +406,43 @@ Usa `referenciado` cuando:
 }
 ```
 
+---
 
+# JSON y BSON
+MongoDB utiliza BSON (Binary JSON) como su formato de almacenamiento interno, aunque interactúas con los datos a través de JSON. Esta diferencia fundamental tiene implicaciones importantes para entender cómo funciona MongoDB.
 
+## ¿Qué es JSON?
+JSON (JavaScript Object Notation) es un formato de intercambio de datos basado en texto plano que representa objetos JavaScript. Es legible por humanos y ampliamente utilizado en aplicaciones web. Un documento JSON típico se ve así:
 
+```json
+{
+  "nombre": "Juan",
+  "edad": 30,
+  "activo": true,
+  "hobbies": ["lectura", "deportes"]
+}
+```
+
+## ¿Qué es BSON?
+BSON (Binary JSON) es una representación binaria de documentos similares a JSON, desarrollada específicamente para MongoDB. Aunque conceptualmente similar a JSON, BSON tiene características adicionales que lo hacen más eficiente para el almacenamiento y procesamiento de bases de datos.
+
+## Diferencias Clave
+
+**Formato de almacenamiento**: JSON es texto plano, mientras que BSON es un formato binario. Esto significa que BSON no es legible directamente por humanos, pero es más eficiente para que las máquinas lo procesen.
+
+**Tipos de datos**: JSON tiene un conjunto limitado de tipos: string, number, boolean, array, object y null. BSON extiende estos tipos significativamente, incluyendo:
+
+- ObjectId (identificadores únicos de MongoDB)
+- Date (fechas con precisión de milisegundos)
+- BinData (datos binarios)
+- NumberInt y NumberLong (enteros de 32 y 64 bits)
+- Decimal128 (números decimales de alta precisión)
+- Regular expressions
+- JavaScript code
+
+**Tamaño**: BSON generalmente ocupa más espacio que JSON porque incluye información adicional sobre los tipos de datos y metadatos para facilitar el procesamiento. Sin embargo, esta sobrecarga se compensa con la eficiencia en las operaciones.
+
+**Velocidad de Procesamiento**: BSON está optimizado para ser rápido de recorrer y modificar. Los documentos BSON incluyen información de longitud que permite saltar campos sin parsear todo el contenido, lo cual es crucial para las consultas eficientes en bases de datos.
 
 
 
