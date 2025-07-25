@@ -21,6 +21,10 @@
    - [Uno a muchos](#one-to-many-1n)
    - [Muchos a muchos](#many-to-many-nm)
 
+5. [JSON y BSON](#5-json-y-bson)
+   - [¿Qué es JSON?](#qué-es-json)
+   - [¿Qué es BSON?](#qué-es-bson)
+   - [Diferencias clave](#diferencias-clave)
 
 
 ---
@@ -408,7 +412,7 @@ Usa `referenciado` cuando:
 
 ---
 
-# JSON y BSON
+# 5. JSON y BSON
 MongoDB utiliza BSON (Binary JSON) como su formato de almacenamiento interno, aunque interactúas con los datos a través de JSON. Esta diferencia fundamental tiene implicaciones importantes para entender cómo funciona MongoDB.
 
 ## ¿Qué es JSON?
@@ -426,7 +430,7 @@ JSON (JavaScript Object Notation) es un formato de intercambio de datos basado e
 ## ¿Qué es BSON?
 BSON (Binary JSON) es una representación binaria de documentos similares a JSON, desarrollada específicamente para MongoDB. Aunque conceptualmente similar a JSON, BSON tiene características adicionales que lo hacen más eficiente para el almacenamiento y procesamiento de bases de datos.
 
-## Diferencias Clave
+## Diferencias clave
 
 **Formato de almacenamiento**: JSON es texto plano, mientras que BSON es un formato binario. Esto significa que BSON no es legible directamente por humanos, pero es más eficiente para que las máquinas lo procesen.
 
