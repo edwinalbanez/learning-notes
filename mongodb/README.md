@@ -26,6 +26,8 @@
    - [¿Qué es BSON?](#qué-es-bson)
    - [Diferencias clave](#diferencias-clave)
 
+6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
+
 
 ---
 
@@ -448,8 +450,41 @@ BSON (Binary JSON) es una representación binaria de documentos similares a JSON
 
 **Velocidad de Procesamiento**: BSON está optimizado para ser rápido de recorrer y modificar. Los documentos BSON incluyen información de longitud que permite saltar campos sin parsear todo el contenido, lo cual es crucial para las consultas eficientes en bases de datos.
 
+---
 
+# 6. Creación de bases de datos
 
+Abre una consola (Simbolo del sistema) y realiza estos pasos:
+
+### Iniciar el servicio de MongoDB
+```bash
+mongod
+```
+
+### Conectarse al servicio
+Abre una nueva consola y ejecuta:
+
+```bash
+mongosh
+```
+
+### Crear/seleccionar una base de datos
+```bash
+use mydatabase
+```
+
+### Verificar la base de datos actual:
+```bash
+db
+```
+
+### Mostrar la lista de bases de datos
+```bash
+show dbs
+```
+
+>[!IMPORTANT]
+> La base de datos que acabas de crear no aparecerá en la lista hasta que contenga al menos un documento.
 
 
 
