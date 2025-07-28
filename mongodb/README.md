@@ -27,6 +27,12 @@
    - [Diferencias clave](#diferencias-clave)
 
 6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
+   
+7. [Operaciones con documentos](#7-operaciones-con-documentos)
+   - [Inserción](#insertar-documentos)
+   - [Actualización](#actualizar-documentos)
+     - [Operadores de actualización](#operadores-de-actualización-más-comunes)
+   - [Eliminación](#eliminar-documentos)
 
 
 ---
@@ -485,6 +491,89 @@ show dbs
 
 >[!IMPORTANT]
 > La base de datos que acabas de crear no aparecerá en la lista hasta que contenga al menos un documento.
+
+---
+
+# 7. Operaciones con documentos
+
+## Insertar documentos
+Inserta solo un documento:
+
+```javascript
+db.usuarios.insertOne({
+    nombre: "Juan",
+    edad: 30,
+    email: "juan@email.com",
+    activo: true
+})
+```
+
+Insertar múltiples documentos:
+```javascript
+db.usuarios.insertMany([
+    {nombre: "María", edad: 25, email: "maria@email.com"},
+    {nombre: "Pedro", edad: 35, email: "pedro@email.com"},
+    {nombre: "Ana", edad: 28, email: "ana@email.com"}
+])
+```
+
+Si la colección no existe se crea automáticamente al insertar un documento. También es posible crear una coleccón explícitamente:
+```javascript
+db.createCollection("usuarios")
+```
+
+## Actualizar documentos
+
+Actualizar un documento (**el primero que coincida**):
+
+```javascript
+db.usuarios.updateOne(
+    {nombre: "Juan"},  // filtro
+    {$set: {edad: 31, ciudad: "Madrid"}}  // actualización
+)
+```
+
+Actualizar múltiples documentos:
+```javascript
+db.usuarios.updateMany(
+    {edad: {$gte: 30}},  // filtro: edad mayor o igual a 30
+    {$set: {categoria: "senior"}}
+)
+```
+
+Reemplazar un documento completo:
+```javascript
+db.usuarios.replaceOne(
+    {nombre: "Juan"},
+    {nombre: "Juan Carlos", edad: 32, email: "juancarlos@email.com", activo: true}
+)
+```
+
+### Operadores de actualización más comunes:
+- `$set`: Establece el valor de un campo
+- `$unset`: Elimina un campo
+- `$inc`: Incrementa un valor numérico
+- `$push`: Añade un elemento a un array
+- `$pull`: Elimina elementos de un array
+
+## Eliminar documentos
+
+Eliminar solo un documento:
+```javascript
+db.usuarios.deleteOne({nombre: "Pedro"})
+```
+
+Eliminar múltiples documentos:
+```javascript
+db.usuarios.deleteMany({edad: {$lt: 25}})  // Elimina usuarios menores de 25 años
+```
+
+Eliminar todos los documentos de una colección:
+```javsacript
+db.usuarios.deleteMany({})
+```
+
+
 
 
 
