@@ -549,12 +549,115 @@ db.usuarios.replaceOne(
 )
 ```
 
-### Operadores de actualización más comunes:
-- `$set`: Establece el valor de un campo
-- `$unset`: Elimina un campo
-- `$inc`: Incrementa un valor numérico
-- `$push`: Añade un elemento a un array
-- `$pull`: Elimina elementos de un array
+## Operadores de actualización más comunes:
+
+### Operadores de campo
+
+`$set`: Establece el valor de un campo
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $set: { nombre: "Juan", edad: 30 } }
+)
+```
+
+`$unset`: Elimina un campo del documento
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $unset: { telefono: "" } }
+)
+```
+
+`$rename`: Renombra un campo
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $rename: { "nombre_completo": "nombre" } }
+)
+```
+
+`$inc`: Incrementa un valor numérico
+```javascript
+db.productos.updateOne(
+  { _id: ObjectId("...") },
+  { $inc: { precio: 10, stock: -1 } }
+)
+```
+
+`$mul`: Multiplica un valor numérico
+```javascript
+db.productos.updateOne(
+  { _id: ObjectId("...") },
+  { $mul: { precio: 1.1 } } // Aumenta precio 10%
+)
+```
+
+`$min` y `$max`: Actualiza solo si el nuevo valor es menor/mayor
+```javascript
+db.productos.updateOne(
+  { _id: ObjectId("...") },
+  { $min: { precio: 100 } } // Solo actualiza si 100 es menor al precio actual
+)
+```
+
+`$currentDate`: Establece la fecha/hora actual
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $currentDate: { 
+    ultimaModificacion: true,
+    timestamp: { $type: "timestamp" }
+  }}
+)
+```
+
+### Operadores de array
+
+`$push`: Añade elementos al final de un array
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $push: { hobbies: "natación" } }
+)
+
+// Con múltiples elementos
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $push: { hobbies: { $each: ["natación", "lectura"] } } }
+)
+```
+
+`$pop`: Elimina el primer (-1) o último (1) elemento
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $pop: { hobbies: 1 } } // Elimina el último
+)
+````
+
+`$pull`: Elimina elementos que coincidan con una condición
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $pull: { hobbies: "fútbol" } }
+)
+
+// Con condición compleja
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $pull: { calificaciones: { $lt: 5 } } }
+)
+```
+
+`$pullAll`: Elimina múltiples valores específicos
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $pullAll: { hobbies: ["fútbol", "tenis"] } }
+)
+```
+
 
 ## Eliminar documentos
 
