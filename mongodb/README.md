@@ -658,6 +658,165 @@ db.usuarios.updateOne(
 )
 ```
 
+`$addToSet`: Añade elementos únicos (evita duplicados)
+```javascript
+db.usuarios.updateOne(
+  { _id: ObjectId("...") },
+  { $addToSet: { hobbies: "natación" } }
+)
+```
+
+Operador `$` (Operador Posicional Simple)
+El operador `$` identifica y actualiza `el primer elemento` del array que coincide con la condición de la consulta.
+
+**Sintaxis:**
+```javascript
+db.coleccion.updateOne(
+  { "array.campo": valor }, // Condición que identifica el elemento
+  { $set: { "array.$.campo": nuevoValor } } // $ representa la posición encontrada
+)
+```
+
+**Ejemplo:**
+```javascript
+// Documento de ejemplo
+{
+  _id: 1,
+  estudiantes: [
+    { nombre: "Ana", nota: 8 },
+    { nombre: "Luis", nota: 6 },
+    { nombre: "María", nota: 9 }
+  ]
+}
+
+// Actualizar la nota de Luis
+db.clase.updateOne(
+  { "estudiantes.nombre": "Luis" }, // Encuentra el elemento donde nombre = "Luis"
+  { $set: { "estudiantes.$.nota": 7 } } // $ representa la posición de Luis
+)
+
+// Resultado:
+{
+  _id: 1,
+  estudiantes: [
+    { nombre: "Ana", nota: 8 },
+    { nombre: "Luis", nota: 7 }, // ✅ Actualizado
+    { nombre: "María", nota: 9 }
+  ]
+}
+```
+
+Limitaciones del operador `$`:
+
+- Solo actualiza **el primer elemento** que coincide
+- Requiere que la condición de consulta incluya el campo del array
+- No puede usarse con arrays anidados profundamente
+
+
+Operador `$[]` (Operador Posicional All)
+El operador `$[]` actualiza todos los elementos del array, sin importar su contenido.
+
+**Sintaxis:**
+```javascript
+db.coleccion.updateOne(
+  { _id: valor }, // Condición del documento
+  { $set: { "array.$[].campo": nuevoValor } } // $[] afecta todos los elementos
+)
+```
+
+**Ejemplo:**
+```javascript
+// Documento de ejemplo
+{
+  _id: 1,
+  estudiantes: [
+    { nombre: "Ana", nota: 8, aprobado: false },
+    { nombre: "Luis", nota: 6, aprobado: false },
+    { nombre: "María", nota: 9, aprobado: false }
+  ]
+}
+
+// Marcar todos como aprobados
+db.clase.updateOne(
+  { _id: 1 },
+  { $set: { "estudiantes.$[].aprobado": true } }
+)
+
+// Resultado:
+{
+  _id: 1,
+  estudiantes: [
+    { nombre: "Ana", nota: 8, aprobado: true },    // ✅ Actualizado
+    { nombre: "Luis", nota: 6, aprobado: true },   // ✅ Actualizado
+    { nombre: "María", nota: 9, aprobado: true }   // ✅ Actualizado
+  ]
+}
+```
+
+**Casos de uso:**
+```javascript
+// Incrementar todas las notas en 1 punto
+db.clase.updateOne(
+  { _id: 1 },
+  { $inc: { "estudiantes.$[].nota": 1 } }
+)
+
+// Añadir un campo a todos los elementos
+db.clase.updateOne(
+  { _id: 1 },
+  { $set: { "estudiantes.$[].fecha_evaluacion": new Date() } }
+)
+```
+
+Operador `$[identifier]` (Operador Posicional Filtrado)
+El operador `$[identifier]` actualiza **elementos específicos** que cumplen una condición definida en `arrayFilters`.
+
+**Sintaxis:**
+```javascript
+db.coleccion.updateOne(
+  { _id: valor }, // Condición del documento
+  { $set: { "array.$[identificador].campo": nuevoValor } },
+  { arrayFilters: [{ "identificador.condicion": valor }] } // Define qué elementos actualizar
+)
+```
+
+**Ejemplo:**
+```javascript
+// Documento de ejemplo
+{
+  _id: 1,
+  estudiantes: [
+    { nombre: "Ana", nota: 8, aprobado: false },
+    { nombre: "Luis", nota: 4, aprobado: false },
+    { nombre: "María", nota: 9, aprobado: false },
+    { nombre: "Pedro", nota: 3, aprobado: false }
+  ]
+}
+
+// Marcar como aprobados solo a quienes tienen nota >= 6
+db.clase.updateOne(
+  { _id: 1 },
+  { $set: { "estudiantes.$[elem].aprobado": true } },
+  { arrayFilters: [{ "elem.nota": { $gte: 6 } }] }
+)
+
+// Resultado:
+{
+  _id: 1,
+  estudiantes: [
+    { nombre: "Ana", nota: 8, aprobado: true },    // ✅ Actualizado (nota >= 6)
+    { nombre: "Luis", nota: 4, aprobado: false },  // ❌ No actualizado
+    { nombre: "María", nota: 9, aprobado: true },  // ✅ Actualizado (nota >= 6)
+    { nombre: "Pedro", nota: 3, aprobado: false }  // ❌ No actualizado
+  ]
+}
+```
+
+
+
+
+
+
 
 ## Eliminar documentos
 
