@@ -553,7 +553,7 @@ db.usuarios.replaceOne(
 
 ### Operadores de campo
 
-`$set`: Establece el valor de un campo
+#### `$set` - Establece el valor de un campo
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -561,7 +561,7 @@ db.usuarios.updateOne(
 )
 ```
 
-`$unset`: Elimina un campo del documento
+#### `$unset` - Elimina un campo del documento
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -569,7 +569,7 @@ db.usuarios.updateOne(
 )
 ```
 
-`$rename`: Renombra un campo
+#### `$rename` - Renombra un campo
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -577,7 +577,7 @@ db.usuarios.updateOne(
 )
 ```
 
-`$inc`: Incrementa un valor numérico
+#### `$inc` - Incrementa un valor numérico
 ```javascript
 db.productos.updateOne(
   { _id: ObjectId("...") },
@@ -585,7 +585,7 @@ db.productos.updateOne(
 )
 ```
 
-`$mul`: Multiplica un valor numérico
+#### `$mul` - Multiplica un valor numérico
 ```javascript
 db.productos.updateOne(
   { _id: ObjectId("...") },
@@ -593,7 +593,7 @@ db.productos.updateOne(
 )
 ```
 
-`$min` y `$max`: Actualiza solo si el nuevo valor es menor/mayor
+#### `$min` y `$max` - Actualiza solo si el nuevo valor es menor/mayor
 ```javascript
 db.productos.updateOne(
   { _id: ObjectId("...") },
@@ -601,7 +601,7 @@ db.productos.updateOne(
 )
 ```
 
-`$currentDate`: Establece la fecha/hora actual
+### `$currentDate` - Establece la fecha/hora actual
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -614,7 +614,7 @@ db.usuarios.updateOne(
 
 ### Operadores de array
 
-`$push`: Añade elementos al final de un array
+#### `$push` - Añade elementos al final de un array
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -628,7 +628,7 @@ db.usuarios.updateOne(
 )
 ```
 
-`$pop`: Elimina el primer (-1) o último (1) elemento
+#### `$pop` - Elimina el primer (-1) o último (1) elemento
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -636,7 +636,7 @@ db.usuarios.updateOne(
 )
 ````
 
-`$pull`: Elimina elementos que coincidan con una condición
+#### `$pull` - Elimina elementos que coincidan con una condición
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -650,7 +650,7 @@ db.usuarios.updateOne(
 )
 ```
 
-`$pullAll`: Elimina múltiples valores específicos
+#### `$pullAll` - Elimina múltiples valores específicos
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -658,7 +658,7 @@ db.usuarios.updateOne(
 )
 ```
 
-`$addToSet`: Añade elementos únicos (evita duplicados)
+#### `$addToSet` - Añade elementos únicos (evita duplicados)
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -666,7 +666,7 @@ db.usuarios.updateOne(
 )
 ```
 
-Operador `$` (Operador Posicional Simple)
+#### `$` (Operador Posicional Simple)
 El operador `$` identifica y actualiza `el primer elemento` del array que coincide con la condición de la consulta.
 
 **Sintaxis:**
@@ -712,8 +712,9 @@ Limitaciones del operador `$`:
 - Requiere que la condición de consulta incluya el campo del array
 - No puede usarse con arrays anidados profundamente
 
+---
 
-Operador `$[]` (Operador Posicional All)
+#### `$[]` (Operador Posicional All)
 El operador `$[]` actualiza todos los elementos del array, sin importar su contenido.
 
 **Sintaxis:**
@@ -768,7 +769,9 @@ db.clase.updateOne(
 )
 ```
 
-Operador `$[identifier]` (Operador Posicional Filtrado)
+---
+
+#### `$[identifier]` (Operador Posicional Filtrado)
 El operador `$[identifier]` actualiza **elementos específicos** que cumplen una condición definida en `arrayFilters`.
 
 **Sintaxis:**
