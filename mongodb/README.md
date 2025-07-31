@@ -601,7 +601,7 @@ db.productos.updateOne(
 )
 ```
 
-### `$currentDate` - Establece la fecha/hora actual
+#### `$currentDate` - Establece la fecha/hora actual
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
