@@ -30,6 +30,7 @@
    
 7. [Operaciones con documentos](#7-operaciones-con-documentos)
    - [Inserción](#insertar-documentos)
+   - [Búsqueda](#buscar-documentos)
    - [Actualización](#actualizar-documentos)
      - [Operadores de actualización](#operadores-de-actualización-más-comunes)
    - [Eliminación](#eliminar-documentos)
@@ -494,9 +495,8 @@ show dbs
 
 ---
 
-# 7. Operaciones con documentos
+# 7. Insertar documentos
 
-## Insertar documentos
 Inserta solo un documento:
 
 ```javascript
@@ -521,6 +521,226 @@ Si la colección no existe se crea automáticamente al insertar un documento. Ta
 ```javascript
 db.createCollection("usuarios")
 ```
+
+# 8. Buscar documentos
+
+## `find()`
+El método `find` es la operación fundamental para buscar documentos en MongoDB. Su sintaxis básica es:
+
+```javascript
+db.collection.find(query, projection)
+```
+
+## Búsquedas básicas
+
+### Buscar todos los documentos:
+```javascript
+db.usuarios.find()
+```
+
+### Buscar con condiciones específicas:
+```javascript
+// Buscar usuarios con edad igual a 25
+db.usuarios.find({edad: 25})
+
+// Buscar usuarios con nombre "Juan"
+db.usuarios.find({nombre: "Juan"})
+```
+
+## Operadores de comparación
+MongoDB ofrece varios operadores para realizar comparaciones más complejas:
+
+```javascript
+// Mayor que ($gt)
+db.usuarios.find({edad: {$gt: 18}})
+
+// Mayor o igual que ($gte)
+db.usuarios.find({edad: {$gte: 18}})
+
+// Menor que ($lt)
+db.usuarios.find({edad: {$lt: 65}})
+
+// Menor o igual que ($lte)
+db.usuarios.find({edad: {$lte: 65}})
+
+// No igual ($ne)
+db.usuarios.find({estado: {$ne: "inactivo"}})
+
+// Valores dentro de un array ($in)
+db.usuarios.find({ciudad: {$in: ["Madrid", "Barcelona", "Valencia"]}})
+
+// Valores que NO están en un array ($nin)
+db.usuarios.find({ciudad: {$nin: ["Madrid", "Barcelona"]}})
+```
+
+## Operadores lógicos
+
+### `AND` implícito (múltiples condiciones):
+```javascript
+db.usuarios.find({edad: {$gte: 18}, ciudad: "Madrid"})
+```
+
+### `OR` explícito:
+```javascript
+db.usuarios.find({
+  $or: [
+    {edad: {$lt: 18}},
+    {edad: {$gt: 65}}
+  ]
+})
+```
+
+### `AND` explícito:
+```javascript
+db.usuarios.find({
+  $and: [
+    {edad: {$gte: 18}},
+    {ciudad: "Madrid"}
+  ]
+})
+```
+
+### `NOT`:
+```javascript
+db.usuarios.find({
+  edad: {$not: {$gt: 25}}
+})
+```
+
+## Búsquedas en arrays
+```javascript
+// Buscar documentos que contengan un valor específico en un array
+db.usuarios.find({hobbies: "lectura"})
+
+// Buscar documentos que contengan TODOS los valores especificados
+db.usuarios.find({hobbies: {$all: ["lectura", "música"]}})
+
+// Buscar por el tamaño del array
+db.usuarios.find({hobbies: {$size: 3}})
+
+// Buscar elementos en posiciones específicas del array
+db.usuarios.find({"hobbies.0": "lectura"})
+```
+
+## Búsquedas en documentos anidados
+```javascript
+// Buscar en un campo anidado
+db.usuarios.find({"direccion.ciudad": "Madrid"})
+
+// Buscar documento completo anidado
+db.usuarios.find({
+  direccion: {
+    calle: "Gran Vía 1",
+    ciudad: "Madrid",
+    codigo_postal: "28013"
+  }
+})
+```
+
+## Búsquedas con expresiones regulares
+```javascript
+// Buscar nombres que empiecen con "Juan"
+db.usuarios.find({nombre: /^Juan/})
+
+// Buscar nombres que contengan "ana" (insensible a mayúsculas)
+db.usuarios.find({nombre: /ana/i})
+
+// Usando el operador $regex
+db.usuarios.find({
+  nombre: {
+    $regex: "^Juan",
+    $options: "i"
+  }
+})
+```
+
+## Proyección de campos
+La proyección te permite especificar qué campos incluir o excluir en los resultados:
+
+```javascript
+// Incluir solo nombre y edad
+db.usuarios.find({}, {nombre: 1, edad: 1})
+
+// Excluir el campo _id
+db.usuarios.find({}, {nombre: 1, edad: 1, _id: 0})
+
+// Excluir campos específicos
+db.usuarios.find({}, {password: 0, datos_privados: 0})
+```
+
+## Limitación y ordenamiento
+```javascript
+// Limitar resultados
+db.usuarios.find().limit(10)
+
+// Ordenar (1 = ascendente, -1 = descendente)
+db.usuarios.find().sort({edad: 1, nombre: -1})
+
+// Saltar documentos (paginación)
+db.usuarios.find().skip(20).limit(10)
+
+// Combinar todo
+db.usuarios.find({edad: {$gte: 18}})
+  .sort({nombre: 1})
+  .skip(10)
+  .limit(5)
+```
+
+## Métodos relacionados
+
+### `findOne()` - Buscar un solo documento:
+```javascript
+db.usuarios.findOne({email: "juan@ejemplo.com"})
+```
+
+### `count()` - Contar documentos:
+```javascript
+db.usuarios.find({edad: {$gte: 18}}).count()
+// O usando countDocuments() (recomendado)
+db.usuarios.countDocuments({edad: {$gte: 18}})
+```
+
+### `distinct()` - Valores únicos:
+```javascript
+db.usuarios.distinct("ciudad")
+```
+
+## Operadores avanzados
+
+### Verificar existencia de campos:
+```javascript
+// Documentos que tienen el campo "telefono"
+db.usuarios.find({telefono: {$exists: true}})
+
+// Documentos que NO tienen el campo "telefono"
+db.usuarios.find({telefono: {$exists: false}})
+```
+
+### Verificar tipo de datos:
+```javascript
+// Buscar donde edad es un número
+db.usuarios.find({edad: {$type: "number"}})
+
+// Buscar donde fecha es un objeto Date
+db.usuarios.find({fecha_registro: {$type: "date"}})
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
 
 ## Actualizar documentos
 
