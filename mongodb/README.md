@@ -815,11 +815,77 @@ db.clase.updateOne(
 }
 ```
 
+#### Otros ejemplos con `$[identifier]`
+
+Múltiples condiciones en arrayFilters:
+```javascript
+// Actualizar estudiantes con nota entre 6 y 8
+db.clase.updateOne(
+  { _id: 1 },
+  { $set: { "estudiantes.$[elem].categoria": "regular" } },
+  { arrayFilters: [{ 
+    "elem.nota": { $gte: 6, $lte: 8 }
+  }] }
+)
+```
+
+>[!IMPORTANT]
+> Cuando aplicas múltiples operadores en **el mismo campo**, se comportan como `AND`.
 
 
+Múltiples `arrayFilters`:
+```javascript
+// Actualizar con diferentes condiciones
+db.clase.updateOne(
+  { _id: 1 },
+  { 
+    $set: { 
+      "estudiantes.$[aprobados].estado": "aprobado",
+      "estudiantes.$[reprobados].estado": "reprobado"
+    }
+  },
+  { 
+    arrayFilters: [
+      { "aprobados.nota": { $gte: 6 } },
+      { "reprobados.nota": { $lt: 6 } }
+    ]
+  }
+)
+```
 
+>[!NOTE]
+> cada objeto en `arrayFilters` es un filtro independiente que puede usarse con diferentes **identificadores**.
 
+---
 
+Con arrays anidados:
+```javascript
+// Documento con arrays anidados
+{
+  _id: 1,
+  cursos: [
+    {
+      nombre: "Matemáticas",
+      tareas: [
+        { titulo: "Tarea 1", puntos: 8 },
+        { titulo: "Tarea 2", puntos: 6 }
+      ]
+    }
+  ]
+}
+
+// Actualizar tareas específicas
+db.estudiantes.updateOne(
+  { _id: 1 },
+  { $set: { "cursos.$[].tareas.$[tarea].revisada": true } },
+  { arrayFilters: [{ "tarea.puntos": { $gte: 7 } }] }
+)
+```
+
+> [!IMPORTANT]
+> Cuando un filtro en `arrayFilters` tiene múltiples propiedades, **todas deben usar el mismo identificador** porque se refieren al mismo elemento del array.
+
+---
 
 ## Eliminar documentos
 
