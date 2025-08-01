@@ -41,10 +41,11 @@
    - [Métodos relacionados](#métodos-relacionados)
    - [Operadores avanzados](#operadores-avanzados)
      
-10. [Actualizar documentos](#9-actualizar-documentos)
+9. [Actualizar documentos](#9-actualizar-documentos)
    - [Operadores de campo](#operadores-de-campo)
    - [Operadores de array](#operadores-de-array)
-11. [Eliminar documentos](#10-eliminar-documentos)
+     
+10. [Eliminar documentos](#10-eliminar-documentos)
 
 
 ---
