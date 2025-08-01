@@ -28,12 +28,12 @@
 
 6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
    
-7. [Operaciones con documentos](#7-operaciones-con-documentos)
-   - [Inserción](#insertar-documentos)
-   - [Búsqueda](#buscar-documentos)
-   - [Actualización](#actualizar-documentos)
-     - [Operadores de actualización](#operadores-de-actualización-más-comunes)
-   - [Eliminación](#eliminar-documentos)
+7. [Insertar documentos](url)
+8. [Búscar documentos](url)
+9. [Actualizar documentos](#9-actualizar-documentos)
+   - [Operadores de campo](#operadores-de-campo)
+   - [Operadores de array](#operadores-de-array)
+11. [Eliminar documentos](#10-eliminar-documentos)
 
 
 ---
@@ -725,24 +725,48 @@ db.usuarios.find({edad: {$type: "number"}})
 db.usuarios.find({fecha_registro: {$type: "date"}})
 ```
 
+## Agregación básica con `find()`
+```javacript
+// Usar $where para lógica JavaScript personalizada (usar con cuidado)
+db.usuarios.find({
+  $where: "this.edad > this.años_experiencia * 2"
+})
+```
 
+## Índices para optimizar búsquedas
+Para mejorar el rendimiento de las búsquedas, es importante crear índices:
 
+```javascript
+// Crear índice simple
+db.usuarios.createIndex({email: 1})
 
+// Crear índice compuesto
+db.usuarios.createIndex({edad: 1, ciudad: 1})
 
+// Ver qué índices existen
+db.usuarios.getIndexes()
+```
 
+## Ejemplos prácticos:
+```javascript
+// Buscar usuarios activos de Madrid entre 25 y 40 años
+db.usuarios.find({
+  estado: "activo",
+  ciudad: "Madrid",
+  edad: {$gte: 25, $lte: 40}
+}).sort({fecha_registro: -1})
 
-
-
-
-
-
-
-
-
+// Buscar productos con precio entre 50 y 200, en stock
+db.productos.find({
+  precio: {$gte: 50, $lte: 200},
+  stock: {$gt: 0},
+  categoria: {$in: ["electrónica", "informática"]}
+}).limit(20)
+```
 
 ---
 
-## Actualizar documentos
+# 9. Actualizar documentos
 
 Actualizar un documento (**el primero que coincida**):
 
@@ -773,7 +797,7 @@ db.usuarios.replaceOne(
 
 ### Operadores de campo
 
-#### `$set` - Establece el valor de un campo
+### `$set` - Establece el valor de un campo
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -781,7 +805,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$unset` - Elimina un campo del documento
+### `$unset` - Elimina un campo del documento
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -789,7 +813,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$rename` - Renombra un campo
+### `$rename` - Renombra un campo
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -797,7 +821,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$inc` - Incrementa un valor numérico
+### `$inc` - Incrementa un valor numérico
 ```javascript
 db.productos.updateOne(
   { _id: ObjectId("...") },
@@ -805,7 +829,7 @@ db.productos.updateOne(
 )
 ```
 
-#### `$mul` - Multiplica un valor numérico
+### `$mul` - Multiplica un valor numérico
 ```javascript
 db.productos.updateOne(
   { _id: ObjectId("...") },
@@ -813,7 +837,7 @@ db.productos.updateOne(
 )
 ```
 
-#### `$min` y `$max` - Actualiza solo si el nuevo valor es menor/mayor
+### `$min` y `$max` - Actualiza solo si el nuevo valor es menor/mayor
 ```javascript
 db.productos.updateOne(
   { _id: ObjectId("...") },
@@ -821,7 +845,7 @@ db.productos.updateOne(
 )
 ```
 
-#### `$currentDate` - Establece la fecha/hora actual
+### `$currentDate` - Establece la fecha/hora actual
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -834,7 +858,7 @@ db.usuarios.updateOne(
 
 ### Operadores de array
 
-#### `$push` - Añade elementos al final de un array
+### `$push` - Añade elementos al final de un array
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -848,7 +872,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$pop` - Elimina el primer (-1) o último (1) elemento
+### `$pop` - Elimina el primer (-1) o último (1) elemento
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -856,7 +880,7 @@ db.usuarios.updateOne(
 )
 ````
 
-#### `$pull` - Elimina elementos que coincidan con una condición
+### `$pull` - Elimina elementos que coincidan con una condición
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -870,7 +894,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$pullAll` - Elimina múltiples valores específicos
+### `$pullAll` - Elimina múltiples valores específicos
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -878,7 +902,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$addToSet` - Añade elementos únicos (evita duplicados)
+### `$addToSet` - Añade elementos únicos (evita duplicados)
 ```javascript
 db.usuarios.updateOne(
   { _id: ObjectId("...") },
@@ -886,7 +910,7 @@ db.usuarios.updateOne(
 )
 ```
 
-#### `$` (Operador Posicional Simple)
+### `$` (Operador Posicional Simple)
 El operador `$` identifica y actualiza `el primer elemento` del array que coincide con la condición de la consulta.
 
 **Sintaxis:**
@@ -934,7 +958,7 @@ Limitaciones del operador `$`:
 
 ---
 
-#### `$[]` (Operador Posicional All)
+### `$[]` (Operador Posicional All)
 El operador `$[]` actualiza todos los elementos del array, sin importar su contenido.
 
 **Sintaxis:**
@@ -991,7 +1015,7 @@ db.clase.updateOne(
 
 ---
 
-#### `$[identifier]` (Operador Posicional Filtrado)
+### `$[identifier]` (Operador Posicional Filtrado)
 El operador `$[identifier]` actualiza **elementos específicos** que cumplen una condición definida en `arrayFilters`.
 
 **Sintaxis:**
@@ -1035,7 +1059,7 @@ db.clase.updateOne(
 }
 ```
 
-#### Otros ejemplos con `$[identifier]`
+### Otros ejemplos con `$[identifier]`
 
 Múltiples condiciones en arrayFilters:
 ```javascript
@@ -1107,19 +1131,19 @@ db.estudiantes.updateOne(
 
 ---
 
-## Eliminar documentos
+# 10. Eliminar documentos
 
-Eliminar solo un documento:
+### Eliminar solo un documento:
 ```javascript
 db.usuarios.deleteOne({nombre: "Pedro"})
 ```
 
-Eliminar múltiples documentos:
+### Eliminar múltiples documentos:
 ```javascript
 db.usuarios.deleteMany({edad: {$lt: 25}})  // Elimina usuarios menores de 25 años
 ```
 
-Eliminar todos los documentos de una colección:
+### Eliminar todos los documentos de una colección:
 ```javsacript
 db.usuarios.deleteMany({})
 ```
