@@ -26,7 +26,7 @@
    - [¿Qué es BSON?](#qué-es-bson)
    - [Diferencias clave](#diferencias-clave)
 
-6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
+6. [Creación de bases de datos y documentos](#6-creación-de-bases-de-datos)
    
 7. [Insertar documentos](url)
 8. [Buscar documentos](#8-buscar-documentos)
@@ -1158,6 +1158,151 @@ db.usuarios.deleteMany({edad: {$lt: 25}})  // Elimina usuarios menores de 25 añ
 ### Eliminar todos los documentos de una colección:
 ```javsacript
 db.usuarios.deleteMany({})
+```
+
+---
+
+# 11. Usuarios y roles
+MongoDB maneja usuarios a nivel de base de datos con diferentes roles y permisos.
+
+Cada usuario tiene esta estructura:
+```javascript
+{
+  _id: "database.username",
+  user: "username",
+  db: "database",
+  credentials: { ... }, // hash de contraseña
+  roles: [
+    { role: "readWrite", db: "myapp" },
+    { role: "userAdmin", db: "admin" }
+  ]
+}
+```
+
+## Niveles de usuarios
+
+### 1. Usuarios de base de datos específica
+```javascript
+use myapp
+db.createUser({
+  user: "appuser",
+  pwd: "password",
+  roles: [{ role: "readWrite", db: "myapp" }]
+})
+```
+
+### 2. Usuarios globales (base de datos `admin`)
+```javascript
+use admin
+db.createUser({
+  user: "globaladmin",
+  pwd: "password",
+  roles: [
+    { role: "userAdminAnyDatabase", db: "admin" },
+    { role: "readWriteAnyDatabase", db: "admin" }
+  ]
+})
+```
+
+En `admin` también es posible asignar roles para otras bases de datos:
+```javascript
+// Crear usuario en base de datos 'admin'
+use admin
+db.createUser({
+  user: "cross_db_user",
+  pwd: "password",
+  roles: [
+    { role: "readWrite", db: "ecommerce" },    // Permisos en ecommerce
+    { role: "read", db: "analytics" },         // Permisos en analytics  
+    { role: "dbAdmin", db: "logs" }            // Permisos admin en logs
+  ]
+})
+```
+
+## Sistema de roles
+
+### Roles de base de datos:
+- `read`: Solo lectura en una BD específica
+- `readWrite`: Lectura y escritura en una BD específica
+- `dbAdmin`: Administración de una BD específica. Este rol no otorga privilegios para la gestión de usuarios ni roles.
+- `userAdmin`: Permite crear y modificar roles y usuarios en una BD específica, incluso a sí mismo.
+- `dbOwner`: El propietario de la base de datos puede realizar cualquier acción administrativa en ella. Este rol combina los privilegios otorgados por los roles `readWrite`, `dbAdmin` y `userAdmin`.
+
+>[!WARNING]
+> Es importante comprender las implicaciones de seguridad de otorgar el rol `userAdmin`: un usuario con este rol para una base de datos puede asignarse cualquier privilegio en dicha base de datos.
+>
+>Otorgar el rol `userAdmin` en la base de datos `admin` tiene implicaciones de seguridad adicionales, ya que indirectamente proporciona acceso de **superusuario** a un clúster. Con el ámbito `admin`, un usuario con el rol `userAdmin` puede otorgar roles o privilegios para todo el clúster, incluyendo `userAdminAnyDatabase`.
+
+---
+
+### Roles administrativos:
+- `readAnyDatabase`: Lectura en todas las BDs
+- `readWriteAnyDatabase`: Lectura/escritura en todas las BDs
+- `userAdminAnyDatabase`: Gestión de usuarios en todas las BDs
+- `dbAdminAnyDatabase`: Administración de todas las BDs
+- `root`: Acceso completo (equivalente al "root" de MySQL)
+
+### Roles personalizados
+```javascript
+db.createRole({
+  role: "customRole",
+  privileges: [
+    { resource: { db: "myapp", collection: "users" }, 
+      actions: ["find", "insert", "update"] }
+  ],
+  roles: []
+})
+```
+
+## Gestión de usuarios:
+
+### Ver usuarios:
+```javascript
+db.getUsers()
+```
+
+### Actualizar contraseña:
+```javascript
+db.changeUserPassword("usuario_app", "nueva_contraseña")
+```
+
+### Eliminar usuario:
+```javascript
+db.dropUser("usuario_app")
+```
+
+### Otorgar roles adicionales:
+```javascript
+db.grantRolesToUser("usuario_app", [
+    {role: "dbAdmin", db: "mi_aplicacion"}
+])
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Proceso de autenticación
+Es posible establecer conexión sin autenticarse inmediatamente. MongoDB separa estos dos conceptos:
+
+### 1. Habilitar autenticación
+En `mongod.conf`:
+
+```yaml
+security:
+  authorization: enabled
 ```
 
 
