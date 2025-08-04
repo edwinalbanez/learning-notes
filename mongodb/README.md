@@ -1228,11 +1228,6 @@ db.createUser({
 - `userAdmin`: Permite crear y modificar roles y usuarios en una BD específica, incluso a sí mismo.
 - `dbOwner`: El propietario de la base de datos puede realizar cualquier acción administrativa en ella. Este rol combina los privilegios otorgados por los roles `readWrite`, `dbAdmin` y `userAdmin`.
 
->[!WARNING]
-> Es importante comprender las implicaciones de seguridad de otorgar el rol `userAdmin`: un usuario con este rol para una base de datos puede asignarse cualquier privilegio en dicha base de datos.
->
->Otorgar el rol `userAdmin` en la base de datos `admin` tiene implicaciones de seguridad adicionales, ya que indirectamente proporciona acceso de **superusuario** a un clúster. Con el ámbito `admin`, un usuario con el rol `userAdmin` puede otorgar roles o privilegios para todo el clúster, incluyendo `userAdminAnyDatabase`.
-
 ---
 
 ### Roles administrativos:
@@ -1241,6 +1236,17 @@ db.createUser({
 - `userAdminAnyDatabase`: Gestión de usuarios en todas las BDs
 - `dbAdminAnyDatabase`: Administración de todas las BDs
 - `root`: Acceso completo (equivalente al "root" de MySQL)
+
+>[!CAUTION]
+> El rol `userAdmin` conlleva riesgos de seguridad significativos:
+>
+> - **A nivel de base de datos**: Un usuario con `userAdmin` puede autoasignarse cualquier privilegio dentro de esa base de datos específica.
+>
+> - **A nivel de clúster**: Cuando se otorga `userAdmin` en la base de datos `admin`, el riesgo se amplifica considerablemente, ya que proporciona acceso de `superusuario` a todo el clúster. Esto permite al usuario conceder roles y privilegios globales, incluyendo `userAdminAnyDatabase`.
+>
+>En esencia, `userAdmin` en `admin` = **control total del sistema MongoDB**.
+
+---
 
 ### Roles personalizados
 ```javascript
