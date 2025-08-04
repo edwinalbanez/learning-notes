@@ -26,7 +26,7 @@
    - [¿Qué es BSON?](#qué-es-bson)
    - [Diferencias clave](#diferencias-clave)
 
-6. [Crear bases de datos](#6-creación-de-bases-de-datos)
+6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
    
 7. [Insertar documentos](#7-insertar-documentos)
    
@@ -511,6 +511,17 @@ show dbs
 
 >[!IMPORTANT]
 > La base de datos que acabas de crear no aparecerá en la lista hasta que contenga al menos un documento.
+
+
+### Ver el tamaño de la base de datos
+```javascript
+db.stats()
+```
+
+### Eliminar la base de datos actual
+```javascript
+db.dropDatabase()
+```
 
 ---
 
