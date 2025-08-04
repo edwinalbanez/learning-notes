@@ -480,7 +480,6 @@ BSON (Binary JSON) es una representación binaria de documentos similares a JSON
 ---
 
 # 6. Creación de bases de datos
-
 Abre una consola (Simbolo del sistema) y realiza estos pasos:
 
 ### Iniciar el servicio de MongoDB
@@ -517,8 +516,7 @@ show dbs
 
 # 7. Insertar documentos
 
-Inserta solo un documento:
-
+### Inserta solo un documento:
 ```javascript
 db.usuarios.insertOne({
     nombre: "Juan",
@@ -528,7 +526,7 @@ db.usuarios.insertOne({
 })
 ```
 
-Insertar múltiples documentos:
+### Insertar múltiples documentos:
 ```javascript
 db.usuarios.insertMany([
     {nombre: "María", edad: 25, email: "maria@email.com"},
@@ -537,10 +535,13 @@ db.usuarios.insertMany([
 ])
 ```
 
-Si la colección no existe se crea automáticamente al insertar un documento. También es posible crear una coleccón explícitamente:
-```javascript
-db.createCollection("usuarios")
-```
+>[!NOTE]
+> Si al colección no existe se crea automáticamente al insertar un documento. También es posible crear una coleccón explícitamente:
+> ```javascript
+> db.createCollection("usuarios")
+> ```
+
+---
 
 # 8. Buscar documentos
 
