@@ -46,7 +46,12 @@
    - [Operadores de array](#operadores-de-array)
      
 10. [Eliminar documentos](#10-eliminar-documentos)
-
+   
+11. [Usuarios y roles](#11-usuarios-y-roles)
+   - [Niveles de usuarios](#niveles-de-usuarios)
+   - [Sistema de roles](#sistema-de-roles)
+   - [Consultar usuarios](#consultar-usuarios)
+   - [Eliminar usuarios](#eliminar-usuario)
 
 ---
 
@@ -1260,23 +1265,6 @@ db.createRole({
 })
 ```
 
-## Gestión de usuarios:
-
-### Ver usuarios:
-```javascript
-db.getUsers()
-```
-
-### Actualizar contraseña:
-```javascript
-db.changeUserPassword("usuario_app", "nueva_contraseña")
-```
-
-### Eliminar usuario:
-```javascript
-db.dropUser("usuario_app")
-```
-
 ### Otorgar roles adicionales:
 ```javascript
 db.grantRolesToUser("usuario_app", [
@@ -1284,32 +1272,37 @@ db.grantRolesToUser("usuario_app", [
 ])
 ```
 
+## Consultar usuarios:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Proceso de autenticación
-Es posible establecer conexión sin autenticarse inmediatamente. MongoDB separa estos dos conceptos:
-
-### 1. Habilitar autenticación
-En `mongod.conf`:
-
-```yaml
-security:
-  authorization: enabled
+### Ver usuarios de la BD actual:
+```javascript
+db.getUsers()
 ```
+
+### Todos los usuarios autenticados en la sesión actual
+```javascript
+db.runCommand("connectionStatus")
+```
+
+### Información detallada de autenticación
+```javascript
+db.runCommand({connectionStatus: 1, showPrivileges: true})
+```
+
+### Actualizar contraseña:
+```javascript
+db.changeUserPassword("usuario_app", "nueva_contraseña")
+```
+
+---
+
+## Eliminar usuario:
+```javascript
+db.dropUser("usuario_app")
+```
+
+
+
 
 
 
