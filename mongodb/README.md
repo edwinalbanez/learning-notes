@@ -28,7 +28,8 @@
 
 6. [Creación de bases de datos y documentos](#6-creación-de-bases-de-datos)
    
-7. [Insertar documentos](url)
+7. [Insertar documentos](#7-insertar-documentos)
+   
 8. [Buscar documentos](#8-buscar-documentos)
    - [Búsquedas básicas](#búsquedas-básicas)
    - [Operadores de comparación](#operadores-de-comparación)
@@ -46,12 +47,14 @@
    - [Operadores de array](#operadores-de-array)
      
 10. [Eliminar documentos](#10-eliminar-documentos)
-   
+
 11. [Usuarios y roles](#11-usuarios-y-roles)
-   - [Niveles de usuarios](#niveles-de-usuarios)
-   - [Sistema de roles](#sistema-de-roles)
-   - [Consultar usuarios](#consultar-usuarios)
-   - [Eliminar usuarios](#eliminar-usuario)
+    - [Niveles de usuarios](#niveles-de-usuarios)
+    - [Sistema de roles](#sistema-de-roles)
+    - [Consultar usuarios](#consultar-usuarios)
+    - [Eliminar usuarios](#eliminar-usuario)
+
+
 
 ---
 
@@ -1161,7 +1164,7 @@ db.usuarios.deleteMany({edad: {$lt: 25}})  // Elimina usuarios menores de 25 añ
 ```
 
 ### Eliminar todos los documentos de una colección:
-```javsacript
+```javascript
 db.usuarios.deleteMany({})
 ```
 
