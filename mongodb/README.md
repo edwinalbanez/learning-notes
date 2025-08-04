@@ -26,7 +26,7 @@
    - [¿Qué es BSON?](#qué-es-bson)
    - [Diferencias clave](#diferencias-clave)
 
-6. [Creación de bases de datos y documentos](#6-creación-de-bases-de-datos)
+6. [Crear bases de datos](#6-creación-de-bases-de-datos)
    
 7. [Insertar documentos](#7-insertar-documentos)
    
