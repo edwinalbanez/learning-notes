@@ -892,7 +892,7 @@ db.usuarios.find({fecha_registro: {$type: "date"}})
 ```
 
 ## Agregación básica con `find()`
-```javacript
+```javascript
 // Usar $where para lógica JavaScript personalizada (usar con cuidado)
 db.usuarios.find({
   $where: "this.edad > this.años_experiencia * 2"
