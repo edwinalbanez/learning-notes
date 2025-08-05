@@ -29,9 +29,11 @@
 6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
    
 7. [Insertar documentos](#7-insertar-documentos)
-   - [writeConcern](#writeconcern-segundo-parámetro---opcional)
-   - [Nodos de réplica](#qué-significa-nodos-de-réplica)
-   - [Journal del servidor](#qué-es-el-journal-del-servidor)
+   - [writeConcern](#writeconcern-opcional)
+      - [Nodos de réplica](#qué-significa-nodos-de-réplica)
+      - [Journal del servidor](#qué-es-el-journal-del-servidor)
+   - [ordered](#ordered---opcional)
+   - [bypassDocumentValidation](#bypassdocumentvalidation---opcional)
    
 8. [Buscar documentos](#8-buscar-documentos)
    - [Búsquedas básicas](#búsquedas-básicas)
@@ -557,6 +559,9 @@ db.usuarios.insertMany([
 > db.createCollection("usuarios")
 > ```
 
+---
+
+
 ## `writeConcern` (opcional)
 El parámetro `writeConcern` es un documento que se pasa como segundo argumento a los métodos `insertOne()` y `insertMany()`.
 
@@ -635,7 +640,7 @@ Aquí está cómo funciona:
 
 Si el servidor se detiene inesperadamente (por ejemplo, debido a un apagón) antes de que los datos se escriban en los archivos principales, el journal le permite a MongoDB reproducir las operaciones faltantes desde el último punto de control, asegurando que no se pierdan datos.
 
-## `ordered` (opcional)
+## `ordered` - (opcional)
 La opción `ordered` en el método `insertMany` de MongoDB es un parámetro que controla cómo se comporta la operación cuando encuentra un error durante la inserción de múltiples documentos.
 
 ```javascript
@@ -663,6 +668,23 @@ Cuando `ordered` está establecido en `false`, MongoDB:
 - Continúa procesando **todos los documentos** aunque encuentre errores
 - Todos los documentos válidos se insertan, independientemente de los errores
 - Los errores se reportan al final de la operación
+
+## `bypassDocumentValidation` - (opcional)
+La opción `bypassDocumentValidation` en el metodo `insertMany()` permite omitir las reglas de validación de documentos que hayas configurado en una colección durante operaciones de escritura.
+
+```javascript
+db.collection.insertMany(
+  [documento1, documento2, ...],
+  {
+    ordered: <boolean>,     
+    writeConcern: <document>,
+    bypassDocumentValidation: <boolean> 
+  }
+)
+```
+
+- `bypassDocumentValidation: false` (por defecto): se aplican las validaciones en los documentos.
+- `bypassDocumentValidation: true`: se omiten las validaciones establecidas.
 
 ---
 
