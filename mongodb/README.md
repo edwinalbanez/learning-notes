@@ -549,7 +549,7 @@ db.usuarios.insertMany([
 ```
 
 >[!NOTE]
-> Si al colección no existe se crea automáticamente al insertar un documento. También es posible crear una coleccón explícitamente:
+> Si la colección no existe se crea automáticamente al insertar un documento. También es posible crear una coleccón explícitamente:
 > ```javascript
 > db.createCollection("usuarios")
 > ```
