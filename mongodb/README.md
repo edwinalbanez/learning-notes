@@ -527,7 +527,8 @@ db.dropDatabase()
 
 # 7. Insertar documentos
 
-### Inserta solo un documento:
+## `insertOne()`
+Este método se usa para añadir un único documento a una colección.
 ```javascript
 db.usuarios.insertOne({
     nombre: "Juan",
@@ -537,7 +538,8 @@ db.usuarios.insertOne({
 })
 ```
 
-### Insertar múltiples documentos:
+## `insertMany()`
+Este método se utiliza para insertar **múltiples documentos** en una colección en una sola operación.
 ```javascript
 db.usuarios.insertMany([
     {nombre: "María", edad: 25, email: "maria@email.com"},
@@ -551,6 +553,62 @@ db.usuarios.insertMany([
 > ```javascript
 > db.createCollection("usuarios")
 > ```
+
+## `writeConcern` (segundo parámetro - opcional)
+El parámetro `writeConcern` es un documento que se pasa como segundo argumento a los métodos `insertOne()` y `insertMany()`.
+
+Controla el nivel de confirmación requerido para una operación de escritura. En otras palabras, te ayuda a definir cuántas réplicas (`nodos`) de tu conjunto de réplicas de MongoDB deben confirmar la escritura antes de que la operación se considere exitosa.
+
+### Sintaxis
+```javascript
+{
+   writeConcern: {
+      w: <valor>,           // Nivel de confirmación
+      j: <boolean>,         // Confirmación de journal
+      wtimeout: <número>    // Tiempo límite en milisegundos
+   }
+}
+```
+
+### `w`: 
+Define el número de nodos de réplica que deben confirmar la escritura.
+
+- `w: 1` (**valor por defecto**): La operación se considera exitosa tan pronto como el nodo primario la ha procesado.
+- `w: "majority"`: La operación se considera exitosa solo después de que la mayoría de los nodos en el conjunto de réplicas han confirmado la escritura. Esto asegura una mayor durabilidad de los datos.
+- `w: <número>`: Un número específico de nodos que deben confirmar la escritura.
+
+### `j`:
+Un valor booleano que indica si la escritura debe ser confirmada en el journal del servidor. 
+
+Si es `true`, la operación no se considerará exitosa hasta que los datos se hayan escrito en el `journal`. Esto proporciona una mayor garantía de que la escritura persistirá incluso si el servidor se reinicia inesperadamente.
+
+### `wtimeout`: 
+Un valor numérico que define un límite de tiempo en milisegundos para que la operación se complete. Si la escritura no se confirma en el tiempo especificado, MongoDB devolverá un error.
+
+## ¿Qué significa "nodos de réplica"?
+Los **nodos de réplica** son servidores MongoDB que forman parte de un `Replica Set` (**conjunto de réplicas**), que es un grupo de instancias MongoDB que mantienen el mismo conjunto de datos.
+
+### Estructura de un `Replica Set`
+
+#### Nodo Primario (Primary)
+
+- Es el **único** nodo que puede recibir operaciones de escritura
+- Todas las escrituras se realizan aquí **primero**
+- Procesa las operaciones de lectura por defecto
+- Solo puede haber uno por replica set
+
+#### Nodos Secundarios (Secondary)
+
+- Replican automáticamente los datos del nodo primario
+- Son de solo lectura (a menos que se configure específicamente)
+- Pueden convertirse en primario si el actual falla
+- Puede haber múltiples nodos secundarios
+
+#### Nodo Árbitro (Arbiter) - Opcional
+
+- No almacena datos, solo participa en elecciones
+- Ayuda a mantener un número impar de nodos votantes
+- Consume menos recursos
 
 ---
 
