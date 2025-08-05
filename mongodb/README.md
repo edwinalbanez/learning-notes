@@ -29,8 +29,11 @@
 6. [Creación de bases de datos](#6-creación-de-bases-de-datos)
    
 7. [Insertar documentos](#7-insertar-documentos)
+   - [writeConcern](#writeconcern-segundo-parámetro---opcional)
+   - [Nodos de réplica](#qué-significa-nodos-de-réplica)
+   - [Journal del servidor](#qué-es-el-journal-del-servidor)
    
-8. [Buscar documentos](#8-buscar-documentos)
+9. [Buscar documentos](#8-buscar-documentos)
    - [Búsquedas básicas](#búsquedas-básicas)
    - [Operadores de comparación](#operadores-de-comparación)
    - [Operadores lógicos](#operadores-lógicos)
@@ -42,13 +45,13 @@
    - [Métodos relacionados](#métodos-relacionados)
    - [Operadores avanzados](#operadores-avanzados)
      
-9. [Actualizar documentos](#9-actualizar-documentos)
+10. [Actualizar documentos](#9-actualizar-documentos)
    - [Operadores de campo](#operadores-de-campo)
    - [Operadores de array](#operadores-de-array)
      
-10. [Eliminar documentos](#10-eliminar-documentos)
+11. [Eliminar documentos](#10-eliminar-documentos)
 
-11. [Usuarios y roles](#11-usuarios-y-roles)
+12. [Usuarios y roles](#11-usuarios-y-roles)
     - [Niveles de usuarios](#niveles-de-usuarios)
     - [Sistema de roles](#sistema-de-roles)
     - [Consultar usuarios](#consultar-usuarios)
@@ -557,7 +560,7 @@ db.usuarios.insertMany([
 ## `writeConcern` (segundo parámetro - opcional)
 El parámetro `writeConcern` es un documento que se pasa como segundo argumento a los métodos `insertOne()` y `insertMany()`.
 
-Controla el nivel de confirmación requerido para una operación de escritura. En otras palabras, te ayuda a definir cuántas réplicas (`nodos`) de tu conjunto de réplicas de MongoDB deben confirmar la escritura antes de que la operación se considere exitosa.
+Controla el nivel de confirmación requerido para una operación de escritura. En otras palabras, define cuántas réplicas (`nodos`) de tu conjunto de réplicas de MongoDB deben confirmar la escritura para que la operación se considere exitosa.
 
 ### Sintaxis
 ```javascript
@@ -609,6 +612,20 @@ Los **nodos de réplica** son servidores MongoDB que forman parte de un `Replica
 - No almacena datos, solo participa en elecciones
 - Ayuda a mantener un número impar de nodos votantes
 - Consume menos recursos
+
+
+## ¿Qué es el `journal` del servidor?
+Es un archivo de registro que almacena las operaciones de escritura antes de que se apliquen a los archivos de datos principales. Esto es crucial para la recuperación en caso de un fallo inesperado del servidor (como un corte de energía).
+
+Aquí está cómo funciona:
+
+1. Una operación de escritura llega a la base de datos.
+2. MongoDB escribe esta operación en el **journal**.
+3. Si la operación es confirmada en el journal, se considera persistente.
+4. Más tarde, en un proceso asincrónico (o en puntos de control programados), MongoDB aplica los datos del journal a los archivos de datos reales.
+
+Si el servidor se detiene inesperadamente (por ejemplo, debido a un apagón) antes de que los datos se escriban en los archivos principales, el journal le permite a MongoDB reproducir las operaciones faltantes desde el último punto de control, asegurando que no se pierdan datos.
+
 
 ---
 
