@@ -557,8 +557,17 @@ db.usuarios.insertMany([
 > db.createCollection("usuarios")
 > ```
 
-## `writeConcern` (segundo parámetro - opcional)
+## `writeConcern` (opcional)
 El parámetro `writeConcern` es un documento que se pasa como segundo argumento a los métodos `insertOne()` y `insertMany()`.
+
+```javascript
+db.collection.insertOne(
+   <documento>,
+   {
+      writeConcern: <documento>
+   }
+)
+```
 
 Controla el nivel de confirmación requerido para una operación de escritura. En otras palabras, define cuántas réplicas (`nodos`) de tu conjunto de réplicas de MongoDB deben confirmar la escritura para que la operación se considere exitosa.
 
@@ -626,6 +635,34 @@ Aquí está cómo funciona:
 
 Si el servidor se detiene inesperadamente (por ejemplo, debido a un apagón) antes de que los datos se escriban en los archivos principales, el journal le permite a MongoDB reproducir las operaciones faltantes desde el último punto de control, asegurando que no se pierdan datos.
 
+## `ordered` (opcional)
+La opción `ordered` en el método `insertMany` de MongoDB es un parámetro que controla cómo se comporta la operación cuando encuentra un error durante la inserción de múltiples documentos.
+
+```javascript
+db.collection.insertMany(
+   [ <documento1>, <documento2>, ... ],
+   {
+      writeConcern: <documento>,
+      ordered: <booleano>
+   }
+)
+```
+
+### `ordered: true` ( por defecto)
+Cuando `ordered` está establecido en `true`, MongoDB:
+
+- Procesa los documentos **secuencialmente** en el orden que aparecen en el array
+- Si encuentra un error en cualquier documento, **detiene inmediatamente** la operación
+- Los documentos que se procesaron exitosamente antes del error **sí se insertan**
+- Los documentos posteriores al error **no se procesan**
+
+### `ordered: false`
+Cuando `ordered` está establecido en `false`, MongoDB:
+
+- Puede procesar los documentos en **paralelo** (no necesariamente en orden)
+- Continúa procesando **todos los documentos** aunque encuentre errores
+- Todos los documentos válidos se insertan, independientemente de los errores
+- Los errores se reportan al final de la operación
 
 ---
 
