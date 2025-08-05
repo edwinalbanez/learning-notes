@@ -33,7 +33,7 @@
    - [Nodos de réplica](#qué-significa-nodos-de-réplica)
    - [Journal del servidor](#qué-es-el-journal-del-servidor)
    
-9. [Buscar documentos](#8-buscar-documentos)
+8. [Buscar documentos](#8-buscar-documentos)
    - [Búsquedas básicas](#búsquedas-básicas)
    - [Operadores de comparación](#operadores-de-comparación)
    - [Operadores lógicos](#operadores-lógicos)
@@ -45,13 +45,13 @@
    - [Métodos relacionados](#métodos-relacionados)
    - [Operadores avanzados](#operadores-avanzados)
      
-10. [Actualizar documentos](#9-actualizar-documentos)
+9. [Actualizar documentos](#9-actualizar-documentos)
    - [Operadores de campo](#operadores-de-campo)
    - [Operadores de array](#operadores-de-array)
      
-11. [Eliminar documentos](#10-eliminar-documentos)
+10. [Eliminar documentos](#10-eliminar-documentos)
 
-12. [Usuarios y roles](#11-usuarios-y-roles)
+11. [Usuarios y roles](#11-usuarios-y-roles)
     - [Niveles de usuarios](#niveles-de-usuarios)
     - [Sistema de roles](#sistema-de-roles)
     - [Consultar usuarios](#consultar-usuarios)
