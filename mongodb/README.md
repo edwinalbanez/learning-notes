@@ -59,6 +59,12 @@
     - [Consultar usuarios](#consultar-usuarios)
     - [Eliminar usuarios](#eliminar-usuario)
 
+12. [Ejecutar scripts JavaScript](12-ejecutar-scripts-javascript)
+    - [Ejecutar desde mongosh](#ejecutar-desde-mongosh)
+    - [Ejecutar desde la línea de comandos](#ejecutar-desde-la-línea-de-comandos)
+    - [Ejecutar con autenticación](#ejecutar-desde-la-línea-de-comandos-con-autenticación)
+    - [Manejo de errores](#terminar-un-script-en-caso-de-error)
+
 
 
 ---
@@ -1579,6 +1585,26 @@ Loading file: queryMovies.js
    }
 ]
 ```
+
+## Ejecutar desde la línea de comandos con autenticación
+Para ejecutar un script en una instancia remota de `mongod` que requiere autenticación, especifique los detalles de **conexión** y **autenticación**, además del nombre del archivo.
+
+Por ejemplo:
+```bash
+mongosh --host 172.17.0.3 --port 27500 --username filmFan --password superSecret --file loadMovies.js
+```
+
+También puedes especificar la forma abreviada de las opciones:
+```javascript
+mongosh --host 172.17.0.3 --port 27500 -u filmFan -p superSecret -f loadMovies.js
+```
+
+## Terminar un script en caso de error
+Suele ser útil finalizar un script en ejecución si se lanza una excepción o en caso de resultados inesperados. Salir en un punto específico del script evita la ejecución de código innecesario y resultados potencialmente inesperados.
+
+Para finalizar un script, puede llamar al método `exit(<code>)`, donde `<code>` es cualquier valor especificado por el usuario.
+
+Como práctica recomendada, encierre el código en un bloque `try-catch`, llamando al método `exit` en el bloque `catch`. De igual modo, para comprobar los resultados de una consulta o cualquier comando, puede agregar una sentencia `if-else` y llamar al método `exit` si los resultados no son los esperados.
 
 
 
