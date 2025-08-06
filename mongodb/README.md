@@ -1450,6 +1450,139 @@ db.changeUserPassword("usuario_app", "nueva_contraseña")
 db.dropUser("usuario_app")
 ```
 
+# 12. Ejecutar scripts JavaScript
+
+## Ejecutar desde `mongosh`
+Es posible ejecutar un archivo `.js` desde dentro de MongoDB Shell utilizando el método `load()`.
+
+### Rutas de archivo
+El método `load()` acepta rutas **relativas** y **absolutas**. Si el directorio de trabajo actual de MongoDB Shell es `/data/db` y el archivo `insert-movies.js` se encuentra en el directorio `/data/db/scripts` , las siguientes llamadas dentro de MongoDB Shell son equivalentes:
+
+```javascript
+load( "scripts/insert-movies.js" )
+load( "/data/db/scripts/insert-movies.js" )
+```
+
+### Ejemplo
+El siguiente ejemplo crea y ejecuta un script que:
+
+- Se conecta a una instancia local que se ejecuta en el puerto predeterminado.
+- Se conecta a la base de datos `myDatabase`.
+- Rellena la colección `movies` con documentos de muestra.
+
+1. Crea un archivo `insert-movies.js` con el siguiente contenido:
+
+```javascript
+db = connect( 'mongodb://localhost/myDatabase' );
+
+db.movies.insertMany( [
+   {
+      title: 'Titanic',
+      year: 1997,
+      genres: [ 'Drama', 'Romance' ]
+   },
+   {
+      title: 'Spirited Away',
+      year: 2001,
+      genres: [ 'Animation', 'Adventure', 'Family' ]
+   },
+   {
+      title: 'Casablanca',
+      genres: [ 'Drama', 'Romance', 'War' ]
+   }
+] )
+```
+
+2. Para cargar y ejecutar el archivo `insert-movies.js` , usa `mongosh` para conectarse a su implementación y ejecuta el siguiente comando:
+
+```javascript
+load( "insert-movies.js" )
+```
+
+3. Para confirmar que los documentos se cargaron correctamente, realiza esta consulta:
+```javascript
+use myDatabase
+db.movies.find()
+```
+
+## Ejecutar desde la línea de comandos
+Puedes usar `mongosh` para ejecutar un script desde la línea de comandos sin necesidad de acceder a la consola.
+
+Para especificar el nombre del archivo, utilice los parámetros `--file` o `-f`. Es posible que también necesite especificar la información de conexión.
+
+>[!TIP]
+> Si pasa un nombre de archivo a `mongosh` sin usar los parámetros `--file` o `-f`, la conexión podría fallar si hay otros argumentos en la línea de comandos.
+
+### Ejemplo
+El siguiente ejemplo crea scripts y los ejecuta desde la línea de comandos.
+
+- `loadMovies.js` usa `insertMany()` para actualizar una instancia local de MongodDB.
+- `queryMovies.js` usa `db.collection.find()` para verificar la actualización.
+
+1 Copia este script y guárdalo como `loadMovies.js`.
+
+```javascript
+db = connect( 'mongodb://localhost/films' );
+
+db.movies.insertMany( [
+   {
+      title: 'Titanic',
+      year: 1997,
+      genres: [ 'Drama', 'Romance' ]
+   },
+   {
+      title: 'Spirited Away',
+      year: 2001,
+      genres: [ 'Animation', 'Adventure', 'Family' ]
+   },
+   {
+      title: 'Casablanca',
+      genres: [ 'Drama', 'Romance', 'War' ]
+   }
+] )
+```
+
+2. Copie este script y guárdalo como `queryMovies.js`.
+
+```javascript
+db = connect( 'mongodb://localhost/films' );
+printjson( db.movies.find( {} ) );
+```
+
+3. Ejecute los scripts desde la línea de comandos.
+
+```javascript
+mongosh --file loadMovies.js --file queryMovies.js
+```
+
+4. Verificar la salida
+```javascript
+Loading file: loadMovies.js
+Loading file: queryMovies.js
+[
+   {
+      _id: ObjectId("616f1b8092dbee425b661117"),
+      title: 'Titanic',
+      year: 1997,
+      genres: [ 'Drama', 'Romance' ]
+   },
+   {
+      _id: ObjectId("616f1b8092dbee425b661118"),
+      title: 'Spirited Away',
+      year: 2001,
+      genres: [ 'Animation', 'Adventure', 'Family' ]
+   },
+   {
+      _id: ObjectId("616f1b8092dbee425b661119"),
+      title: 'Casablanca',
+      genres: [ 'Drama', 'Romance', 'War' ]
+   }
+]
+```
+
+
+
+
 
 
 
