@@ -1701,12 +1701,12 @@ Combina múltiples campos en un solo índice:
 db.ventas.createIndex({ "fecha": -1, "monto": 1, "vendedor": -1 })
 ```
 
-Consultas optimizadas (usa el índice directamente)
+MongoDB puede usar un índice compuesto para ordenamiento y optimizar las consultas si:
 ```javascript
-// Mismo patrón que el índice
+// El patrón de sort coincide exactamente con el índice
 db.ventas.find().sort({ "fecha": -1, "monto": 1, "vendedor": -1 })
 
-// Patrón completamente inverso
+// El Patrón es completamente inverso
 db.ventas.find().sort({ "fecha": 1, "monto": -1, "vendedor": 1 })
 
 // Prefijos del patrón
@@ -1714,7 +1714,7 @@ db.ventas.find().sort({ "fecha": -1 })
 db.ventas.find().sort({ "fecha": -1, "monto": 1 })
 ```
 
-Consultas NO optimizados (requieren ordenamiento en memoria)
+Por el contrario, estas son consultas **NO** optimizados (requieren ordenamiento en memoria)
 ```javascript
 // Patrones mixtos que no coinciden
 db.ventas.find().sort({ "fecha": -1, "monto": -1, "vendedor": -1 })
