@@ -64,6 +64,7 @@
     - [Ejecutar desde la línea de comandos](#ejecutar-desde-la-línea-de-comandos)
     - [Ejecutar con autenticación](#ejecutar-desde-la-línea-de-comandos-con-autenticación)
     - [Manejo de errores](#terminar-un-script-en-caso-de-error)
+    - [Abrir una nueva conexión](#abrir-una-nueva-conexión)
 
 
 
@@ -1668,6 +1669,298 @@ El siguiente comando se conecta a una instancia de MongoDB que:
 ```javascript
 conn = Mongo("mongodb://<username>:<password>@localhost:27017/<authDB>");
 ```
+
+# 13. Índices
+Los índices en MongoDB son estructuras de datos que mejoran significativamente la velocidad de las operaciones de consulta al crear atajos organizados para encontrar documentos específicos.
+
+## ¿Qué son los índices?
+Los índices en MongoDB funcionan de manera similar a los índices de un libro. En lugar de examinar cada página (documento) para encontrar información específica, el índice proporciona una referencia directa a la ubicación exacta de los datos que buscas.
+
+## Tipos de índices
+
+### 1. Índice simple 
+
+Se crea sobre un campo específico del documento:
+```javascript
+// Estos dos índices son funcionalmente equivalentes para consultas simples
+db.usuarios.createIndex({ "edad": 1 })   // ascendente
+db.usuarios.createIndex({ "edad": -1 })  // descendente
+
+// Ambos optimizan estas consultas por igual:
+db.usuarios.find({ edad: 25 })
+db.usuarios.find({ edad: { $gt: 18 } })
+db.usuarios.find().sort({ edad: 1 })     // orden ascendente
+db.usuarios.find().sort({ edad: -1 })    // orden descendente
+```
+
+### 2. Índice compuesto 
+
+Combina múltiples campos en un solo índice:
+```javascript
+// Índice compuesto con direcciones mixtas
+db.ventas.createIndex({ "fecha": -1, "monto": 1, "vendedor": -1 })
+```
+
+Consultas optimizadas (usa el índice directamente)
+```javascript
+// Mismo patrón que el índice
+db.ventas.find().sort({ "fecha": -1, "monto": 1, "vendedor": -1 })
+
+// Patrón completamente inverso
+db.ventas.find().sort({ "fecha": 1, "monto": -1, "vendedor": 1 })
+
+// Prefijos del patrón
+db.ventas.find().sort({ "fecha": -1 })
+db.ventas.find().sort({ "fecha": -1, "monto": 1 })
+```
+
+Consultas NO optimizados (requieren ordenamiento en memoria)
+```javascript
+// Patrones mixtos que no coinciden
+db.ventas.find().sort({ "fecha": -1, "monto": -1, "vendedor": -1 })
+db.ventas.find().sort({ "fecha": 1, "monto": 1, "vendedor": -1 })
+```
+
+### 3. Índice multivalor
+
+MongoDB crea múltiples entradas (referencias) de índice para cada documento:
+1. Para "Laptop": 3 entradas (electronica, computadora, portatil)
+2. Para "Mesa": 2 entradas (mueble, madera)
+3. Para "Telefono": 2 entradas (electronica, comunicacion)
+
+```javascript
+// Documentos con arrays
+db.productos.insertMany([
+  { nombre: "Laptop", etiquetas: ["electronica", "computadora", "portatil"] },
+  { nombre: "Mesa", etiquetas: ["mueble", "madera"] },
+  { nombre: "Telefono", etiquetas: ["electronica", "comunicacion"] }
+])
+
+// Crear índice multivalor
+db.productos.createIndex({ "etiquetas": 1 })
+```
+
+#### Consultas optimizadas:
+```javascript
+// Todas estas usan el índice eficientemente
+db.productos.find({ "etiquetas": "electronica" })
+db.productos.find({ "etiquetas": { $in: ["mueble", "electronica"] } })
+db.productos.find({ "etiquetas": { $all: ["electronica", "computadora"] } })
+```
+
+#### Limitaciones importantes
+```javascript
+// ❌ PROHIBIDO - Solo UN campo array por índice compuesto
+// Error si ambos campos contienen arrays
+db.productos.createIndex({ "etiquetas": 1, "categorias": 1 })
+
+// ✅ PERMITIDO - Un array y campos escalares
+db.productos.createIndex({ "etiquetas": 1, "precio": 1, "marca": 1 })
+```
+
+#### Arrays anidados:
+```javascript
+// Documento con array de objetos
+db.pedidos.insertOne({
+  numero: 123,
+  productos: [
+    { id: 1, categoria: "A" },
+    { id: 2, categoria: "B" }
+  ]
+})
+
+// Índice en campo anidado de array
+db.pedidos.createIndex({ "productos.categoria": 1 })
+
+// Consulta optimizada
+db.pedidos.find({ "productos.categoria": "A" })
+```
+
+### 4. Índice de texto
+
+Para búsquedas de texto completo:
+```javascript
+db.articulos.createIndex({ "titulo": "text", "contenido": "text" })
+```
+
+### 5. Índice geoespacial 
+
+Para consultas de ubicación:
+```javascript
+db.lugares.createIndex({ "ubicacion": "2dsphere" })
+```
+
+### 6. Índice hash
+
+Para distribución uniforme en sharding:
+```javascript
+db.datos.createIndex({ "campo": "hashed" })
+```
+
+### 7. Índice TTL
+
+Para documentos que expiran automáticamente:
+```javascript
+db.sesiones.createIndex({ "fechaCreacion": 1 }, { expireAfterSeconds: 3600 })
+```
+
+### 8. Índices parciales
+
+Para grandes colecciones:
+```javascript
+db.coleccion.createIndex(
+  { campo: 1 }, 
+  { partialFilterExpression: { campo: { $exists: true } } }
+)
+```
+
+## Estrategias de indexación
+
+### Regla ESR (Equality, Sort, Range)
+Al crear índices compuestos, ordena los campos según:
+
+1. `Equality`: Campos con consultas de igualdad exacta
+2. `Sort`: Campos utilizados para ordenamiento
+3. `Range`: Campos con consultas de rango
+
+```javascript
+// Para consulta: find({status: "active"}).sort({fecha: -1}).limit(10)
+// donde también filtras por rango de edad
+db.coleccion.createIndex({ 
+  "status": 1,      // Equality
+  "fecha": -1,      // Sort  
+  "edad": 1         // Range
+})
+```
+
+## Operaciones principales
+
+### Crear índices
+```javascript
+// Índice simple
+db.coleccion.createIndex({ campo: 1 })
+
+// Índice con opciones
+db.coleccion.createIndex(
+  { campo: 1 }, 
+  { 
+    unique: true,           // Valores únicos
+    sparse: true,           // Ignora documentos sin el campo
+    name: "mi_indice"       // Nombre personalizado
+  }
+)
+```
+
+#### `unique: true`
+
+Garantiza valores únicos en el campo indexado:
+```javascript
+db.usuarios.createIndex({ "email": 1 }, { unique: true })
+// Impide documentos con emails duplicados
+// null se considera un valor, solo puede haber un documento con campo null
+```
+
+#### `sparse: true`
+
+Indexa solo documentos que tienen el campo (ignora nulls y campos inexistentes):
+```javascript
+db.usuarios.createIndex({ "telefono": 1 }, { sparse: true })
+// No indexa documentos sin campo 'telefono' o con telefono: null
+// Útil para campos opcionales con constraint unique```
+```
+
+#### `name: "nombre_personalizado"`
+
+Asigna un nombre específico al índice:
+```javascript
+db.productos.createIndex(
+  { "precio": 1, "categoria": 1 }, 
+  { name: "idx_precio_categoria" }
+)
+// Por defecto MongoDB genera nombres como "precio_1_categoria_1"
+```
+
+#### `partialFilterExpression`
+
+Crea índices parciales (solo documentos que cumplan condición):
+```javascript
+db.usuarios.createIndex(
+  { "edad": 1 },
+  { 
+    partialFilterExpression: { 
+      "edad": { $gte: 18 },
+      "activo": true 
+    }
+  }
+)
+// Solo indexa usuarios mayores de edad y activos
+// Reduce significativamente el tamaño del índice
+```
+
+#### `expireAfterSeconds`
+
+Para índices TTL (Time To Live):
+```javascript
+db.sesiones.createIndex(
+  { "fechaCreacion": 1 },
+  { expireAfterSeconds: 3600 }  // 1 hora
+)
+// MongoDB elimina automáticamente documentos después del tiempo especificado
+```
+
+#### `collation`
+
+Define reglas de comparación de texto:
+```javascript
+db.productos.createIndex(
+  { "nombre": 1 },
+  { 
+    collation: { 
+      locale: "es", 
+      strength: 2  // Ignora mayúsculas/minúsculas y acentos
+    }
+  }
+)
+```
+
+### Listar índices
+```javascript
+db.coleccion.getIndexes()
+```
+
+### Eliminar índices
+```javascript
+db.coleccion.dropIndex("nombre_indice")
+db.coleccion.dropIndex({ campo: 1 })
+db.coleccion.dropIndexes()  // Elimina todos excepto _id
+```
+
+## Mejores prácticas
+
+1. Crea índices basados en patrones de consulta reales
+2. Monitorea el rendimiento usando `explain()`:
+```javascript
+db.coleccion.find({campo: "valor"}).explain("executionStats")
+```
+
+3. Usa índices compuestos eficientemente siguiendo la regla ESR
+4. Considera índices parciales para grandes colecciones
+5. Elimina índices no utilizados regularmente
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
