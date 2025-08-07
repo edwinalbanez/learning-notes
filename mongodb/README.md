@@ -59,7 +59,7 @@
     - [Consultar usuarios](#consultar-usuarios)
     - [Eliminar usuarios](#eliminar-usuario)
 
-12. [Ejecutar scripts JavaScript](#12-ejecutar-scripts-javascript)
+12. [Ejecutar scripts JavaScript](#12-escribir-scripts-javascript)
     - [Ejecutar desde mongosh](#ejecutar-desde-mongosh)
     - [Ejecutar desde la línea de comandos](#ejecutar-desde-la-línea-de-comandos)
     - [Ejecutar con autenticación](#ejecutar-desde-la-línea-de-comandos-con-autenticación)
@@ -1456,7 +1456,7 @@ db.changeUserPassword("usuario_app", "nueva_contraseña")
 db.dropUser("usuario_app")
 ```
 
-# 12. Ejecutar scripts JavaScript
+# 12. Escribir scripts (JavaScript)
 
 ## Ejecutar desde `mongosh`
 Es posible ejecutar un archivo `.js` desde dentro de MongoDB Shell utilizando el método `load()`.
@@ -1512,7 +1512,7 @@ db.movies.find()
 ```
 
 ## Ejecutar desde la línea de comandos
-Puedes usar `mongosh` para ejecutar un script desde la línea de comandos sin necesidad de acceder a la consola.
+Puedes usar `mongosh` para ejecutar un script desde la línea de comandos sin necesidad de acceder a `mongosh`.
 
 Para especificar el nombre del archivo, utilice los parámetros `--file` o `-f`. Es posible que también necesite especificar la información de conexión.
 
@@ -1587,7 +1587,7 @@ Loading file: queryMovies.js
 ```
 
 ## Ejecutar desde la línea de comandos con autenticación
-Para ejecutar un script en una instancia remota de `mongod` que requiere autenticación, especifique los detalles de **conexión** y **autenticación**, además del nombre del archivo.
+Para ejecutar un script en una instancia de `mongod` que requiere autenticación, especifique los detalles de **conexión** y **autenticación**, además del nombre del archivo.
 
 Por ejemplo:
 ```bash
@@ -1607,12 +1607,67 @@ Para finalizar un script, puede llamar al método `exit(<code>)`, donde `<code>`
 Como práctica recomendada, encierre el código en un bloque `try-catch`, llamando al método `exit` en el bloque `catch`. De igual modo, para comprobar los resultados de una consulta o cualquier comando, puede agregar una sentencia `if-else` y llamar al método `exit` si los resultados no son los esperados.
 
 
+## Abrir una nueva conexión
 
+### Conectarse localmente a MongoDB:
+Desde MongoDB Shell o desde un archivo JavaScript, puede crear instancias de conexiones de base de datos utilizando el método `Mongo()`. Todas estas maneras son válidas:
 
+```javascript
+new Mongo()
+new Mongo(<host>)
+new Mongo(<host:port>)
+```
 
+Si existe una instancia de MongoDB ejecutándose en localhost en el puerto predeterminado. El siguiente ejemplo:
 
+- Crea una nueva conexión a la instancia 
+- Establece la variable global `db` en `myDatabase` mediante el método `Mongo.getDB()`.
 
+```javascript
+conn = Mongo();
+db = conn.getDB("myDatabase");
 
+printjson(db.movies.find({}));
+```
+
+De esta manera puedes interactuar con `otras bases de datos` desde el mismo archivo JavaScript.
+
+---
+
+### Conectarse a MongoDB Atlas
+Para conectarse a una implementación alojada en MongoDB Atlas, ejecute el comando `mongosh` con su cadena de conexión de Atlas. Por ejemplo:
+```bash
+mongosh "mongodb+srv://YOUR_CLUSTER_NAME.YOUR_HASH.mongodb.net/" --apiVersion YOUR_API_VERSION --username YOUR_USERNAME
+```
+
+Una vez establecida la conexión con su implementación, puede instanciar conexiones de base de datos directamente desde MongoDB Shell o un archivo JavaScript. Este ejemplo:
+
+- Instancia una conexión a la implementación actual mediante el método `db.getMongo()`.
+- Establece la variable global `db` en `myDatabase` mediante el `método Mongo.getDB()`.
+
+```javascript
+conn = db.getMongo()
+db = conn.getDB("myDatabase");
+
+printjson(db.movies.find({}));
+```
+
+En `mongosh`:
+```javascript
+load("/path/to/script.js")
+```
+
+### Conectarse a una instancia de MongoDB que aplica el control de acceso
+Debes incluir las credenciales en la **cadena de conexión**.
+
+El siguiente comando se conecta a una instancia de MongoDB que:
+
+- Se ejecuta en el host local en el puerto predeterminado
+- Está protegida mediante `SCRAM`.
+
+```javascript
+conn = Mongo("mongodb://<username>:<password>@localhost:27017/<authDB>");
+```
 
 
 
