@@ -59,7 +59,7 @@
     - [Consultar usuarios](#consultar-usuarios)
     - [Eliminar usuarios](#eliminar-usuario)
 
-12. [Ejecutar scripts JavaScript](#12-escribir-scripts-javascript)
+12. [Escribir scripts](#12-escribir-scripts-javascript)
     - [Ejecutar desde mongosh](#ejecutar-desde-mongosh)
     - [Ejecutar desde la línea de comandos](#ejecutar-desde-la-línea-de-comandos)
     - [Ejecutar con autenticación](#ejecutar-desde-la-línea-de-comandos-con-autenticación)
