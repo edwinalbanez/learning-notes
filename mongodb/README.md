@@ -66,7 +66,12 @@
     - [Manejo de errores](#terminar-un-script-en-caso-de-error)
     - [Abrir una nueva conexión](#abrir-una-nueva-conexión)
 
-
+13. [índices](#13-índices)
+    - [Tipos de índices](#tipos-de-índices)
+    - [Estrategia de indexación](#estrategias-de-indexación)
+    - [Operaciones principales](#operaciones-principales)
+    - [¿Cómo funcionan los índices?](#qué-son-realmente-los-índices-internamente)
+    - [Analogía de listas](#analogía-de-listas)
 
 ---
 
@@ -1790,10 +1795,204 @@ db.pedidos.find({ "productos.categoria": "A" })
 
 ### 4. Índice de texto
 
-Para búsquedas de texto completo:
+Los índices de texto permiten realizar búsquedas de texto completo dentro de documentos.
 ```javascript
 db.articulos.createIndex({ "titulo": "text", "contenido": "text" })
 ```
+
+### Arquitectura interna del índice de `Texto`
+
+### 1. Proceso de tokenización:
+Cuando MongoDB crea un índice de texto, realiza los siguientes pasos:
+
+```javascript
+// Documento original
+{
+  titulo: "Introducción a MongoDB y NoSQL",
+  contenido: "MongoDB es una base de datos NoSQL que utiliza documentos JSON"
+}
+```
+
+#### Paso 1: Normalización
+
+- Convierte todo a minúsculas
+- Elimina signos de puntuación y caracteres especiales
+- Separa palabras por espacios
+
+#### Paso 2: Eliminación de Stop Words
+```javascript
+// Palabras originales
+["introducción", "a", "mongodb", "y", "nosql", "es", "una", "base", "de", "datos"]
+
+// Después de eliminar stop words (español)
+["introducción", "mongodb", "nosql", "base", "datos"]
+```
+
+#### Paso 3: Stemming (Reducción a raíz)
+```javascript
+// Reduce palabras a su raíz según el idioma
+"introducción" → "introduc"
+"bases" → "base"
+"corriendo" → "corr"
+```
+
+### 2. Estructura del índice invertido
+MongoDB crea un índice invertido que mapea cada término a los documentos:
+
+```javascript
+// Estructura interna simplificada
+{
+  "mongodb": [
+    { docId: ObjectId("..."), weight: 2.5, fields: ["titulo", "contenido"] },
+    { docId: ObjectId("..."), weight: 1.8, fields: ["contenido"] }
+  ],
+  "nosql": [
+    { docId: ObjectId("..."), weight: 3.1, fields: ["titulo"] }
+  ],
+  "base": [
+    { docId: ObjectId("..."), weight: 1.2, fields: ["contenido"] },
+    { docId: ObjectId("..."), weight: 2.0, fields: ["titulo"] }
+  ]
+}
+```
+
+### 3. Configuración detallada
+```javascript
+// Índice básico
+db.articulos.createIndex({ 
+  "titulo": "text", 
+  "contenido": "text" 
+})
+
+// Índice con configuración avanzada
+db.articulos.createIndex(
+  { 
+    "titulo": "text", 
+    "contenido": "text",
+    "tags": "text"
+  },
+  {
+    // Idioma por defecto
+    default_language: "spanish",
+    
+    // Configurar idiomas específicos por campo
+    language_override: "idioma",
+    
+    // Pesos para diferentes campos
+    weights: {
+      titulo: 10,      // Título tiene más importancia
+      contenido: 5,    // Contenido importancia media
+      tags: 2          // Tags menos importancia
+    },
+    
+    // Nombre del índice
+    name: "busqueda_articulos",
+    
+    // Configuración de texto
+    textIndexVersion: 3
+  }
+)
+```
+
+### ¿Para qué sirven los pesos?
+Los pesos permiten dar **diferente importancia a distintos campos** cuando MongoDB calcula la relevancia (score) de los resultados de búsqueda.
+
+#### 1. Fórmula de Cálculo del Score
+```
+// Fórmula simplificada del Text Score
+score = Σ (término_freq_en_campo × peso_campo × idf_término)
+
+// Donde:
+// - término_freq_en_campo: cuántas veces aparece el término en ese campo específico
+// - peso_campo: el peso asignado al campo (weight)
+// - idf_término: Inverse Document Frequency (qué tan raro/común es el término)
+```
+
+#### 2. Ejemplo de configuración
+```javascript
+// Configuración del índice con pesos
+db.articulos.createIndex(
+  {
+    titulo: "text",
+    resumen: "text", 
+    contenido: "text",
+    etiquetas: "text"
+  },
+  {
+    weights: {
+      titulo: 20,      // Peso más alto
+      resumen: 10,     
+      etiquetas: 5,    
+      contenido: 1     // Peso por defecto
+    }
+  }
+)
+```
+
+Documentos de ejemplo:
+```javascript
+// Documento A
+{
+  titulo: "Tutorial de MongoDB",           // "mongodb" aparece aquí
+  resumen: "Aprende bases de datos NoSQL",
+  contenido: "En este tutorial veremos...",
+  etiquetas: ["tutorial", "base-datos"]
+}
+
+// Documento B  
+{
+  titulo: "Introducción a SQL",
+  resumen: "Tutorial básico de SQL",
+  contenido: "MongoDB es mencionado aquí como alternativa...", // "mongodb" aparece aquí
+  etiquetas: ["sql", "tutorial"]
+}
+```
+
+Cálculo del score para búsqueda "mongodb":
+```javascript
+// Documento A: "mongodb" en título (peso 20)
+score_A = 1 × 20 × idf_mongodb = 20 × idf_mongodb
+
+// Documento B: "mongodb" en contenido (peso 1)  
+score_B = 1 × 1 × idf_mongodb = 1 × idf_mongodb
+
+// Resultado: Documento A tendrá score 20 veces mayor que B
+```
+
+Los documentos con **mayor score** aparecen **primero** en los resultados.
+
+
+#### Ejemplos de consultas:
+```javascript
+// Búsqueda AND implícita
+// Busca documentos que contengan TANTO "mongodb" COMO "tutorial"
+db.articulos.find({ $text: { $search: "mongodb tutorial" } })
+
+// Búsqueda OR explícita
+// Busca documentos que contengan "mongodb" O "mysql"
+db.articulos.find({ $text: { $search: "mongodb | mysql" } })
+
+// Búsqueda de frase exacta
+// Busca la frase exacta "base de datos"
+db.articulos.find({ $text: { $search: "\"base de datos\"" } })
+
+// Negación
+// Busca "mongodb" pero EXCLUYE documentos con "mysql"
+db.articulos.find({ $text: { $search: "mongodb -mysql" } })
+
+// Combinación compleja
+// Busca "machine learning" exacto, con "python", sin "java", con "tutorial"
+db.articulos.find({ 
+  $text: { 
+    $search: "\"machine learning\" python -java tutorial" 
+  } 
+})
+```
+
+>[!IMPORTANT]
+> Solo puede haber un índice de texto por colección
+
+---
 
 ### 5. Índice geoespacial 
 
