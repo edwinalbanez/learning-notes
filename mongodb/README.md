@@ -1607,6 +1607,18 @@ Para finalizar un script, puede llamar al método `exit(<code>)`, donde `<code>`
 
 Como práctica recomendada, encierre el código en un bloque `try-catch`, llamando al método `exit` en el bloque `catch`. De igual modo, para comprobar los resultados de una consulta o cualquier comando, puede agregar una sentencia `if-else` y llamar al método `exit` si los resultados no son los esperados.
 
+### Códigos de salida comunes
+```javascript
+// Convención de códigos de salida
+// 0  = Éxito
+// 1  = Error general
+// 2  = Error de configuración
+// 3  = Error de datos
+// 10-19 = Errores de validación inicial
+// 20-29 = Errores de procesamiento
+// 99 = Error crítico/inesperado
+```
+
 
 ## Abrir una nueva conexión
 
@@ -1996,7 +2008,7 @@ Puede ser útil pensar en los índices como "listas" ordenadas de referencias pa
 ```
 
 ### índice multivalor
-```javasript
+```javascript
 // Documento
 { _id: 1, etiquetas: ["A", "B", "C"] }
 
