@@ -2003,25 +2003,163 @@ db.lugares.createIndex({ "ubicacion": "2dsphere" })
 
 ### 6. Índice hash
 
-Para distribución uniforme en sharding:
+Los índices hash utilizan una función hash para crear una distribución uniforme de los valores, especialmente útiles para sharding.
+
+MongoDB aplica una función hash al valor del campo indexado, creando:
+
+1. **Distribución uniforme**: Los valores se distribuyen equitativamente
+2. **Óptimo para igualdad exacta**: Muy eficiente para consultas `db.col.find({campo: valor})`
+3. **No ordenado**: No mantiene el orden original de los datos
+4. **Sharding automático**: Distribución equilibrada en clusters sharded
+
+#### Creación de índices hash
 ```javascript
+// Sintaxis básica
 db.datos.createIndex({ "campo": "hashed" })
+
+// Ejemplo práctico
+db.usuarios.createIndex({ "userId": "hashed" })
+```
+
+### Limitaciones:
+```javascript
+// ✅ Eficiente - consulta de igualdad exacta
+db.usuarios.find({ "userId": "12345" })
+
+// ❌ Ineficiente - no soporta consultas de rango
+db.usuarios.find({ "userId": { $gt: "12345" } })
+
+// ❌ No útil para ordenamiento
+db.usuarios.find().sort({ "userId": 1 })
+```
+
+#### Ejemplos
+
+#### Para distribución uniforme en sharding:
+```javascript
+// Crear shard key con hash para distribución uniforme
+sh.shardCollection("miapp.usuarios", { "userId": "hashed" })
+
+// El índice hash se crea automáticamente
+db.usuarios.createIndex({ "userId": "hashed" })
+```
+
+#### Para consultas de búsqueda rápida:
+```javascript
+// Índice hash para IDs de sesión
+db.sesiones.createIndex({ "sessionId": "hashed" })
+
+// Búsqueda muy rápida por sessionId específico
+db.sesiones.find({ "sessionId": "abc123def456" })
+```
+
+#### Combinando con otros campos:
+```javascript
+// Índice compuesto: hash + campo normal
+db.logs.createIndex({ "userId": "hashed", "timestamp": 1 })
+
+// Eficiente para consultas que incluyen userId exacto
+db.logs.find({ 
+  "userId": "user123", 
+  "timestamp": { $gte: new Date("2024-01-01") }
+})
 ```
 
 ### 7. Índice TTL
 
-Para documentos que expiran automáticamente:
+Son índices especiales que MongoDB utiliza para eliminar automáticamente documentos después de un período específico de tiempo. Son especialmente útiles para datos temporales como logs, sesiones de usuario, datos de caché, o cualquier información que tenga una validez limitada en el tiempo.
+
+MongoDB ejecuta una tarea en segundo plano cada 60 segundos que:
+
+1. Examina todos los índices TTL en la base de datos
+2. Identifica documentos que han superado su tiempo de vida
+3. Elimina automáticamente esos documentos
+
+Crear un índice:
 ```javascript
-db.sesiones.createIndex({ "fechaCreacion": 1 }, { expireAfterSeconds: 3600 })
+db.coleccion.createIndex(
+  { "fechaCampo": 1 }, 
+  { expireAfterSeconds: 3600 }  // Expira después de 1 hora
+)
+```
+
+#### Expiración en una fecha específica:
+```javascript
+// El documento expira exactamente en la fecha especificada en el campo
+db.logs.createIndex({ "fechaExpiracion": 1 }, { expireAfterSeconds: 0 })
+
+// Documento de ejemplo
+{
+  "_id": ObjectId("..."),
+  "mensaje": "Log entry",
+  "fechaExpiracion": new Date("2024-12-31T23:59:59Z")
+}
+```
+
+#### Expiración después de un tiempo relativo:
+```javascript
+// El documento expira 24 horas después de la fecha en el campo
+db.sesiones.createIndex({ "fechaCreacion": 1 }, { expireAfterSeconds: 86400 })
+
+// Documento de ejemplo
+{
+  "_id": ObjectId("..."),
+  "usuarioId": "user123",
+  "fechaCreacion": new Date()  // Se creó ahora, expira en 24 horas
+}
 ```
 
 ### 8. Índices parciales
 
-Para grandes colecciones:
+Los índices parciales solo incluyen documentos que cumplen con una condición específica, lo que los hace más eficientes en espacio y rendimiento. Esto significa:
+
+- **Menor uso de espacio**: El índice solo almacena entradas para documentos que cumplen la condición
+- **Mejor rendimiento**: Menos entradas para examinar durante las consultas
+- **Mantenimiento más rápido**: Menos documentos que actualizar cuando cambian los datos
+
+#### Ejemplos
+
+#### Indexar solo documentos activos:
 ```javascript
-db.coleccion.createIndex(
-  { campo: 1 }, 
-  { partialFilterExpression: { campo: { $exists: true } } }
+// Solo indexa usuarios que están activos
+db.usuarios.createIndex(
+  { "email": 1 },
+  { 
+    partialFilterExpression: { estado: "activo" }
+  }
+)
+
+// Esta consulta USARÁ el índice
+db.usuarios.find({ email: "juan@email.com", "estado": "activo" })
+
+// Esta consulta NO USARÁ el índice (falta la condición de estado)
+db.usuarios.find({ email: "juan@email.com" })
+```
+
+#### Indexar solo campos no nulos:
+```javascript
+// Solo indexa documentos donde el campo telefono existe y no es null
+db.contactos.createIndex(
+  { "telefono": 1 },
+  { 
+    partialFilterExpression: { 
+      "telefono": { $exists: true, $ne: null }
+    }
+  }
+)
+```
+
+#### Índice con múltiples condiciones:
+```javascript
+// Solo indexa productos caros y en stock
+db.productos.createIndex(
+  { "categoria": 1, "precio": 1 },
+  { 
+    partialFilterExpression: { 
+      "precio": { $gt: 100 },
+      "stock": { $gt: 0 }
+    }
+  }
 )
 ```
 
