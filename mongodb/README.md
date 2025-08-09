@@ -1,4 +1,4 @@
-``# Guía para MongoDB
+# Guía para MongoDB
 
 ## Índice
 
