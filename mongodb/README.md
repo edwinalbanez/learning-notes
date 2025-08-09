@@ -2496,11 +2496,80 @@ Puede ser útil pensar en los índices como "listas" ordenadas de referencias pa
 
 Todo esto en realidad está implementado como un `árbol B` de decisiones eficiente en lugar de una lista secuencial.
 
+---
 
+# 14. Colecciones con límite
+Las `capped collections` son un tipo especial de colección en MongoDB que tienen un tamaño fijo predefinido. Funcionan como un buffer circular: cuando alcanzan su límite de tamaño, los documentos más antiguos se eliminan automáticamente para hacer espacio a los nuevos.
 
+## Características principales
 
+- **Tamaño fijo**: Se define un tamaño máximo en bytes al momento de creación y no puede cambiarse después.
+- **Orden de inserción preservado**: Los documentos mantienen siempre el orden natural de inserción, similar a un log.
+- **Alta performance**: Las inserciones son extremadamente rápidas porque no requieren búsqueda de espacio libre.
+- **Eliminación automática**: Los documentos más antiguos se eliminan automáticamente cuando se alcanza el límite.
+- **No modificables**: No puedes actualizar documentos si la actualización aumenta su tamaño. Las eliminaciones manuales tampoco están permitidas.
 
+## Creación de Capped Collections
+```javascript
+db.createCollection("miColeccion", {
+   capped: true,
+   size: 100000,  // Tamaño en bytes
+   max: 5000      // Máximo número de documentos (opcional)
+})
+```
 
+## Ejemplos 
+
+### Colección de logs limitada por tamaño:
+```javascript
+db.createCollection("logs", {
+   capped: true,
+   size: 10485760  // 10MB
+})
+```
+
+### Colección limitada por número de documentos:
+```javascript
+db.createCollection("eventos", {
+   capped: true,
+   size: 5242880,  // 5MB mínimo requerido
+   max: 1000       // Máximo 1000 documentos
+})
+```
+
+## Casos de uso comunes
+
+- **Sistemas de logging**: Perfectas para almacenar logs de aplicación con rotación automática.
+- **Cache de datos**: Para mantener datos temporales con expiración automática.
+- **Métricas y eventos**: Almacenamiento de métricas de rendimiento o eventos del sistema.
+- **Colas de mensajes**: Implementación de colas FIFO simples.
+- **Datos de sesión**: Almacenamiento temporal de datos de sesiones web.
+
+## Operaciones especiales
+
+### Consultas Tailable Cursors
+Las capped collections soportan cursores "tailable" que permanecen abiertos y reciben nuevos documentos automáticamente:
+```javascript
+db.logs.find().addOption(DBQuery.Option.tailable)
+```
+
+### Verificar si una colección es capped:
+```javascript
+db.miColeccion.isCapped()
+```
+
+### Obtener estadísticas:
+```javascript
+db.miColeccion.stats()
+```
+
+## Limitaciones importantes
+
+- `Sin sharding`: Las capped collections no pueden ser distribuidas en un cluster sharded.
+- `Sin índices por defecto`: Solo tienen el índice _id por defecto, y agregar índices adicionales puede afectar el rendimiento.
+- `Actualizaciones restringidas`: Solo se permiten actualizaciones que no cambien el tamaño del documento.
+- `Sin eliminaciones manuales`: No puedes usar deleteOne() o deleteMany().
+- `Tamaño no modificable`: Una vez creada, no puedes cambiar el tamaño de la colección.
 
 
 
