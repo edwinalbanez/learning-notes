@@ -1,4 +1,4 @@
-# Guía para MongoDB
+``# Guía para MongoDB
 
 ## Índice
 
@@ -1710,6 +1710,62 @@ db.usuarios.find().sort({ edad: 1 })     // orden ascendente
 db.usuarios.find().sort({ edad: -1 })    // orden descendente
 ```
 
+### Indexación en documentos embebidos
+
+#### 1. Indexación de campos específicos (Dot Notation)
+```javascript
+// Documento de ejemplo
+{
+  "_id": 1,
+  "user": {
+    "name": "Juan",
+    "age": 25,
+    "address": {
+      "city": "Madrid",
+      "country": "España"
+    }
+  }
+}
+
+// Indexar campo específico del documento embebido
+db.users.createIndex({ "user.name": 1 })
+db.users.createIndex({ "user.address.city": 1 })
+
+//Consultas optimizadas
+db.users.find({ "user.name": "Juan" })
+db.users.find({ "user.address.city": "Madrid" })
+```
+
+#### Indexación del documento completo
+```javascript
+// Documento de ejemplo
+{
+  "_id": 1,
+  "user": {
+    "name": "Juan",
+    "age": 25,
+    "address": {
+      "city": "Madrid",
+      "country": "España"
+    }
+  }
+}
+
+// Indexar todo el documento embebido
+db.users.createIndex({ "user": 1 })
+```
+
+`Importante`: Este índice solo es útil para consultas que coincidan exactamente con la estructura y orden de los campos:
+```javascript
+// ✅ Esta consulta usará el índice
+db.users.find({ "user": { "name": "Juan", "age": 25, "address": { "city": "Madrid", "country": "España" } } })
+
+// ❌ Esta NO usará el índice (orden diferente)
+db.users.find({ "user": { "age": 25, "name": "Juan", "address": { "city": "Madrid", "country": "España" } } })
+```
+
+---
+
 ### 2. Índice compuesto 
 
 Combina múltiples campos en un solo índice:
@@ -1738,7 +1794,11 @@ db.ventas.find().sort({ "fecha": -1, "monto": -1, "vendedor": -1 })
 db.ventas.find().sort({ "fecha": 1, "monto": 1, "vendedor": -1 })
 ```
 
+---
+
 ### 3. Índice multivalor
+
+Un índice multivalor se crea automáticamente cuando indexas un campo que contiene un array. MongoDB genera entradas de índice separadas para cada elemento del array
 
 MongoDB crea múltiples entradas (referencias) de índice para cada documento:
 1. Para "Laptop": 3 entradas (electronica, computadora, portatil)
@@ -1765,16 +1825,6 @@ db.productos.find({ "etiquetas": { $in: ["mueble", "electronica"] } })
 db.productos.find({ "etiquetas": { $all: ["electronica", "computadora"] } })
 ```
 
-#### Limitaciones importantes
-```javascript
-// ❌ PROHIBIDO - Solo UN campo array por índice compuesto
-// Error si ambos campos contienen arrays
-db.productos.createIndex({ "etiquetas": 1, "categorias": 1 })
-
-// ✅ PERMITIDO - Un array y campos escalares
-db.productos.createIndex({ "etiquetas": 1, "precio": 1, "marca": 1 })
-```
-
 #### Arrays anidados:
 ```javascript
 // Documento con array de objetos
@@ -1792,6 +1842,87 @@ db.pedidos.createIndex({ "productos.categoria": 1 })
 // Consulta optimizada
 db.pedidos.find({ "productos.categoria": "A" })
 ```
+
+#### Estructura del índice: Array + 2 campos simples
+
+#### Ejemplo de datos:
+```javascript
+// Documentos de ejemplo
+{
+  "_id": 1,
+  "skills": ["JavaScript", "Python", "React"],
+  "experience": 5,
+  "salary": 80000
+}
+
+{
+  "_id": 2, 
+  "skills": ["Python", "MongoDB", "Node.js"],
+  "experience": 3,
+  "salary": 60000
+}
+
+{
+  "_id": 3,
+  "skills": ["React", "Vue", "Angular"],
+  "experience": 7,
+  "salary": 95000
+}
+```
+
+Creación del índice:
+```javascript
+db.developers.createIndex({ "skills": 1, "experience": 1, "salary": 1 })
+```
+
+MongoDB genera una entrada de índice por cada elemento del array combinado con ambos campos simples:
+```javascript
+// Del documento 1:
+["JavaScript", 5, 80000] → doc _id: 1
+["Python", 5, 80000] → doc _id: 1
+["React", 5, 80000] → doc _id: 1
+
+// Del documento 2:
+["MongoDB", 3, 60000] → doc _id: 2
+["Node.js", 3, 60000] → doc _id: 2
+["Python", 3, 60000] → doc _id: 2
+
+// Del documento 3:
+["Angular", 7, 95000] → doc _id: 3
+["React", 7, 95000] → doc _id: 3
+["Vue", 7, 95000] → doc _id: 3
+```
+
+#### Ordenamiento del índice:
+
+Las entradas se ordenan por: `skills` → `experience` → `salary`
+```javascript
+["Angular", 7, 95000] → doc _id: 3
+["JavaScript", 5, 80000] → doc _id: 1
+["MongoDB", 3, 60000] → doc _id: 2
+["Node.js", 3, 60000] → doc _id: 2
+["Python", 3, 60000] → doc _id: 2
+["Python", 5, 80000] → doc _id: 1
+["React", 5, 80000] → doc _id: 1
+["React", 7, 95000] → doc _id: 3
+["Vue", 7, 95000] → doc _id: 3
+```
+
+#### Limitaciones importantes
+
+- **Límite de claves por documento**: Un documento no puede generar más de un cierto número de claves de índice (generalmente alrededor de `1024`). Si un array es demasiado grande, la indexación fallará.
+- **Índices compuestos**: Solo un campo array puede ser parte de un índice compuesto:
+```javascript
+// ❌ PROHIBIDO - Solo UN campo array por índice compuesto
+// Error si ambos campos contienen arrays
+db.productos.createIndex({ "etiquetas": 1, "categorias": 1 })
+
+// ✅ PERMITIDO - Un array y campos escalares
+db.productos.createIndex({ "etiquetas": 1, "precio": 1, "marca": 1 })
+```
+- **Arrays muy grandes**: pueden impactar negativamente el rendimiento de escritura, ya que cada inserción o actualización debe mantener múltiples entradas de índice.
+
+---
 
 ### 4. Índice de texto
 
@@ -2001,6 +2132,8 @@ Para consultas de ubicación:
 db.lugares.createIndex({ "ubicacion": "2dsphere" })
 ```
 
+---
+
 ### 6. Índice hash
 
 Los índices hash utilizan una función hash para crear una distribución uniforme de los valores, especialmente útiles para sharding.
@@ -2065,6 +2198,8 @@ db.logs.find({
 })
 ```
 
+---
+
 ### 7. Índice TTL
 
 Son índices especiales que MongoDB utiliza para eliminar automáticamente documentos después de un período específico de tiempo. Son especialmente útiles para datos temporales como logs, sesiones de usuario, datos de caché, o cualquier información que tenga una validez limitada en el tiempo.
@@ -2108,6 +2243,8 @@ db.sesiones.createIndex({ "fechaCreacion": 1 }, { expireAfterSeconds: 86400 })
   "fechaCreacion": new Date()  // Se creó ahora, expira en 24 horas
 }
 ```
+
+---
 
 ### 8. Índices parciales
 
