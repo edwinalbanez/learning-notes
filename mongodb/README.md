@@ -2571,15 +2571,46 @@ db.miColeccion.stats()
 - `Sin eliminaciones manuales`: No puedes usar deleteOne() o deleteMany().
 - `Tamaño no modificable`: Una vez creada, no puedes cambiar el tamaño de la colección.
 
+# 14. Sharding
+El `sharding` en MongoDB es una técnica de escalamiento horizontal que permite distribuir datos a través de múltiples servidores (llamados shards) para manejar grandes volúmenes de datos y alta carga de trabajo que exceden la capacidad de un solo servidor.
 
+Se divide una colección grande en fragmentos más pequeños llamados "chunks", donde cada chunk contiene un subconjunto de documentos basado en una clave de sharding (shard key). Estos chunks se distribuyen automáticamente entre diferentes shards en el clúster.
 
+## Componentes de la arquitectura de Sharding
 
+- `Shards`: Son los servidores individuales (o replica sets) que almacenan los datos. Cada shard contiene un subconjunto de los datos de la colección.
+- `Mongos (Query Router)`: Actúa como interfaz entre las aplicaciones cliente y el clúster sharded. Enruta las consultas a los shards apropiados y combina los resultados.
+- `Config Servers`: Almacenan los metadatos del clúster, incluyendo información sobre qué chunks están en qué shards, rangos de claves, y la configuración del sharding.
 
+## Shard Key (Clave de Sharding)
+La shard key es fundamental para el sharding eficiente. Es un campo indexado que determina cómo se distribuyen los documentos entre los shards.
 
+### Características importantes de una buena shard key:
 
+- **Alta cardinalidad**: Debe tener muchos valores únicos posibles
+- **Distribución uniforme**: Los valores deben distribuirse de manera equilibrada
+- **Patrones de consulta**: Debe alinearse con los patrones de consulta más comunes
+- **Inmutable**: No puede cambiar después de que el documento es insertado
 
+## Proceso de Balanceador
 
+MongoDB incluye un balanceador automático que:
 
+- Monitorea la distribución de chunks entre shards
+- Mueve chunks automáticamente cuando detecta desbalances
+- Intenta mantener un número similar de chunks en cada shard
+- Puede configurarse para ejecutarse en ventanas de tiempo específicas
 
+## Ejemplo de Configuración Básica
+Para habilitar sharding en una colección:
 
+```javascript
+// Habilitar sharding en la base de datos
+sh.enableSharding("miBaseDeDatos")
 
+// Crear índice en la shard key
+db.miColeccion.createIndex({usuario_id: 1})
+
+// Habilitar sharding en la colección
+sh.shardCollection("miBaseDeDatos.miColeccion", {usuario_id: 1})
+```
