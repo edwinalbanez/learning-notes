@@ -2576,11 +2576,17 @@ El `sharding` en MongoDB es una técnica de escalamiento horizontal que permite 
 
 Se divide una colección grande en fragmentos más pequeños llamados "chunks", donde cada chunk contiene un subconjunto de documentos basado en una clave de sharding (shard key). Estos chunks se distribuyen automáticamente entre diferentes shards en el clúster.
 
-## Componentes de la arquitectura de Sharding
+## [Componentes de la arquitectura de Sharding](https://www.mongodb.com/docs/manual/sharding/#sharded-cluster)
 
 - `Shards`: Son los servidores individuales (o replica sets) que almacenan los datos. Cada shard contiene un subconjunto de los datos de la colección.
 - `Mongos (Query Router)`: Actúa como interfaz entre las aplicaciones cliente y el clúster sharded. Enruta las consultas a los shards apropiados y combina los resultados.
 - `Config Servers`: Almacenan los metadatos del clúster, incluyendo información sobre qué chunks están en qué shards, rangos de claves, y la configuración del sharding.
+
+El siguiente gráfico describe la interacción de los componentes dentro de un clúster fragmentado:
+<img width="441" height="314" alt="image" src="https://www.mongodb.com/docs/manual/images/sharded-cluster-production-architecture.bakedsvg.svg" />
+
+
+
 
 ## Shard Key (Clave de Sharding)
 La shard key es fundamental para el sharding eficiente. Es un campo indexado que determina cómo se distribuyen los documentos entre los shards.
