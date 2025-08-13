@@ -2578,15 +2578,42 @@ Se divide una colección grande en fragmentos más pequeños llamados "chunks", 
 
 ## [Componentes de la arquitectura de Sharding](https://www.mongodb.com/docs/manual/sharding/#sharded-cluster)
 
-- `Shards`: Son los servidores individuales (o replica sets) que almacenan los datos. Cada shard contiene un subconjunto de los datos de la colección.
-- `Mongos (Query Router)`: Actúa como interfaz entre las aplicaciones cliente y el clúster sharded. Enruta las consultas a los shards apropiados y combina los resultados.
-- `Config Servers`: Almacenan los metadatos del clúster, incluyendo información sobre qué chunks están en qué shards, rangos de claves, y la configuración del sharding.
+### 1. Shards (Fragmentos)
+   - [Cada shard es un replica set independiente](https://www.mongodb.com/docs/manual/sharding/#high-availability)
+   - [Contiene un subconjunto de los datos totales](https://www.mongodb.com/docs/manual/sharding/#storage-capacity)
+   - Los datos se distribuyen basándose en la shard key (clave de fragmentación)
+   - Pueden agregarse más shards para escalar horizontalmente
+
+### 2. Router (mongos)
+
+   - [Son los puntos de entrada de las aplicaciones](https://www.mongodb.com/docs/manual/core/sharded-cluster-query-router/#routing-with-mongos)
+   - Actúan como proxy entre la aplicación cliente y los shards
+   - [Procesan las consultas y determinan a qué shard(s) dirigir cada operación](https://www.mongodb.com/docs/manual/sharding/#advantages-of-sharding)
+   - No almacenan datos, solo enrutan las peticiones
+   - Pueden tener múltiples instancias para alta disponibilidad
+
+### 3. Config Servers (Servidores de Configuración)
+
+   - Almacenan los metadatos del cluster sharded
+   - Contienen información sobre:
+        - Qué datos están en cada shard
+        - Rangos de claves (shard keys) asignados a cada shard
+        - Configuración del cluster
+   - [Funciona como replica set para garantizar alta disponibilidad](https://www.mongodb.com/docs/manual/sharding/#high-availability)
+   - Son críticos para el funcionamiento del cluster
+
 
 El siguiente gráfico describe la interacción de los componentes dentro de un clúster fragmentado:
-<img width="441" height="314" alt="image" src="https://www.mongodb.com/docs/manual/images/sharded-cluster-production-architecture.bakedsvg.svg" />
 
+<img width="441" height="314" alt="image" src="https://github.com/user-attachments/assets/2b74d134-6212-48fb-b4b4-1b9045c213bf" />
 
+### Flujo de funcionamiento:
 
+1. `La aplicación` se conecta a los routers (mongos)
+2. `El router` consulta los config servers para determinar dónde están los datos
+3. `El router` dirige la consulta al shard apropiado
+4. `El shard` procesa la operación y devuelve el resultado
+5. `El router` consolida las respuestas (si es necesario) y las envía a la aplicación
 
 ## Shard Key (Clave de Sharding)
 La shard key es fundamental para el sharding eficiente. Es un campo indexado que determina cómo se distribuyen los documentos entre los shards.
