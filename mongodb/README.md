@@ -2616,7 +2616,14 @@ El siguiente gráfico describe la interacción de los componentes dentro de un c
 5. `El router` consolida las respuestas (si es necesario) y las envía a la aplicación
 
 ## Shard Key (Clave de Sharding)
-La shard key es fundamental para el sharding eficiente. Es un campo indexado que determina cómo se distribuyen los documentos entre los shards.
+MongoDB utiliza la clave de fragmento para distribuir los documentos de la colección entre shards (fragmentos). La shard key consiste en uno o varios campos de los documentos.
+
+Para fragmentar una colección completa, esta debe tener un `índice` que comience con la shard key. Al fragmentar una colección vacía, MongoDB crea el índice de apoyo si la colección no tiene un índice adecuado para la shard key especificada.
+
+La elección de la clave de fragmentación afecta el rendimiento, la eficiencia y la escalabilidad de un clúster fragmentado. Un clúster con el mejor hardware e infraestructura posibles puede verse afectado por la elección de la clave de fragmentación.
+
+### Chunks
+MongoDB particiona los datos fragmentados en `chunks`. Cada chunk tiene un rango inferior inclusivo y un rango superior exclusivo según la shard key.
 
 ### Características importantes de una buena shard key:
 
