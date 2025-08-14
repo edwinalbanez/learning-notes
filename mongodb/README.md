@@ -2622,15 +2622,17 @@ Para fragmentar una colección completa, esta debe tener un `índice` que comien
 
 La elección de la clave de fragmentación afecta el rendimiento, la eficiencia y la escalabilidad de un clúster fragmentado. Un clúster con el mejor hardware e infraestructura posibles puede verse afectado por la elección de la clave de fragmentación.
 
-### Chunks
-MongoDB particiona los datos fragmentados en `chunks`. Cada chunk tiene un rango inferior inclusivo y un rango superior exclusivo según la shard key.
-
 ### Características importantes de una buena shard key:
 
 - **Alta cardinalidad**: Debe tener muchos valores únicos posibles
 - **Distribución uniforme**: Los valores deben distribuirse de manera equilibrada
 - **Patrones de consulta**: Debe alinearse con los patrones de consulta más comunes
 - **Inmutable**: No puede cambiar después de que el documento es insertado
+
+## Chunks
+MongoDB particiona los documentos de una colección en `chunks`. Cada chunk tiene un rango inferior inclusivo y un rango superior exclusivo según la shard key.
+
+
 
 ## Proceso de Balanceador
 
