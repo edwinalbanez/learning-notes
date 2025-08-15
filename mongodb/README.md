@@ -2615,10 +2615,10 @@ El siguiente gráfico describe la interacción de los componentes dentro de un c
 4. `El shard` procesa la operación y devuelve el resultado
 5. `El router` consolida las respuestas (si es necesario) y las envía a la aplicación
 
-## Shard Key (Clave de Sharding)
-MongoDB utiliza la clave de fragmento para distribuir los documentos de la colección entre shards (fragmentos). La shard key consiste en uno o varios campos de los documentos.
+## Shard Key (clave de fragmentación)
+MongoDB utiliza la `shard key` para distribuir los documentos de la colección entre shards (fragmentos). La shard key consiste en uno o varios campos de los documentos.
 
-Para fragmentar una colección completa, esta debe tener un `índice` que comience con la shard key. Al fragmentar una colección vacía, MongoDB crea el índice de apoyo si la colección no tiene un índice adecuado para la shard key especificada.
+Para fragmentar una colección completa, esta **debe tener un `índice` que comience con la shard key**. Al fragmentar una colección vacía, MongoDB crea el índice de apoyo si la colección no tiene un índice adecuado para la shard key especificada.
 
 La elección de la clave de fragmentación afecta el rendimiento, la eficiencia y la escalabilidad de un clúster fragmentado. Un clúster con el mejor hardware e infraestructura posibles puede verse afectado por la elección de la clave de fragmentación.
 
@@ -2629,12 +2629,22 @@ La elección de la clave de fragmentación afecta el rendimiento, la eficiencia 
 - **Patrones de consulta**: Debe alinearse con los patrones de consulta más comunes
 - **Inmutable**: No puede cambiar después de que el documento es insertado
 
+Para consultas que incluyen la clave de fragmento o el prefijo de una clave de fragmento compuesta, `Mongos` puede dirigir la consulta a un shard o conjunto de shards específicos. Estas **operaciones dirigidas** suelen ser más eficientes que la difusión a todos los shards del clúster.
+
 ## Chunks
-MongoDB particiona los documentos de una colección en `chunks`. Cada chunk tiene un rango inferior inclusivo y un rango superior exclusivo según la shard key.
+MongoDB particiona los documentos de una colección en `chunks`. Un chunk es un **rango contiguo de datos** de una colección particionada (sharded collection) que se define por los valores de la `shard key`. Cada chunk contiene documentos cuyos valores de shard key caen dentro de un rango específico, por ejemplo:
 
+- Chunk 1: shard key valores de 1 a 100
+- Chunk 2: shard key valores de 101 a 200
+- Chunk 3: shard key valores de 201 a 300
 
+### Características principales
+- `Tamaño por defecto`: Cada chunk tiene un tamaño máximo de 64 MB por defecto (configurable entre 1 MB y 1024 MB).
+- `Distribución`: Los chunks se distribuyen automáticamente entre los diferentes shards del cluster para balancear la carga.
+- `Indivisibilidad`: Un chunk completo siempre reside en un solo shard, nunca se divide entre múltiples shards.
 
 ## Proceso de Balanceador
+En un intento por lograr una distribución uniforme de datos entre todos los `shards` del clúster, un `balanceador` se ejecuta en segundo plano para migrar rangos entre los fragmentos.
 
 MongoDB incluye un balanceador automático que:
 
@@ -2656,3 +2666,54 @@ db.miColeccion.createIndex({usuario_id: 1})
 // Habilitar sharding en la colección
 sh.shardCollection("miBaseDeDatos.miColeccion", {usuario_id: 1})
 ```
+
+## Consideraciones antes de fragmentar
+Los requisitos y la complejidad de la infraestructura del clúster fragmentado requieren una planificación, ejecución y mantenimiento cuidadosos.
+
+Si bien es posible volver a fragmentar la colección más tarde, es importante considerar cuidadosamente la elección de clave de fragmentación para evitar problemas de escalabilidad y rendimiento.
+
+A partir de `MongoDB 5.1`, al iniciar, reiniciar o añadir un `shard` (servidor) con `sh.addShard()`, se debe configurar la **preocupación de escritura a nivel de clúster (CWWC)**.
+
+Si la `CWWC` no está configurada y el fragmento está configurado con la preocupación de escritura predeterminada `{w:1}`, el servidor de fragmentos no se iniciará ni se añadirá y generará un error.
+
+## Conexión a un clúster fragmentado
+Debes conectarte a un enrutador Mongos para interactuar con cualquier colección del clúster fragmentado. Esto incluye colecciones fragmentadas y no fragmentadas. Los clientes nunca deben conectarse a un único fragmento para realizar operaciones de lectura o escritura.
+
+<img width="440" height="231" alt="image" src="https://github.com/user-attachments/assets/6a529589-d3c5-418a-80dd-93a01abf42d8" />
+
+
+Puedes conectarte a un `mongos` de la misma manera que te conectas a un `mongod` usando `mongosh` o un controlador MongoDB.
+
+## Estrategia de fragmentación
+MongoDB admite dos estrategias de fragmentación para distribuir datos entre clústeres fragmentados .
+
+### Fragmentación hash
+La `fragmentación hash` implica calcular un `hash` del valor del campo de la clave de fragmento. A cada `chunk` se le asigna un rango basado en los valores `hash` calculados.
+
+<img width="442" height="157" alt="image" src="https://github.com/user-attachments/assets/0b216921-d572-471d-a817-040b8773e0c7" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
