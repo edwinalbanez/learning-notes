@@ -2720,23 +2720,25 @@ Las zonas son una característica de MongoDB que permite definir regiones lógic
 #### Configuración de Zones
 En la parte superior vemos la definición de zonas:
 
-**Zona A**: Rango X: 1-10
-**Zona B**: Rango X: 10-20
+- **Zona A**: Rango X: 1-10
+- **Zona B**: Rango X: 10-20
 
 #### Distribución de Chunks
 Los chunks (fragmentos de datos) se distribuyen según su shard key:
 
-`{ X : 8 }` → Va a Shard Alpha (está en zona A: 1-10)
-`{ X : 13 }` → Va a Shard Beta (está en zona B: 10-20)
-`{ X : 3 }` → Va a Shard Beta (está en zona A: 1-10)
-`{ X : 23 }` → Va a Shard Charlie (fuera de zonas definidas)
+- `{ X : 8 }` → Va a Shard Alpha (está en zona A: 1-10)
+- `{ X : 13 }` → Va a Shard Beta (está en zona B: 10-20)
+- `{ X : 3 }` → Va a Shard Beta (está en zona A: 1-10)
+- `{ X : 23 }` → Va a Shard Charlie (fuera de zonas definidas)
 
 #### Asignación de Shards a Zonas
 
-Shard Alpha: zone ["A"] - Solo maneja datos de zona A
-Shard Beta: zone ["A","B"] - Maneja datos de ambas zonas
-Shard Charlie: zone [ ] - No tiene zonas asignadas (datos sin zonificar)
+- **Shard Alpha**: zone ["A"] - Solo maneja datos de zona A
+- **Shard Beta**: zone ["A","B"] - Maneja datos de ambas zonas
+- **Shard Charlie**: zone [ ] - No tiene zonas asignadas (datos sin zonificar)
 
+> [!IMPORTANT]
+> Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards se asignan a zonas**, no las zonas a shards
 
 
 
