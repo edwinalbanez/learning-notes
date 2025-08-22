@@ -2688,16 +2688,54 @@ Puedes conectarte a un `mongos` de la misma manera que te conectas a un `mongod`
 MongoDB admite dos estrategias de fragmentación para distribuir datos entre clústeres fragmentados .
 
 ### Fragmentación hash
-La `fragmentación hash` implica calcular un `hash` del valor del campo de la clave de fragmento. A cada `chunk` se le asigna un rango basado en los valores `hash` calculados.
+Es una estrategia de distribución de datos donde MongoDB toma el valor del campo que has definido como "shard key" (clave de fragmentación) y le aplica una función hash. Esta función convierte el valor original en un **número hash**. A cada `chunk` se le asigna un rango basado en los valores **hash** calculados.
+
 
 <img width="442" height="157" alt="image" src="https://github.com/user-attachments/assets/0b216921-d572-471d-a817-040b8773e0c7" />
 
 
+Aunque un rango de claves de fragmento puede ser similar, es poco probable que sus valores hash se encuentren en el mismo `chunk`. La distribución de datos basada en valores hash facilita una distribución más uniforme, especialmente en conjuntos de datos donde la clave de fragmento cambia de forma monótona.
+
+Sin embargo, la distribución hash significa que las consultas basadas en rangos por medio de la `shard key` tienen menos probabilidades de apuntar a un solo `shard`, lo que da como resultado más operaciones de transmisión en todo el clúster.
+
+### Fragmentación por rangos
+
+Implica dividir los datos en **rangos** según los valores de la `shard key`. A cada `chunk` se le asigna un rango según los valores de la `shard key`.
 
 
+<img width="443" height="144" alt="image" src="https://github.com/user-attachments/assets/be4dd6dd-91f1-49e4-8a3c-b7864e525441" />
+
+Es más probable que un rango de `shard key` con valores similares resida en el mismo `chunk`. Esto permite **operaciones específicas**, ya que `Mongos` puede enrutar las operaciones únicamente a los `shards` que contienen los datos necesarios.
+
+La eficiencia de la fragmentación por rangos depende de la `shard key` elegida. Unas `shard key` mal diseñadas pueden resultar en una distribución desigual de los datos, lo que puede anular algunas de las ventajas de la fragmentación o causar cuellos de botella en el rendimiento.
+
+## Zonas en clústeres fragmentados
+Las zonas son una característica de MongoDB que permite definir regiones lógicas dentro de un cluster sharded para mejorar la localidad de datos, especialmente útil cuando el cluster se extiende a través de múltiples centros de datos.
 
 
+<img width="441" height="219" alt="image" src="https://github.com/user-attachments/assets/6b3e0b14-327c-4e6e-8591-29e8b4a61d71" />
 
+### Análisis del diagrama
+
+#### Configuración de Zones
+En la parte superior vemos la definición de zonas:
+
+**Zona A**: Rango X: 1-10
+**Zona B**: Rango X: 10-20
+
+#### Distribución de Chunks
+Los chunks (fragmentos de datos) se distribuyen según su shard key:
+
+`{ X : 8 }` → Va a Shard Alpha (está en zona A: 1-10)
+`{ X : 13 }` → Va a Shard Beta (está en zona B: 10-20)
+`{ X : 3 }` → Va a Shard Beta (está en zona A: 1-10)
+`{ X : 23 }` → Va a Shard Charlie (fuera de zonas definidas)
+
+#### Asignación de Shards a Zonas
+
+Shard Alpha: zone ["A"] - Solo maneja datos de zona A
+Shard Beta: zone ["A","B"] - Maneja datos de ambas zonas
+Shard Charlie: zone [ ] - No tiene zonas asignadas (datos sin zonificar)
 
 
 
