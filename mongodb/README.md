@@ -2638,6 +2638,8 @@ MongoDB particiona los documentos de una colección en `chunks`. Un chunk es un 
 - Chunk 2: shard key valores de 101 a 200
 - Chunk 3: shard key valores de 201 a 300
 
+Una vez que los `chunks` están creados, el sistema de MongoDB (específicamente el `balancer`) se encarga de distribuir estos chunks de manera equilibrada entre los diferentes shards del clúster. Así, cada shard termina almacenando uno o más chunks.
+
 ### Características principales
 - `Tamaño por defecto`: Cada chunk tiene un tamaño máximo de 64 MB por defecto (configurable entre 1 MB y 1024 MB).
 - `Distribución`: Los chunks se distribuyen automáticamente entre los diferentes shards del cluster para balancear la carga.
