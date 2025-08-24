@@ -2708,7 +2708,39 @@ Es una estrategia de distribución de datos donde MongoDB toma el valor del camp
 <img width="442" height="157" alt="image" src="https://github.com/user-attachments/assets/0b216921-d572-471d-a817-040b8773e0c7" />
 
 
-Aunque un rango de claves de fragmento puede ser similar, es poco probable que sus valores hash se encuentren en el mismo `chunk`. La distribución de datos basada en valores hash facilita una distribución más uniforme, especialmente en conjuntos de datos donde la clave de fragmento cambia de forma monótona.
+Aunque un rango de claves de fragmento puede ser similar, es poco probable que sus valores hash se encuentren en el mismo `chunk`. La distribución de datos basada en valores hash facilita una distribución más uniforme, especialmente en conjuntos de datos donde la clave de fragmento cambia de `forma monótona`.
+
+#### Ejemplos
+
+```javascript
+sh.shardCollection("mydb.users", {"userId": "hashed"})
+sh.shardCollection("mydb.sessions", {"sessionId": "hashed"})
+sh.shardCollection("mydb.logs", {"timestamp": "hashed"})
+```
+
+#### Ilustración
+
+```javascript
+// MongoDB creará chunks basados en valores hash:
+// Chunk 1: userId_hash: MinKey → -5000000000000000000
+// Chunk 2: userId_hash: -5000000000000000000 → 0
+// Chunk 3: userId_hash: 0 → 5000000000000000000
+// Chunk 4: userId_hash: 5000000000000000000 → MaxKey
+
+sh.shardCollection("ecommerce.customers", {"userId": "hashed"})
+```
+
+#### ¿Cuando usar fragmentación hash?
+```javascript
+// 1. Writes secuenciales que causarían hotspots
+sh.shardCollection("logs.events", {"timestamp": "hashed"})
+
+// 2. IDs autoincrementales
+sh.shardCollection("app.users", {"_id": "hashed"})
+
+// 3. Necesitas máxima distribución uniforme
+sh.shardCollection("sessions.data", {"sessionId": "hashed"})
+```
 
 Sin embargo, la distribución hash significa que las consultas basadas en rangos por medio de la `shard key` tienen menos probabilidades de apuntar a un solo `shard`, lo que da como resultado más operaciones de transmisión en todo el clúster.
 
@@ -2720,6 +2752,25 @@ Implica dividir los datos en **rangos** según los valores de la `shard key`. A 
 <img width="443" height="144" alt="image" src="https://github.com/user-attachments/assets/be4dd6dd-91f1-49e4-8a3c-b7864e525441" />
 
 Es más probable que un rango de `shard key` con valores similares resida en el mismo `chunk`. Esto permite **operaciones específicas**, ya que `Mongos` puede enrutar las operaciones únicamente a los `shards` que contienen los datos necesarios.
+
+#### Ejemplos
+```javascript
+// Fragmentación por rangos (estrategia por defecto)
+sh.shardCollection("mydb.users", {"age": 1})
+sh.shardCollection("mydb.orders", {"orderDate": 1})
+sh.shardCollection("mydb.products", {"category": 1, "price": 1})
+```
+
+#### Ilustración
+```javascript
+// MongoDB creará chunks basados en rangos de valores:
+// Chunk 1: age: MinKey → 25
+// Chunk 2: age: 25 → 50  
+// Chunk 3: age: 50 → 75
+// Chunk 4: age: 75 → MaxKey
+
+sh.shardCollection("ecommerce.customers", {"age": 1})
+```
 
 La eficiencia de la fragmentación por rangos depende de la `shard key` elegida. Unas `shard key` mal diseñadas pueden resultar en una distribución desigual de los datos, lo que puede anular algunas de las ventajas de la fragmentación o causar cuellos de botella en el rendimiento.
 
