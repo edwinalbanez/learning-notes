@@ -2136,14 +2136,7 @@ db.lugares.createIndex({ "ubicacion": "2dsphere" })
 
 ### 6. Índice hash
 
-Los índices hash utilizan una función hash para crear una distribución uniforme de los valores, especialmente útiles para sharding.
-
-MongoDB aplica una función hash al valor del campo indexado, creando:
-
-1. **Distribución uniforme**: Los valores se distribuyen equitativamente
-2. **Óptimo para igualdad exacta**: Muy eficiente para consultas `db.col.find({campo: valor})`
-3. **No ordenado**: No mantiene el orden original de los datos
-4. **Sharding automático**: Distribución equilibrada en clusters sharded
+Un índice `hashed` es un tipo especial de índice donde MongoDB aplica una `función hash` a los valores del campo antes de almacenarlos en el índice, es especialmente útiles para sharding.
 
 #### Creación de índices hash
 ```javascript
@@ -2153,6 +2146,25 @@ db.datos.createIndex({ "campo": "hashed" })
 // Ejemplo práctico
 db.usuarios.createIndex({ "userId": "hashed" })
 ```
+
+#### ¿Qué hace la función hash?
+La función hash toma cualquier valor y lo convierte en un **número entero de 64 bits** de forma determinística:
+
+```javascript
+// Ejemplos de transformación (valores aproximados):
+1     → -2345678901234567890
+"abc" → 1234567890123456789
+100   → -9876543210987654321
+1000  → 5555555555555555555
+```
+
+MongoDB aplica una función hash al valor del campo indexado, creando:
+
+1. **Distribución uniforme**: Los valores se distribuyen equitativamente
+2. **Óptimo para igualdad exacta**: Muy eficiente para consultas `db.col.find({campo: valor})`
+3. **No ordenado**: No mantiene el orden original de los datos
+4. **Sharding automático**: Distribución equilibrada en clusters sharded
+
 
 ### Limitaciones:
 ```javascript
@@ -2757,7 +2769,19 @@ Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene l
 - Un documento con un valor de clave de fragmento de `7` se enruta a la `zona A`.
 - Un documento con un valor de clave de fragmento de `10` se enruta a la `zona B`.
 
+### Claves de fragmentos con hash y rangos de zonas
 
+En las colecciones cuya clave de fragmento incluye un campo con `hash`, los rangos de zona y la distribución de datos en ese campo se basan en valores con `hash`. La zona contiene documentos cuyo valor de clave de fragmento con hash se encuentra dentro del rango definido. Un rango de zona en un campo con hash no tiene el mismo comportamiento predecible de enrutamiento de documentos que un rango de zona en un campo sin hash.
+
+Por ejemplo, considera una clave de fragmento en `{"x" : "hashed"}`. El siguiente rango representa el rango con hash entre `5` y `10`:
+
+```javascript
+{ "x": Long("4470791281878691347") } --> { "x": Long("7766103514953448109") } // Zone A
+```
+
+- Un documento con un valor de clave de fragmento de `1` se enruta a la `Zona A`, ya que el valor hash de `1` se encuentra dentro del rango definido.
+- Un documento con un valor de clave de fragmento de `15` se enruta a la `Zona A`, ya que el valor hash de `15` se encuentra dentro del rango definido.
+- Un documento con un valor de clave de fragmento de `8` no se enruta a la `Zona A`, ya que el valor hash de `8` no se encuentra dentro del rango definido.
 
 
 
