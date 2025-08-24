@@ -2742,11 +2742,20 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 > [!IMPORTANT]
 > Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards se asignan a zonas**, no las zonas a shards
 
+### Comportamiento y operaciones
 
+#### Rangos
+Cada zona abarca uno o más rangos de valores de clave de fragmento para una colección. Cada rango que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
 
+Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene los siguientes rangos de zona:
 
+```javascript
+{ "x" : 5 } --> { "x" : 10 } // Zona A
+{ "x" : 10} --> { "x" : 20 } // Zona B
+```
 
-
+- Un documento con un valor de clave de fragmento de `7` se enruta a la `zona A`.
+- Un documento con un valor de clave de fragmento de `10` se enruta a la `zona B`.
 
 
 
