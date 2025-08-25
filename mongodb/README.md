@@ -2808,7 +2808,7 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 ### Comportamiento y operaciones
 
 #### Rangos
-Cada zona abarca uno o más rangos de valores de clave de fragmento para una colección. Cada rango que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
+Cada zona abarca uno o más `rangos de valores` de clave de fragmento para una colección. Cada `rango` que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
 
 Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene los siguientes rangos de zona:
 
@@ -2822,19 +2822,53 @@ Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene l
 
 ### Claves de fragmentos con hash y rangos de zonas
 
-En las colecciones cuya clave de fragmento incluye un campo con `hash`, los rangos de zona y la distribución de datos en ese campo se basan en valores con `hash`. La zona contiene documentos cuyo valor de clave de fragmento con hash se encuentra dentro del rango definido. Un rango de zona en un campo con hash no tiene el mismo comportamiento predecible de enrutamiento de documentos que un rango de zona en un campo sin hash.
+Cuando usas un `shard key` con `hash` en MongoDB, las zonas y la distribución de datos se basan en los valores hasheados, no en los valores originales de los documentos. Esto cambia completamente cómo se comporta el enrutamiento de documentos comparado con shard keys sin hash.
 
-Por ejemplo, considera una clave de fragmento en `{"x" : "hashed"}`. El siguiente rango representa el rango con hash entre `5` y `10`:
+Por ejemplo, considera una `shard key` en `{"x" : "hashed"}`. El siguiente rango representa el rango con hash entre `5` y `10`:
 
 ```javascript
 { "x": Long("4470791281878691347") } --> { "x": Long("7766103514953448109") } // Zone A
 ```
 
-- Un documento con un valor de clave de fragmento de `1` se enruta a la `Zona A`, ya que el valor hash de `1` se encuentra dentro del rango definido.
-- Un documento con un valor de clave de fragmento de `15` se enruta a la `Zona A`, ya que el valor hash de `15` se encuentra dentro del rango definido.
-- Un documento con un valor de clave de fragmento de `8` no se enruta a la `Zona A`, ya que el valor hash de `8` no se encuentra dentro del rango definido.
+- Documento con `x: 1` → Su valor hash **SÍ** cae en la Zona `A`
+- Documento con `x: 15` → Su valor hash **SÍ** cae en la Zona `A`
+- Documento con `x: 8` → Su valor hash **NO** cae en la Zona `A`
+
+El `8` (que está entre 5 y 10) **NO** va a la misma zona, porque **después del hash**, su valor transformado cae **fuera del rango definido**.
+
+>[!IMPORTANT]
+> Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
 
 
+### Distribución inicial de `chunks`
+MongoDB permite definir zonas y rangos de zona antes de fragmentar una colección. Esto es importante porque:
+
+- Las `zonas` son grupos lógicos de `shards` que pueden estar ubicados en diferentes centros de datos, regiones geográficas, o tener diferentes características de hardware
+- Los `rangos de zona` definen qué valores de la clave de fragmentación (shard key) deben residir en cada zona
+
+Cuando ejecutas la operación de fragmentación (`sh.shardCollection()`) en una colección vacía o inexistente que ya tiene zonas definidas, MongoDB:
+
+- Crea `chunks` automáticamente para cada **rango de zona** que hayas definido
+- Genera `chunks` adicionales para cubrir todo el espacio posible de valores de la shard key que no esté cubierto por las zonas
+- Distribuye inicialmente estos `chunks` basándose en la configuración de zonas
+
+Los `chunks` que **no tienen zona asignada** se distribuyen entre **todos los shards disponibles** en el cluster, sin restricciones de zona.
+
+### Clave de fragmento
+
+Debes usar los campos incluidos en la clave de partición al definir un nuevo rango que una zona debe cubrir. Si usa una clave de partición compuesta, el rango debe incluir el **prefijo de la clave de partición**.
+
+
+Por ejemplo, dada una clave de partición `{a: 1, b: 1, c: 1}`, para crear o actualizar un rango que cubra valores de `b`, se requiere incluir `a` como prefijo. Para crear o actualizar un rango que cubra valores de `c`, se requieren `a` y `b` como prefijos.
+
+
+No puede crear rangos con campos que no estén incluidos en la clave de partición. Por ejemplo, si desea usar zonas para particionar datos según la ubicación geográfica, la clave de partición necesitaría que el primer campo contuviera datos geográficos.
+
+
+Al elegir una clave de partición para una colección, considere qué campos podría usar para configurar las zonas.
+
+> [!IMPORTANT]
+> Eliminar una colección también elimina automáticamente todos sus rangos de zona asociados, así que ten esto en cuenta en tu estrategia de gestión de datos.
 
 
 
