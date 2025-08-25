@@ -2853,7 +2853,58 @@ Cuando ejecutas la operación de fragmentación (`sh.shardCollection()`) en una 
 - Genera `chunks` adicionales para cubrir todo el espacio posible de valores de la shard key que no esté cubierto por las zonas
 - Distribuye inicialmente estos `chunks` basándose en la configuración de zonas
 
-Los `chunks` que **no tienen zona asignada** se distribuyen entre **todos los shards disponibles** en el cluster, sin restricciones de zona.
+### Ejemplo
+```javascript
+// 1. Primero defines las zonas
+sh.addShardToZone("shard01", "US_EAST")
+sh.addShardToZone("shard02", "US_WEST")
+
+// 2. Defines los rangos de zona
+sh.updateZoneKeyRange("mydb.users", 
+  { region: "east", userId: MinKey }, 
+  { region: "east", userId: MaxKey }, 
+  "US_EAST")
+
+sh.updateZoneKeyRange("mydb.users", 
+  { region: "west", userId: MinKey }, 
+  { region: "west", userId: MaxKey }, 
+  "US_WEST")
+
+// 3. Fragmentas la colección (vacía)
+sh.shardCollection("mydb.users", { region: 1, userId: 1 })
+```
+> [!NOTE]
+> Los `chunks` que **no tienen zona asignada** se distribuyen entre **todos los shards disponibles** en el cluster, sin restricciones de zona.
+
+`MinKey` y `MaxKey` son valores reales de MongoDB:
+
+- `MinKey`: representa el valor más pequeño posible
+- `MaxKey`: representa el valor más grande posible
+- Son tipos de datos especiales del sistema BSON
+
+```javascript
+// Esto es código REAL que funciona:
+sh.updateZoneKeyRange("mydb.users", 
+  { region: "east", userId: MinKey },    // ← MinKey literal
+  { region: "east", userId: MaxKey },    // ← MaxKey literal
+  "US_EAST")
+
+// Esto significa: TODOS los documentos donde region="east" 
+// independientemente del valor de userId
+```
+
+Son útiles para definir rangos "abiertos":
+
+```javascript
+// Ejemplo: Todos los usuarios de región "east"
+{ region: "east", userId: MinKey } → { region: "east", userId: MaxKey }
+
+// Ejemplo: Todos los documentos con userId menor a 1000
+{ region: MinKey, userId: MinKey } → { region: MaxKey, userId: 1000 }
+
+// Ejemplo: Rango que cubre absolutamente todo
+{ region: MinKey, userId: MinKey } → { region: MaxKey, userId: MaxKey }
+```
 
 ## Clave de fragmento
 
@@ -2904,6 +2955,15 @@ sh.updateZoneKeyRange("records.users", { zipcode: "11201" }, { zipcode: "11240" 
 sh.updateZoneKeyRange("records.users", { zipcode: "94102" }, { zipcode: "94135" }, "SFO")
 ```
 
+No se puede crear un rango de valores de clave de fragmentación cuyos límites inferior y superior se superpongan con un rango existente para la colección fragmentada. Por ejemplo, dado un rango existente de `1` a `10`, no se puede crear un nuevo rango de `5` a `20`, ya que este se superpondría con el rango existente.
+
+
+Una zona puede tener **varios rangos de datos asociados**, pero un rango puede estar asociado, como máximo, a **una sola zona**.
+
+
+> [!NOTE]
+> Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
+
 
 ## Eliminar un rango de zona
 Utilice el método auxiliar de shell `sh.removeRangeFromZone()` para eliminar un rango de una zona.
@@ -2937,7 +2997,30 @@ use config
 db.tags.find({ tag: "NYC" })
 ```
 
+## Distribución inicial de chunks con shard key con `hash compuesto`
+MongoDB admite la fragmentación de colecciones en índices con hash compuesto. Al fragmentar la colección vacía o inexistente en una clave de fragmento con hash compuesto, MongoDB optimiza la creación y distribución inicial de fragmentos.
 
+### El campo hash es prefijo
+Si el campo con hash es el prefijo de la clave de fragmento (es decir, el primer campo de la `shard key`), se debe cumplir con estas 2 condiciones para que MongoDB realice la creación y distribución del fragmento inicial:
+
+#### 1.  Configuración de zona única
+```javascript
+// La colección debe tener una sola zona que cubra TODO el rango posible
+{
+  // Límites inferiores: MinKey para todos los campos
+  "userId": MinKey,
+  "timestamp": MinKey
+},
+{
+  // Límites superiores: MaxKey para todos los campos  
+  "userId": MaxKey,
+  "timestamp": MaxKey
+}
+```
+
+- `MinKey` y `MaxKey` son valores especiales que representan el mínimo y máximo posible
+- Esta configuración significa que la zona abarca **todos los valores posibles** de la shard key
+- Es como decir "toda la colección pertenece a una sola zona"
 
 
 
