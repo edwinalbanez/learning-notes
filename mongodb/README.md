@@ -2774,21 +2774,23 @@ sh.shardCollection("ecommerce.customers", {"age": 1})
 
 La eficiencia de la fragmentación por rangos depende de la `shard key` elegida. Unas `shard key` mal diseñadas pueden resultar en una distribución desigual de los datos, lo que puede anular algunas de las ventajas de la fragmentación o causar cuellos de botella en el rendimiento.
 
-## Zonas en clústeres fragmentados
-Las zonas son una característica de MongoDB que permite definir regiones lógicas dentro de un cluster sharded para mejorar la localidad de datos, especialmente útil cuando el cluster se extiende a través de múltiples centros de datos.
+# 15. Zonas en clústeres fragmentados
+En clústeres fragmentados, se pueden crear `zonas` que representan un grupo de `shards` y asociar uno o más rangos de valores de clave de fragmento a esa zona. MongoDB enruta las lecturas y escrituras dentro de un rango de zona únicamente a los fragmentos dentro de ella.
 
+
+ Esto es especialmente útil cuando el cluster se extiende a través de múltiples centros de datos.
 
 <img width="441" height="219" alt="image" src="https://github.com/user-attachments/assets/6b3e0b14-327c-4e6e-8591-29e8b4a61d71" />
 
-### Análisis del diagrama
+## Análisis del diagrama
 
-#### Configuración de Zones
+### Configuración de Zones
 En la parte superior vemos la definición de zonas:
 
 - **Zona A**: Rango X: 1-10
 - **Zona B**: Rango X: 10-20
 
-#### Distribución de Chunks
+### Distribución de Chunks
 Los chunks (fragmentos de datos) se distribuyen según su shard key:
 
 - `{ X : 8 }` → Va a Shard Alpha (está en zona A: 1-10)
@@ -2796,7 +2798,7 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 - `{ X : 3 }` → Va a Shard Beta (está en zona A: 1-10)
 - `{ X : 23 }` → Va a Shard Charlie (fuera de zonas definidas)
 
-#### Asignación de Shards a Zonas
+### Asignación de Shards a Zonas
 
 - **Shard Alpha**: zone ["A"] - Solo maneja datos de zona A
 - **Shard Beta**: zone ["A","B"] - Maneja datos de ambas zonas
@@ -2805,9 +2807,8 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 > [!IMPORTANT]
 > Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards se asignan a zonas**, no las zonas a shards
 
-### Comportamiento y operaciones
 
-#### Rangos
+## Rangos
 Cada zona abarca uno o más `rangos de valores` de clave de fragmento para una colección. Cada `rango` que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
 
 Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene los siguientes rangos de zona:
@@ -2820,7 +2821,7 @@ Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene l
 - Un documento con un valor de clave de fragmento de `7` se enruta a la `zona A`.
 - Un documento con un valor de clave de fragmento de `10` se enruta a la `zona B`.
 
-### Claves de fragmentos con hash y rangos de zonas
+## Claves de fragmentos con hash y rangos de zonas
 
 Cuando usas un `shard key` con `hash` en MongoDB, las zonas y la distribución de datos se basan en los valores hasheados, no en los valores originales de los documentos. Esto cambia completamente cómo se comporta el enrutamiento de documentos comparado con shard keys sin hash.
 
@@ -2840,7 +2841,7 @@ El `8` (que está entre 5 y 10) **NO** va a la misma zona, porque **después del
 > Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
 
 
-### Distribución inicial de `chunks`
+## Distribución inicial de `chunks`
 MongoDB permite definir zonas y rangos de zona antes de fragmentar una colección. Esto es importante porque:
 
 - Las `zonas` son grupos lógicos de `shards` que pueden estar ubicados en diferentes centros de datos, regiones geográficas, o tener diferentes características de hardware
@@ -2854,7 +2855,7 @@ Cuando ejecutas la operación de fragmentación (`sh.shardCollection()`) en una 
 
 Los `chunks` que **no tienen zona asignada** se distribuyen entre **todos los shards disponibles** en el cluster, sin restricciones de zona.
 
-### Clave de fragmento
+## Clave de fragmento
 
 Debes usar los campos incluidos en la clave de partición al definir un nuevo rango que una zona debe cubrir. Si usa una clave de partición compuesta, el rango debe incluir el **prefijo de la clave de partición**.
 
@@ -2869,6 +2870,100 @@ Al elegir una clave de partición para una colección, considere qué campos pod
 
 > [!IMPORTANT]
 > Eliminar una colección también elimina automáticamente todos sus rangos de zona asociados, así que ten esto en cuenta en tu estrategia de gestión de datos.
+
+## Agregar shards a una zona
+Asocia una `zona` a un `shard` específico mediante el método `sh.addShardToZone()` al conectarse a una instancia de `Mongos`. Un `shard` puede pertenecer a varias zonas, y varios `shard` también pueden pertenecer a la misma zona.
+
+### Ejemplo
+El siguiente ejemplo agrega la zona `NYC` a dos `shards` y las zonas `SFO` y `NRT` a un tercer `shard`:
+
+```javascript
+sh.addShardToZone("shard0000", "NYC")
+sh.addShardToZone("shard0001", "NYC")
+sh.addShardToZone("shard0002", "SFO")
+sh.addShardToZone("shard0002", "NRT")
+```
+
+Puede eliminar la zona de un shard en particular usando el método s`h.removeShardFromZone()` cuando esté conectado a una instancia de `mongos`, como en el siguiente ejemplo, que elimina la zona `NRT` de un shard:
+
+```javascript
+sh.removeShardFromZone("shard0002", "NRT")
+```
+
+## Crear un rango de zonas
+Para definir el rango de claves de fragmento de la zona, utiliza el método `sh.updateZoneKeyRange()` al conectarse a una instancia de Mongos. Cada rango de claves de fragmento solo puede tener una zona asignada. No se pueden superponer los rangos definidos.
+
+Dada una colección denominada "users" en la base de datos "records", fragmentada por el campo de `zipcode`, las siguientes operaciones asignan:
+
+- Dos rangos de códigos postales en Manhattan y Brooklyn (zona de Nueva York)
+- Un rango de códigos postales en San Francisco (zona de San Francisco)
+
+```javascript
+sh.updateZoneKeyRange("records.users", { zipcode: "10001" }, { zipcode: "10281" }, "NYC")
+sh.updateZoneKeyRange("records.users", { zipcode: "11201" }, { zipcode: "11240" }, "NYC")
+sh.updateZoneKeyRange("records.users", { zipcode: "94102" }, { zipcode: "94135" }, "SFO")
+```
+
+
+## Eliminar un rango de zona
+Utilice el método auxiliar de shell `sh.removeRangeFromZone()` para eliminar un rango de una zona.
+
+El siguiente ejemplo elimina la asignación de la zona de Nueva York para el rango de códigos postales dentro de Manhattan:
+
+```javascript
+sh.removeRangeFromZone("records.user", {zipcode: "10001"}, {zipcode: "10281"})
+```
+
+> [!NOTE]
+> Al eliminar una colección se eliminan sus rangos de zona/etiqueta asociados.
+
+
+## Ver zonas existentes
+Utilice `sh.status()` para listar las zonas asociadas a cada shard del clúster. También puede ver las zonas de un shard consultando la colección de fragmentos en la base de datos de configuración.
+
+El siguiente ejemplo utiliza el método `find()` para devolver todos los fragmentos con la zona `NYC`.
+
+```javascript
+use config
+db.shards.find({ tags: "NYC" })
+```
+
+Puede encontrar los rangos de zona para todos los espacios de nombres en la colección de etiquetas de la base de datos de configuración. La salida de `sh.status()` también muestra todos los rangos de zona.
+
+El siguiente ejemplo utiliza el método `find()` para devolver cualquier rango asociado a la zona `NYC`.
+
+```javascript
+use config
+db.tags.find({ tag: "NYC" })
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
