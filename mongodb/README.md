@@ -2774,8 +2774,11 @@ sh.shardCollection("ecommerce.customers", {"age": 1})
 
 La eficiencia de la fragmentación por rangos depende de la `shard key` elegida. Unas `shard key` mal diseñadas pueden resultar en una distribución desigual de los datos, lo que puede anular algunas de las ventajas de la fragmentación o causar cuellos de botella en el rendimiento.
 
+---
+
 # 15. Zonas en clústeres fragmentados
-En clústeres fragmentados, se pueden crear `zonas` que representan un grupo de `shards` y asociar uno o más rangos de valores de clave de fragmento a esa zona. MongoDB enruta las lecturas y escrituras dentro de un rango de zona únicamente a los fragmentos dentro de ella.
+
+En clústeres fragmentados, se pueden crear zonas que **representan un grupo de shards** y asociar uno o más **rangos de valores de clave de fragmento** a esa zona. MongoDB enruta las lecturas y escrituras dentro de un rango de zona únicamente a los shards dentro de ella.
 
 
  Esto es especialmente útil cuando el cluster se extiende a través de múltiples centros de datos.
@@ -2942,6 +2945,7 @@ sh.removeShardFromZone("shard0002", "NRT")
 ```
 
 ## Crear un rango de zonas
+
 Para definir el rango de claves de fragmento de la zona, utiliza el método `sh.updateZoneKeyRange()` al conectarse a una instancia de Mongos. Cada rango de claves de fragmento solo puede tener una zona asignada. No se pueden superponer los rangos definidos.
 
 Dada una colección denominada "users" en la base de datos "records", fragmentada por el campo de `zipcode`, las siguientes operaciones asignan:
@@ -2998,10 +3002,11 @@ db.tags.find({ tag: "NYC" })
 ```
 
 ## Distribución inicial de chunks con shard key con `hash compuesto`
-MongoDB admite la fragmentación de colecciones en índices con hash compuesto. Al fragmentar la colección vacía o inexistente en una clave de fragmento con hash compuesto, MongoDB optimiza la creación y distribución inicial de fragmentos.
+
+MongoDB admite la fragmentación de colecciones en índices con **hash compuesto**. Al fragmentar la colección vacía o inexistente en una clave de fragmento con hash compuesto, MongoDB optimiza la creación y distribución inicial de fragmentos.
 
 ### El campo hash es prefijo
-Si el campo con hash es el prefijo de la clave de fragmento (es decir, el primer campo de la `shard key`), se debe cumplir con estas 2 condiciones para que MongoDB realice la creación y distribución del fragmento inicial:
+Si el campo con hash es el prefijo de la clave de fragmento (es decir, el **primer campo** de la `shard key`), se debe cumplir con estas 2 condiciones para que MongoDB realice la creación y distribución del fragmento inicial:
 
 #### 1.  Configuración de zona única
 ```javascript
@@ -3023,6 +3028,14 @@ Si el campo con hash es el prefijo de la clave de fragmento (es decir, el primer
 - Es como decir "toda la colección pertenece a una sola zona"
 
 
+#### 2. Opción `presplitHashedZones: true`
+```javascript
+sh.shardCollection(
+  "miBaseDatos.miColeccion",
+  { "userId": "hashed", "timestamp": 1 },
+  { presplitHashedZones: true }  // Esta opción es obligatoria
+)
+```
 
 
 
