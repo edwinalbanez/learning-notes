@@ -2840,7 +2840,7 @@ Por ejemplo, considera una `shard key` en `{"x" : "hashed"}`. El siguiente rango
 
 El `8` (que está entre 5 y 10) **NO** va a la misma zona, porque **después del hash**, su valor transformado cae **fuera del rango definido**.
 
->[!IMPORTANT]
+> [!IMPORTANT]
 > Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
 
 
@@ -3036,6 +3036,8 @@ sh.shardCollection(
   { presplitHashedZones: true }  // Esta opción es obligatoria
 )
 ```
+
+`presplitHashedZones` activa la **creación automática** de múltiples chunks **distribuidos uniformemente** antes de insertar datos
 
 
 
