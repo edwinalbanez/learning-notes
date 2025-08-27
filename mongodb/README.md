@@ -2807,12 +2807,14 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 - **Shard Beta**: zone ["A","B"] - Maneja datos de ambas zonas
 - **Shard Charlie**: zone [ ] - No tiene zonas asignadas (datos sin zonificar)
 
+Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards se asignan a zonas**, no las zonas a shards. Cada zona abarca **uno o más rangos** de valores de clave de fragmento.
+
 > [!IMPORTANT]
-> Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards se asignan a zonas**, no las zonas a shards
+> Configurar zonas y rangos de zonas `antes` de fragmentar una colección vacía o inexistente permite una configuración más rápida de la fragmentación por zonas.
 
 
 ## Rangos
-Cada zona abarca uno o más `rangos de valores` de clave de fragmento para una colección. Cada `rango` que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
+Cada zona abarca **uno** o **más** `rangos de valores` de clave de fragmento para una colección. Cada `rango` que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
 
 Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene los siguientes rangos de zona:
 
@@ -2844,17 +2846,23 @@ El `8` (que está entre 5 y 10) **NO** va a la misma zona, porque **después del
 > Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
 
 
-## Distribución inicial de `chunks`
-MongoDB permite definir zonas y rangos de zona antes de fragmentar una colección. Esto es importante porque:
+## Predefinir zonas y rangos de zonas para una colección vacía o inexistente
+MongoDB permite definir zonas y rangos de zona antes de fragmentar una colección vacía. Esto es importante porque:
 
 - Las `zonas` son grupos lógicos de `shards` que pueden estar ubicados en diferentes centros de datos, regiones geográficas, o tener diferentes características de hardware
-- Los `rangos de zona` definen qué valores de la clave de fragmentación (shard key) deben residir en cada zona
+- Los `rangos de zona` definen qué valores de la clave de fragmentación (shard key) deben residir en cada zona desde el principio
 
-Cuando ejecutas la operación de fragmentación (`sh.shardCollection()`) en una colección vacía o inexistente que ya tiene zonas definidas, MongoDB:
+Cuando ejecutas la operación de fragmentación (`sh.shardCollection()`) en una colección vacía o inexistente que `ya tiene zonas definidas`, MongoDB:
 
 - Crea `chunks` automáticamente para cada **rango de zona** que hayas definido
 - Genera `chunks` adicionales para cubrir todo el espacio posible de valores de la shard key que no esté cubierto por las zonas
 - Distribuye inicialmente estos `chunks` basándose en la configuración de zonas
+
+El `balanceador` realiza toda la gestión de `chunks` después de la creación y distribución inicial optimizada de los `chunks`.
+
+> [!IMPORTANT]
+> Los `chunks` que **no tienen zona asignada** se distribuyen entre **todos los shards disponibles** en el cluster, sin restricciones de zona.
+
 
 ### Ejemplo
 ```javascript
@@ -2876,8 +2884,6 @@ sh.updateZoneKeyRange("mydb.users",
 // 3. Fragmentas la colección (vacía)
 sh.shardCollection("mydb.users", { region: 1, userId: 1 })
 ```
-> [!NOTE]
-> Los `chunks` que **no tienen zona asignada** se distribuyen entre **todos los shards disponibles** en el cluster, sin restricciones de zona.
 
 `MinKey` y `MaxKey` son valores reales de MongoDB:
 
