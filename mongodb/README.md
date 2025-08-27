@@ -3082,10 +3082,7 @@ db.usuarios.find(
 - Ordena por valores de bytes UTF-8
 
 > [!NOTE]
-> Por defecto, MongoDB usa `collation simple` al crear una colección
-> ```
-> // Equivalente a: { locale: "simple" }
-> ```
+> Por defecto, MongoDB usa `{collation: { locale: "simple"}}` al crear una colección
 
 
 ## Distribución inicial de chunks con shard key con `hash compuesto`
