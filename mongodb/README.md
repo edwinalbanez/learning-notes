@@ -2667,7 +2667,7 @@ MongoDB incluye un balanceador automático que:
 - Intenta mantener un número similar de chunks en cada shard
 - Puede configurarse para ejecutarse en ventanas de tiempo específicas
 
-## Ejemplo de Configuración Básica
+## Ejemplo de configuración básica
 Para habilitar sharding en una colección:
 
 ```javascript
@@ -2781,7 +2781,7 @@ La eficiencia de la fragmentación por rangos depende de la `shard key` elegida.
 En clústeres fragmentados, se pueden crear zonas que **representan un grupo de shards** y asociar uno o más **rangos de valores de clave de fragmento** a esa zona. MongoDB enruta las lecturas y escrituras dentro de un rango de zona únicamente a los shards dentro de ella.
 
 
- Esto es especialmente útil cuando el cluster se extiende a través de múltiples centros de datos.
+Esto es especialmente útil cuando el cluster se extiende a través de múltiples centros de datos.
 
 <img width="441" height="219" alt="image" src="https://github.com/user-attachments/assets/6b3e0b14-327c-4e6e-8591-29e8b4a61d71" />
 
@@ -3007,6 +3007,87 @@ use config
 db.tags.find({ tag: "NYC" })
 ```
 
+## `Collations` en `sharding`
+Las `collations` en MongoDB definen las reglas para comparar y ordenar `strings`, incluyendo aspectos como sensibilidad a mayúsculas/minúsculas, acentos, y reglas específicas de idiomas.
+
+Supongamos que tu colección tiene esta configuración:
+```javascript
+// Colección con collation española
+db.createCollection("usuarios", {
+  collation: { locale: "es", strength: 1 } // Ignora mayúsculas/acentos
+})
+```
+
+Ahora tienes estos documentos:
+
+```javascript
+{ email: "jose@email.com", nombre: "José" }
+{ email: "JOSE@email.com", nombre: "José" }  
+{ email: "José@email.com", nombre: "José" }
+```
+
+Con `collation española`, MongoDB considera que estos 3 emails son "iguales":
+
+"jose@email.com"
+"JOSE@email.com"
+"José@email.com"
+
+Pero cuando MongoDB intenta hacer sharding, necesita saber exactamente en qué shard colocar cada documento. Si considera que los emails son "iguales", ¿dónde los pone?, esto crea **inconsistencias y confusión**.
+
+
+### Para aplicar sharding correctamente se necesita:
+
+### 1. Crear un índice con collation `simple`
+```javascript
+// Crear índice que MongoDB usará para sharding
+db.usuarios.createIndex(
+  { email: 1 },                    // Campo del shard key
+  { collation: { locale: "simple" } }  // Reglas simples y exactas
+)
+```
+
+### 2. Hacer sharding con collation simple
+```javascript
+sh.shardCollection("miDB.usuarios", 
+  { email: 1 },                    // Shard key
+  { collation: { locale: "simple" } }  // Usar reglas simples para distribución
+)
+```
+
+Después del sharding tienes dos comportamientos:
+
+### 1. Consultas normales (usan collation de la colección)
+```javascript
+// Usa la collation española de la colección
+db.usuarios.find({ nombre: "josé" })
+// Encuentra: "josé", "José", "JOSÉ", "Jose"
+```
+
+### 2. Consultas con collation `simple` (usan el índice de la shard key)
+```javascript
+// Usa collation simple para aprovechar el sharding
+db.usuarios.find(
+  { email: "jose@email.com" },
+  { collation: { locale: "simple" } }
+)
+// Encuentra SOLO: "jose@email.com" (exacto)
+```
+
+### ¿Qué significa "simple"?
+
+- Comparación binaria exacta
+- Sensible a mayúsculas
+- Sensible a acentos
+- Sin reglas de idioma específicas
+- Ordena por valores de bytes UTF-8
+
+> [!NOTE]
+> Por defecto, MongoDB usa `collation simple` al crear una colección
+> ```
+> // Equivalente a: { locale: "simple" }
+> ```
+
+
 ## Distribución inicial de chunks con shard key con `hash compuesto`
 
 MongoDB admite la fragmentación de colecciones en índices con **hash compuesto**. Al fragmentar la colección vacía o inexistente en una clave de fragmento con hash compuesto, MongoDB optimiza la creación y distribución inicial de fragmentos.
@@ -3044,9 +3125,6 @@ sh.shardCollection(
 ```
 
 `presplitHashedZones` activa la **creación automática** de múltiples chunks **distribuidos uniformemente** antes de insertar datos
-
-
-
 
 
 
