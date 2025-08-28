@@ -3123,8 +3123,17 @@ sh.shardCollection(
 
 `presplitHashedZones` activa la **creación automática** de múltiples chunks **distribuidos uniformemente** antes de insertar datos
 
+---
 
+# 16. Implementar un clúster fragmentado autoadministrado
+Este tutorial implica la creación de un nuevo clúster fragmentado que consta de un `mongos`, el conjunto de réplicas del servidor de configuración y dos conjuntos de réplicas de fragmentos.
 
+## Implementaciones de localhost 
+Si usa `localhost` o su `dirección IP` como la parte del nombre de host de cualquier identificador de host, debe usar ese identificador como configuración de host para cualquier otro componente de MongoDB en el clúster.
+
+Por ejemplo, el método `sh.addShard()` toma un parámetro de host para el nombre de host del fragmento de destino. Si establece host como localhost, debe usar localhost como host para todos los demás fragmentos del clúster.
+
+##
 
 
 
