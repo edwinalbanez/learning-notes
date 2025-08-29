@@ -43,6 +43,7 @@ Para una implementación de producción, implemente un conjunto de réplicas del
 
 
 ## 1. Inicie cada miembro del conjunto de réplicas del servidor de configuración.
+
 Al iniciar cada `mongod`, especifique la configuración de `mongod` ya sea mediante un archivo de configuración o la línea de comando.
 
 Si utiliza un archivo de configuración, configure:
@@ -51,7 +52,7 @@ Si utiliza un archivo de configuración, configure:
 sharding:
   clusterRole: configsvr
 replication:
-  replSetName: myConfReplSet
+  replSetName: <replica set name>
 net:
   bindIp: localhost,<hostname(s)|ip address(es)>
   port: <port number>
@@ -74,7 +75,7 @@ sharding:
 
 ```yaml
 replication:
-  replSetName: myConfReplSet
+  replSetName: <replica set name>
 ```
 
 `replSetName`: Especifica el nombre del replica set. Todos los config servers deben usar el mismo nombre de replica set.
@@ -95,6 +96,20 @@ net:
 `bindIp`: Define las direcciones IP donde el servidor escuchará conexiones. Incluye `localhost` para conexiones locales y las IPs/hostnames específicos del servidor.
 
 ---
+
+### Ejemplo
+
+Cree 3 archivos `.conf` y escriba un `port` diferente para cada miembro del servidor de configuración:
+
+```yaml
+sharding:
+  clusterRole: configsvr
+replication:
+  replSetName: myConfigReplSet
+net:
+  bindIp: localhost
+  port: 27019
+```
 
 Inicie `mongod` con la opción `--config` establecida en la ruta del archivo de configuración.
 
@@ -119,16 +134,18 @@ Desde `mongosh`, ejecute el método `rs.initiate()`.
 `rs.initiate()` puede tomar un documento de configuración de conjunto de réplicas opcional. En el documento de configuración de conjunto de réplicas, incluya:
 
 - El `_id` se establece en el nombre del conjunto de réplicas especificado en `replication.replSetName` o en la opción `--replSet`.
-- El campo `configsvr` se establece en verdadero para el conjunto de réplicas del servidor de configuración.
+- El campo `configsvr` se establece en `true` para el conjunto de réplicas del servidor de configuración.
 - La matriz de miembros contiene un documento por cada miembro del conjunto de réplicas.
+
 
 > [!IMPORTANT]
 > Ejecute `rs.initiate()` solo en una instancia de `mongod` para el conjunto de réplicas.`
 
+
 ```javascript
 rs.initiate(
   {
-    _id: "myConfReplSet",
+    _id: "myConfigReplSet",
     configsvr: true,
     members: [
       { _id : 0, host : "localhost:27019" },
@@ -143,7 +160,7 @@ Una vez que el conjunto de réplicas del servidor de configuración (CSRS) se ha
 
 ---
 
-# Crear los conjuntos de réplicas de shards
+# Crear los conjuntos de réplicas de `shards`
 
 Para una implementación de producción, utilice un conjunto de réplicas con al menos tres miembros. Para realizar pruebas, puede crear un conjunto de réplicas con un solo miembro.
 
@@ -151,9 +168,10 @@ Para una implementación de producción, utilice un conjunto de réplicas con al
 > [!NOTE]
 > Los conjuntos de réplicas de shards no deben usar el mismo nombre que el conjunto de réplicas del servidor de configuración.
 
-Para cada `shard`, utilice los siguientes pasos para crear el conjunto de réplicas de shards:
 
-## 1. Inicie cada miembro del conjunto de réplicas de shards.
+Para cada `shard`, utilice los siguientes pasos para crear el `conjunto de réplicas` de shards:
+
+## 1. Inicie cada miembro del conjunto de réplicas de `shards`.
 
 Al iniciar cada `mongod`, especifique la configuración de `mongod` ya sea mediante un archivo de configuración o la línea de comando.
 
@@ -163,10 +181,41 @@ Si utiliza un archivo de configuración, configure:
 sharding:
   clusterRole: shardsvr
 replication:
-  replSetName: myShardReplSet
+  replSetName: <replica set name>
 net:
   bindIp: localhost,<ip address>
   port: <port number>
+storage:
+  dbPath: /data/shard01/member01
+```
+
+
+### `storage:`
+
+```yaml
+storage:
+  dbPath: /data/shard01/member01
+```
+
+`dbPath: /data/shard01/member01`: MongoDB creará automáticamente los archivos de base de datos dentro de esta carpeta.
+
+
+Cada miembro del `shard` debe tener su propio directorio.
+
+---
+
+### Ejemplo
+
+Cree 3 archivos `.conf`, especifique un `port` y `dbPath` diferente para cada `shard`:
+
+```yaml
+sharding:
+  clusterRole: shardsvr
+replication:
+  replSetName: myShardReplSet
+net:
+  bindIp: localhost
+  port: 27022
 storage:
   dbPath: /data/shard01/member01
 ```
@@ -194,7 +243,7 @@ Desde `mongosh`, ejecute el método `rs.initiate()`.
 - El campo `_id` establecido con el nombre del conjunto de réplicas especificado en `replication.replSetName` o en la opción `--replSet`.
 - La matriz de miembros con un documento por cada miembro del conjunto de réplicas.
 
-El siguiente ejemplo inicia un conjunto de réplicas de tres miembros.
+El siguiente ejemplo inicia `un conjunto de réplicas de tres miembros`:
 
 > [!IMPORTANT]
 > Ejecute `rs.initiate()` solo en una instancia de `mongod` para el conjunto de réplicas.
@@ -219,11 +268,11 @@ rs.initiate(
 Inicie `mongos` usando un archivo de configuración o un parámetro de línea de comando para especificar los servidores de configuración.
 
 
-Si usa un archivo de configuración, establezca `sharding.configDB` en el nombre del conjunto de réplicas del servidor de configuración y al menos un miembro del conjunto de réplicas en formato `<replSetName>/<host:port>`.
+Si usa un archivo de configuración, establezca `sharding.configDB` con el nombre del conjunto de réplicas del servidor de configuración y al menos un miembro del conjunto de réplicas en formato `<replSetName>/<host:port>`.
 
 ```yaml
 sharding:
-  configDB: myReplSet/localhost:27020,localhost:27021,localhost:27022
+  configDB: myConfigReplSet/localhost:27019,localhost:27020,localhost:27021
 net:
   port: 27018
   bindIp: localhost
@@ -241,7 +290,7 @@ En este punto, su clúster fragmentado cuenta con `mongos` y los servidores y de
 
 # Conectarse al clúster fragmentado
 
-Conecta `mongosh` a `mongos`. Especifica el host y el puerto donde se ejecuta mongos:
+Conecta `mongosh` a `mongos`. Especifica el host y el puerto donde se ejecuta `mongos`:
 
 ```bash
 mongosh --host <hostname> --port <port>
@@ -258,7 +307,7 @@ En una sesión de `mongosh` conectada a `mongos`, use el método `sh.addShard()`
 La siguiente operación agrega un único conjunto de réplicas de fragmentos al clúster:
 
 ```javascript
-sh.addShard("myReplSetName/localhost:27018,localhost:27019,localhost:27020")
+sh.addShard("myShardReplSet/localhost:27019,localhost:27020,localhost:27021")
 ```
 
 Repita estos pasos hasta que el clúster incluya todos los fragmentos deseados.
