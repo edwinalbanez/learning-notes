@@ -97,7 +97,7 @@ net:
 
 ---
 
-### Ejemplo
+### _EJEMPLO_
 
 Implementaremos `tres` miembros para el `servidor de configuración`, para cada uno realice lo siguiente:
 
@@ -206,7 +206,7 @@ Cada miembro del `shard` debe tener su propio directorio.
 
 ---
 
-### Ejemplo
+### _EJEMPLO_
 
 Implementaremos `tres` miembros para el `conjunto de réplicas de shards`, para cada uno realice lo siguiente:
 
