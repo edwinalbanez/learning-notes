@@ -59,7 +59,7 @@ net:
 
 Cada sección representa:
 
-### sharding:
+### `sharding`
 
 ```yaml
 sharding:
@@ -69,7 +69,7 @@ sharding:
 `clusterRole: configsvr`: Define que esta instancia de `mongod` actuará como un servidor de configuración en el clúster fragmentado.
 
 
-### replication:
+### `replication`
 
 ```yaml
 replication:
@@ -79,7 +79,7 @@ replication:
 `replSetName`: Especifica el nombre del replica set. Todos los config servers deben usar el mismo nombre de replica set.
 
 
-### net:
+### `net`
 
 ```yaml
 net:
