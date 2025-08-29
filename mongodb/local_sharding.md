@@ -99,9 +99,11 @@ net:
 
 ### _EJEMPLO_
 
-Implementaremos `tres` miembros para el `servidor de configuración`, para cada uno realice lo siguiente:
+Implementaremos `tres` miembros para el `servidor de configuración`.
 
-1. Cree un archivo `.conf` y escriba un `port` diferente para cada miembro del servidor de configuración:
+Para cada uno realice lo siguiente:
+
+1. Cree un archivo `.conf`, pegue lo siguiente y escriba un `port` diferente para cada uno:
 
 ```yaml
 sharding:
@@ -208,9 +210,11 @@ Cada miembro del `shard` debe tener su propio directorio.
 
 ### _EJEMPLO_
 
-Implementaremos `tres` miembros para el `conjunto de réplicas de shards`, para cada uno realice lo siguiente:
+Implementaremos `tres` miembros para el `conjunto de réplicas de shards`.
 
-1. Cree un archivo `.conf`, especifique un `port` y `dbPath` diferente para cada `shard`:
+Para cada uno realice lo siguiente:
+
+1. Cree un archivo `.conf`, pegue lo siguiente y especifique un `port` y `dbPath` diferente para cada `shard`:
 
 ```yaml
 sharding:
