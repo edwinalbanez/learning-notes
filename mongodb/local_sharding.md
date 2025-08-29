@@ -39,7 +39,7 @@ sh.addShard("localhost:27020")
 Los siguientes pasos implementan un conjunto de réplicas del servidor de configuración.
 
 
-Para una implementación de producción, implemente un conjunto de réplicas del servidor de configuración con al menos tres miembros. Para realizar pruebas, puede crear un conjunto de réplicas de un solo miembro.
+Para una implementación de producción, implemente un conjunto de réplicas del servidor de configuración con al menos `tres` miembros. Para realizar pruebas, puede crear un conjunto de réplicas de un solo miembro.
 
 
 ## 1. Inicie cada miembro del conjunto de réplicas del servidor de configuración.
@@ -99,7 +99,9 @@ net:
 
 ### Ejemplo
 
-Cree 3 archivos `.conf` y escriba un `port` diferente para cada miembro del servidor de configuración:
+Implementaremos `tres` miembros para el `servidor de configuración`, para cada uno realice lo siguiente:
+
+1. Cree un archivo `.conf` y escriba un `port` diferente para cada miembro del servidor de configuración:
 
 ```yaml
 sharding:
@@ -111,7 +113,7 @@ net:
   port: 27019
 ```
 
-Inicie `mongod` con la opción `--config` establecida en la ruta del archivo de configuración.
+2. Inicie `mongod` con la opción `--config` establecida en la ruta del archivo de configuración.
 
 ```bash
 mongod --config <path-to-config-file>
@@ -206,7 +208,9 @@ Cada miembro del `shard` debe tener su propio directorio.
 
 ### Ejemplo
 
-Cree 3 archivos `.conf`, especifique un `port` y `dbPath` diferente para cada `shard`:
+Implementaremos `tres` miembros para el `conjunto de réplicas de shards`, para cada uno realice lo siguiente:
+
+1. Cree un archivo `.conf`, especifique un `port` y `dbPath` diferente para cada `shard`:
 
 ```yaml
 sharding:
@@ -220,7 +224,7 @@ storage:
   dbPath: /data/shard01/member01
 ```
 
-Inicie `mongod` con la opción `--config` establecida en la ruta del archivo de configuración.
+2. Inicie `mongod` con la opción `--config` establecida en la ruta del archivo de configuración.
 
 ```bash
 mongod --config <path-to-config-file>
