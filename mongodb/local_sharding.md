@@ -1,12 +1,14 @@
-# Implementar un clúster fragmentado autoadministrado
+# Implementar un clúster fragmentado localmente
+
 Este tutorial implica la creación de un nuevo clúster fragmentado que consta de un `mongos`, el conjunto de réplicas del servidor de configuración y dos conjuntos de réplicas de fragmentos.
 
 ## Implementaciones de localhost 
+
 Si usa `localhost` o su `dirección IP` como la parte del nombre de host de cualquier identificador de host, debe usar ese identificador como configuración de host para cualquier otro componente de MongoDB en el clúster.
 
 Por ejemplo, el método `sh.addShard()` toma un parámetro de host para el nombre de host del fragmento de destino. Si establece host como localhost, debe usar localhost como host para todos los demás fragmentos del clúster.
 
-### CORRECTO:
+### Correcto:
 ```javascript
 // Primer shard
 sh.addShard("localhost:27019")
@@ -18,7 +20,7 @@ sh.addShard("localhost:27020")
 sh.addShard("localhost:27021")
 ```
 
-### INCORRECTO:
+### Incorrecto:
 ```javascript
 // Primer shard con localhost
 sh.addShard("localhost:27018")
@@ -32,7 +34,7 @@ sh.addShard("localhost:27020")
 
 ---
 
-## Crear el conjunto de réplicas del servidor de configuración
+# Crear el conjunto de réplicas del servidor de configuración
 
 Los siguientes pasos implementan un conjunto de réplicas del servidor de configuración.
 
@@ -40,7 +42,7 @@ Los siguientes pasos implementan un conjunto de réplicas del servidor de config
 Para una implementación de producción, implemente un conjunto de réplicas del servidor de configuración con al menos tres miembros. Para realizar pruebas, puede crear un conjunto de réplicas de un solo miembro.
 
 
-### 1. Inicie cada miembro del conjunto de réplicas del servidor de configuración.
+## 1. Inicie cada miembro del conjunto de réplicas del servidor de configuración.
 Al iniciar cada `mongod`, especifique la configuración de `mongod` ya sea mediante un archivo de configuración o la línea de comando.
 
 Si utiliza un archivo de configuración, configure:
@@ -57,7 +59,7 @@ net:
 
 Cada sección representa:
 
-#### sharding:
+### sharding:
 
 ```yaml
 sharding:
@@ -67,7 +69,7 @@ sharding:
 `clusterRole: configsvr`: Define que esta instancia de `mongod` actuará como un servidor de configuración en el clúster fragmentado.
 
 
-#### replication:
+### replication:
 
 ```yaml
 replication:
@@ -77,7 +79,7 @@ replication:
 `replSetName`: Especifica el nombre del replica set. Todos los config servers deben usar el mismo nombre de replica set.
 
 
-#### net:
+### net:
 
 ```yaml
 net:
@@ -98,7 +100,7 @@ mongod --config <path-to-config-file>
 ```
 
 
-### 2. Conectarse a uno de los servidores de configuración.
+## 2. Conectarse a uno de los servidores de configuración.
 
 Conecte `mongosh` a uno de los miembros del servidor de configuración.
 
@@ -106,7 +108,7 @@ Conecte `mongosh` a uno de los miembros del servidor de configuración.
 mongosh --host <hostname> --port <port>
 ```
 
-### 3. Iniciar el conjunto de réplicas.
+## 3. Iniciar el conjunto de réplicas.
 
 Desde `mongosh`, ejecute el método `rs.initiate()`.
 
@@ -138,7 +140,7 @@ Una vez que el conjunto de réplicas del servidor de configuración (CSRS) se ha
 
 ---
 
-## Crear los conjuntos de réplicas de shards
+# Crear los conjuntos de réplicas de shards
 
 Para una implementación de producción, utilice un conjunto de réplicas con al menos tres miembros. Para realizar pruebas, puede crear un conjunto de réplicas con un solo miembro.
 
@@ -148,7 +150,7 @@ Para una implementación de producción, utilice un conjunto de réplicas con al
 
 Para cada `shard`, utilice los siguientes pasos para crear el conjunto de réplicas de shards:
 
-### 1. Inicie cada miembro del conjunto de réplicas de shards.
+## 1. Inicie cada miembro del conjunto de réplicas de shards.
 
 Al iniciar cada `mongod`, especifique la configuración de `mongod` ya sea mediante un archivo de configuración o la línea de comando.
 
@@ -172,7 +174,7 @@ Inicie `mongod` con la opción `--config` establecida en la ruta del archivo de 
 mongod --config <path-to-config-file>
 ```
 
-### 2. Conectarse a un miembro del conjunto de réplicas de shards.
+## 2. Conectarse a un miembro del conjunto de réplicas de shards.
 
 Conecte `mongosh` a uno de los miembros del conjunto de réplicas.
 
@@ -180,7 +182,7 @@ Conecte `mongosh` a uno de los miembros del conjunto de réplicas.
 mongosh --host <hostname> --port <port>
 ```
 
-### 3. Iniciar el conjunto de réplicas.
+## 3. Iniciar el conjunto de réplicas.
 
 Desde `mongosh`, ejecute el método `rs.initiate()`.
 
@@ -209,7 +211,7 @@ rs.initiate(
 
 ---
 
-## Iniciar `mongos` para el clúster fragmentado
+# Iniciar `mongos` para el clúster fragmentado
 
 Inicie `mongos` usando un archivo de configuración o un parámetro de línea de comando para especificar los servidores de configuración.
 
@@ -234,7 +236,7 @@ En este punto, su clúster fragmentado cuenta con `mongos` y los servidores y de
 
 ---
 
-## Conectarse al clúster fragmentado
+# Conectarse al clúster fragmentado
 
 Conecta `mongosh` a `mongos`. Especifica el host y el puerto donde se ejecuta mongos:
 
@@ -246,7 +248,7 @@ Una vez que haya conectado `mongosh` a `mongos`, continúe con el siguiente proc
 
 ---
 
-## Agregar shards al clúster
+# Agregar shards al clúster
 
 En una sesión de `mongosh` conectada a `mongos`, use el método `sh.addShard()` para agregar cada fragmento al clúster.
 
@@ -260,7 +262,7 @@ Repita estos pasos hasta que el clúster incluya todos los fragmentos deseados.
 
 ---
 
-## Fragmentar una colección
+# Fragmentar una colección
 
 Para fragmentar una colección, conecte `mongosh` a `mongos` y use el método `sh.shardCollection()`.
 
@@ -270,7 +272,7 @@ Para fragmentar una colección, conecte `mongosh` a `mongos` y use el método `s
 
 MongoDB ofrece dos estrategias para fragmentar colecciones:
 
-### La fragmentación hash
+## La fragmentación hash
 
 utiliza un índice en hash de un solo campo como clave de fragmentación para particionar los datos en todo el clúster fragmentado.
 
@@ -278,7 +280,7 @@ utiliza un índice en hash de un solo campo como clave de fragmentación para pa
 sh.shardCollection("<database>.<collection>", { <shard key field> : "hashed" } )
 ```
 
-### La fragmentación por rangos
+## La fragmentación por rangos
 
 Utiliza múltiples campos como clave de fragmento y divide los datos en rangos contiguos determinados por los valores de la clave de fragmento.
 
