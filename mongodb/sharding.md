@@ -157,6 +157,18 @@ sh.shardCollection(
 )
 ```
 
+### Fragmentar una colección poblada
+
+Si fragmenta una colección poblada utilizando una clave de fragmento con hash:
+
+- La operación de fragmentación crea un fragmento inicial que abarca todos los valores de clave del fragmento.
+- Tras la creación del fragmento inicial, el balanceador mueve los rangos del fragmento inicial cuando necesita equilibrar los datos.
+
+### Fragmentar una colección vacía
+
+La operación de recopilación de fragmentos puede crear y distribuir fragmentos inicialmente para colecciones vacías o inexistentes si se han definido zonas y rangos de zonas para la colección. Esta creación y distribución inicial de fragmentos permite una configuración más rápida de la fragmentación por zonas. Tras la distribución inicial, el balanceador gestiona la distribución de fragmentos de forma habitual.
+
+
 
 ## Proceso de Balanceador
 
