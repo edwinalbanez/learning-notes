@@ -80,20 +80,82 @@ Una vez que los `chunks` están creados, el `balancer` se encarga de distribuir 
 - `Indivisibilidad`: Un chunk completo siempre reside en un solo shard, nunca se divide entre múltiples shards.
 
 
-## Estrategia de fragmentación
+## Estrategias de fragmentación
 
 MongoDB admite dos estrategias de fragmentación para distribuir datos entre clústeres fragmentados.
 
-### Fragmentación hash
+## `Fragmentación hash`
 
-La fragmentación hash utiliza un índice hash de un solo campo o un índice hash compuesto como clave de fragmento para particionar los datos en el clúster fragmentado.
-
-Fragmentación en un índice hash de un solo campo
-La fragmentación hash proporciona una distribución de datos más uniforme en el clúster fragmentado, a costa de reducir las operaciones dirigidas frente a las operaciones de difusión. Tras el hash, es poco probable que los documentos con valores de clave de fragmento "similares" se encuentren en el mismo fragmento o fragmento; es más probable que Mongos realice operaciones de difusión para responder a una consulta de rango determinada. Mongos puede dirigir consultas con coincidencias de igualdad a un único fragmento.
+La fragmentación hash utiliza un `índice hash` de **un solo campo** o un **índice hash compuesto** como clave de fragmento para particionar los datos en el clúster fragmentado. 
 
 
+La distribución de datos basada en valores hash facilita una distribución más uniforme, especialmente en conjuntos de datos donde la clave de fragmento cambia de `forma monótona` (que siempre van en la misma dirección) como valores de `ObjectId` o `marcas de tiempo`.
 
 
+MongoDB toma el valor del campo que has definido como "shard key" (clave de fragmentación) y le aplica una función hash. Esta función convierte el valor original en un **número hash**. A cada `chunk` se le asigna un rango basado en los valores **hash** calculados.
+
+
+
+### Fragmentación en un `índice hash de un solo campo`
+
+La fragmentación hash proporciona una distribución de datos más uniforme en el clúster fragmentado. Aunque un rango de claves de fragmento puede ser similar, es poco probable que sus valores hash se encuentren en el mismo `chunk`.
+
+
+Sin embargo, la distribución hash significa que las consultas basadas en rangos por medio de la `shard key` tienen menos probabilidades de apuntar a un solo `shard`, lo que da como resultado más operaciones de transmisión en todo el clúster.
+
+
+<img width="442" height="157" alt="image" src="https://github.com/user-attachments/assets/0b216921-d572-471d-a817-040b8773e0c7" />
+
+
+### Fragmentación en un `índice hash compuesto`
+
+MongoDB permite crear `índices compuestos con un único campo hash`. Para crear un índice hash compuesto, especifique "hashed" como el valor de cualquier clave de índice al crear el índice.
+
+
+El índice hash compuesto calcula el valor hash de un único campo del índice compuesto; este valor se utiliza junto con los demás campos del índice como clave de fragmentación.
+
+
+La fragmentación hash compuesta admite funciones como la fragmentación por zonas, donde el prefijo (es decir, el primer campo o campos sin hash) admite rangos de zonas, mientras que el campo hash permite una distribución más uniforme de los datos fragmentados. La fragmentación hash compuesta también admite claves de fragmentación con un prefijo hash para resolver problemas de distribución de datos relacionados con campos de `crecimiento monótono`.
+
+### Fragmentación hash vs. fragmentación a distancia
+
+Dada una colección que utiliza un valor `X` que aumenta `monótonamente` como clave de fragmento, el uso de fragmentos por rango da como resultado una distribución de inserciones entrantes similar a la siguiente:
+
+<img width="422" height="209" alt="image" src="https://github.com/user-attachments/assets/b7312e3c-480e-4a55-8234-633d3f8e532f" />
+
+
+- `Chunk con MinKey`: Siempre existe un `chunk` que maneja el rango más bajo, desde `MinKey` (valor más pequeño posible) hasta algún valor específico.
+- `Chunk con MaxKey`: Siempre existe un chunk que maneja el rango más alto, desde algún valor hasta `MaxKey` (valor más grande posible).
+
+Si la clave `X` **siempre aumenta** (`25 → 26 → 27`):
+
+- Todos los nuevos documentos van al chunk que termina en `MaxKey` (Chunk C en la imagen)
+- El shard que contiene este chunk se sobrecarga con todas las escrituras
+
+Al utilizar un índice hash en X, la distribución de inserciones es similar a la siguiente:
+
+
+<img width="401" height="217" alt="image" src="https://github.com/user-attachments/assets/a4c21238-c1e6-43f0-933b-c93d37cef91d" />
+
+
+Como ahora los datos se distribuyen de manera más uniforme, las inserciones se distribuyen de manera eficiente en todo el clúster.
+
+### Fragmentar la colección
+
+Utilice el método `sh.shardCollection()`, especificando el espacio de nombres completo de la colección y el índice hash de destino para utilizar como clave de fragmento.
+
+```javascript
+sh.shardCollection( "database.collection", { <field> : "hashed" } )
+```
+
+Para fragmentar una colección en un índice hash compuesto, especifique el espacio de nombres completo de la colección y el índice hash compuesto de destino que se utilizará como clave de fragmentación:
+
+```javascript
+sh.shardCollection(
+  "database.collection",
+  { "fieldA" : 1, "fieldB" : 1, "fieldC" : "hashed" }
+)
+```
 
 
 ## Proceso de Balanceador
