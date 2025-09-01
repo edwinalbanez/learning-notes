@@ -5,7 +5,7 @@
 1. [¿Dónde usar los hooks?](#dónde-usar-los-hooks)
 2. [Componentes dentro de componentes](#no-definir-componentes-dentro-de-los-componentes)
 3. [¿Qué es una Promesa?](#qué-es-una-promesa)
-4. [Virtual DOM](url)
+4. [Virtual DOM](#4-virtual-dom)
 
 ---
 
@@ -44,19 +44,19 @@ El `DOM virtual` de React es una **representación en memoria del DOM real** que
 
 El DOM virtual es una estructura de datos en JavaScript que describe cómo debería verse la interfaz de usuario. Es una copia "virtual" del DOM real que React mantiene en memoria como objetos JavaScript simples.
 
-## 1. Renderizado inicial
+### 1. Renderizado inicial
 Cuando tu componente se renderiza por primera vez, React crea una representación virtual de toda la estructura del DOM.
 
-## 2. Cambios de estado
+### 2. Cambios de estado
 Cuando el estado de un componente cambia, React crea un nuevo árbol del DOM virtual que refleja el estado actualizado.
 
-## 3. Algoritmo de diffing
+### 3. Algoritmo de diffing
 React compara (hace "diff") el nuevo árbol virtual con la versión anterior para identificar exactamente qué cambió.
 
-## 4. Reconciliación
+### 4. Reconciliación
 React calcula el conjunto mínimo de cambios necesarios para actualizar el DOM real.
 
-## 5. Actualización del DOM
+### 5. Actualización del DOM
 Finalmente, React aplica solo los cambios necesarios al DOM real, no toda la estructura.
 
 ### Ejemplo conceptual
