@@ -167,6 +167,8 @@ sh.shardCollection(
 )
 ```
 
+---
+
 ### Fragmentar una colección poblada (con datos)
 
 Cuando fragmentas una colección que ya tiene datos usando una clave hash:
@@ -176,11 +178,13 @@ Cuando fragmentas una colección que ya tiene datos usando una clave hash:
 
 Es un proceso más simple porque ya hay datos para analizar y distribuir.
 
+---
+
 ### Fragmentar una colección vacía
 
-El comportamiento varía según el tipo de clave de fragmentación y la configuración.
+El comportamiento varía según el tipo de clave de fragmentación y la configuración:
 
-### Caso 1: Clave hash de campo único
+### Clave hash de campo único
 
 #### Sin zonas definidas:
 
@@ -196,7 +200,9 @@ El comportamiento varía según el tipo de clave de fragmentación y la configur
 - Realiza distribución inicial basada en las zonas
 - Acelera la configuración del "zoned sharding" (fragmentación por zonas)
 
-### Caso 2: Clave compuesta hash con `prefijo hash`
+---
+
+### Clave compuesta hash con `prefijo hash`
 
 Cuando el campo hash es el primer campo en la clave compuesta:
 
@@ -212,7 +218,9 @@ Cuando el campo hash es el primer campo en la clave compuesta:
 - Crea chunks para la zona definida más chunks adicionales
 - Distribución inicial basada en zonas
 
-### Caso 3: Clave compuesta hash con prefijo No-Hash
+---
+
+### Clave compuesta hash con prefijo No-Hash
 
 Cuando el campo hash **NO** es el primer campo:
 
@@ -227,6 +235,8 @@ Cuando el campo hash **NO** es el primer campo:
 - Crea chunks para rangos de zona definidos
 - Subdivide cada chunk inicial para que cada shard en la zona reciba el mismo número de chunks
 - Permite configuración rápida de zoned sharding
+
+---
 
 ## Fragmentación por rangos
 
@@ -245,13 +255,126 @@ La fragmentación basada en rangos es la metodología de fragmentación `predete
 
 La fragmentación por rango es más eficiente cuando la clave de fragmento presenta las siguientes características:
 
-- Gran cardinalidad de clave de fragmento
-- Baja frecuencia de clave de fragmento
-- Claves de fragmento con cambios no monótonos
+#### Gran cardinalidad de clave de fragmento
+
+La `cardinalidad` se refiere al número de valores únicos posibles que puede tener tu **shard key**.
+
+- Necesitas una clave que pueda tener muchos valores diferentes
+- Esto permite que MongoDB distribuya los datos en más "chunks" (fragmentos)
+- Más chunks = mejor distribución = mejor paralelización
+
+Ejemplo
+
+```javascript
+// ❌ BAJA cardinalidad (malo)
+{ status: "active" }  // Solo 2-3 valores posibles
+
+// ✅ ALTA cardinalidad (bueno)
+{ userId: ObjectId }  // Millones de valores únicos posibles
+{ email: "user@domain.com" }  // Cada email es único
+```
+
+---
+
+#### Baja frecuencia de clave de fragmento
+
+La `frecuencia` se refiere a qué tan a menudo se repite cada valor de la **shard key**.
+
+- Cada valor de tu shard key debería aparecer pocas veces en tu colección
+- Evita valores que se repitan demasiado (hot spots)
+- Distribución más uniforme de los datos
+
+Ejemplo
+
+```javascript
+// ❌ ALTA frecuencia
+{ country: "USA" }  // Si 80% de usuarios son de USA
+
+// ✅ BAJA frecuencia
+{ userId: ObjectId }  // Cada documento tiene un userId único
+{ customerId: "CUST_12345" }  // Cada cliente aparece pocas veces
+```
+
+> [!NOTE]
+> El ejemplo anterior no es una recomendación de `shard key`. Su objetivo es explicar el concepto de `frecuencia`
+
+---
+
+#### Claves de fragmento con cambios no monótonos
+
+**Monótonamente creciente** significa que los valores siempre aumentan (como timestamps o IDs secuenciales).
+
+#### ¿Por qué evitar claves monótonas?
+
+- Todos los nuevos documentos van al mismo shard (el último)
+- Crea un "hotspot" de escritura
+- Los otros shards quedan subutilizados
+
+Ejemplo:
+
+```javascript
+// ❌ MONOTÓNO
+{ timestamp: ISODate() }      // Siempre creciente
+{ _id: ObjectId() }           // ObjectId incluye timestamp
+{ sequenceNumber: 12345 }     // Autoincremental
+
+// ✅ NO MONOTÓNO
+{ userId: "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6" } // UUID aleatorios
+{ productCode: "LAPTOP-XR7-BLK", "MOUSE-WL2-RED", "KEY-MX3-WHT" } // códigos de productos
+{ customerId: "CUST_XYZ" }    // IDs no secuenciales
+```
+
+---
 
 La siguiente imagen ilustra un clúster fragmentado que utiliza el campo `X` como clave de fragmentación. Si los valores de X tienen un rango amplio, una frecuencia baja y cambian a un ritmo no monótono, la distribución de inserciones podría ser similar a la siguiente:
 
 
+<img width="477" height="236" alt="image" src="https://github.com/user-attachments/assets/7b821b13-f338-4e6a-a501-69c6ba315c9b" />
+
+---
+
+### Fragmentar una colección
+
+Utilice el método `sh.shardCollection()`, especificando el espacio de nombres completo de la colección y el índice de destino o índice compuesto que se utilizará como clave del fragmento.
+
+```javascript
+sh.shardCollection( "database.collection", { <shard key> } )
+```
+
+---
+
+### Fragmentar una colección `poblada`
+
+Si fragmenta una colección poblada, `inicialmente solo se crea un chunk`. El balanceador migra los rangos de ese fragmento si es necesario, según el tamaño del rango configurado.
+
+#### 1. Creación de un solo chunk inicial
+Independientemente de cuántos documentos tenga tu colección (miles, millones, etc.), MongoDB crea inicialmente **UN SOLO CHUNK** que contiene TODOS los datos existentes.
+
+#### 2. El trabajo del balanceador
+El balanceador analiza este chunk gigante y determina si necesita dividirlo según el tamaño de chunk configurado (por defecto 128MB).
+
+- Si el chunk excede el tamaño límite, el balanceador lo divide (split)
+- Luego migra los nuevos chunks a diferentes shards para equilibrar la carga
+- Este proceso ocurre de forma automática y gradual
+
+---
+
+### Fragmentar una colección `vacía`
+
+Si fragmenta una colección vacía:
+
+#### Sin zonas definidas:
+
+1. **Creación de un solo chunk**: MongoDB crea un único fragmento (chunk) vacío que cubre todo el rango posible de valores de la shard key. Por ejemplo, si tu shard key es un campo numérico, este chunk cubriría desde -∞ hasta +∞.
+
+2. **Trabajo del balanceador**: El balanceador de MongoDB (un proceso automático) toma este chunk inicial y lo distribuye entre los shards disponibles conforme sea necesario. También se encarga de la distribución futura cuando lleguen datos.
+
+
+#### Con zonas y rangos definidos:
+
+1. **Creación de múltiples chunks**: MongoDB crea chunks vacíos específicamente para cada rango de zona que definiste, además de chunks adicionales para cubrir cualquier parte del rango de shard key que no esté cubierta por las zonas.
+2. **Distribución inicial inteligente**: Los chunks se distribuyen inmediatamente según las zonas configuradas, lo que hace que el proceso sea más eficiente.
+3. **Gestión futura**: El balanceador continúa manejando la distribución según las reglas de zona establecidas.
 
 ## Consideraciones antes de fragmentar
 
@@ -273,33 +396,3 @@ Debes conectarte a un enrutador Mongos para interactuar con cualquier colección
 Puedes conectarte a un `mongos` de la misma manera que te conectas a un `mongod` usando `mongosh` o un controlador MongoDB.
 
 
-
-### Fragmentación por rangos
-
-Implica dividir los datos en **rangos** según los valores de la `shard key`. A cada `chunk` se le asigna un rango según los valores de la `shard key`.
-
-
-<img width="443" height="144" alt="image" src="https://github.com/user-attachments/assets/be4dd6dd-91f1-49e4-8a3c-b7864e525441" />
-
-Es más probable que un rango de `shard key` con valores similares resida en el mismo `chunk`. Esto permite **operaciones específicas**, ya que `Mongos` puede enrutar las operaciones únicamente a los `shards` que contienen los datos necesarios.
-
-#### Ejemplos
-```javascript
-// Fragmentación por rangos (estrategia por defecto)
-sh.shardCollection("mydb.users", {"age": 1})
-sh.shardCollection("mydb.orders", {"orderDate": 1})
-sh.shardCollection("mydb.products", {"category": 1, "price": 1})
-```
-
-#### Ilustración
-```javascript
-// MongoDB creará chunks basados en rangos de valores:
-// Chunk 1: age: MinKey → 25
-// Chunk 2: age: 25 → 50  
-// Chunk 3: age: 50 → 75
-// Chunk 4: age: 75 → MaxKey
-
-sh.shardCollection("ecommerce.customers", {"age": 1})
-```
-
-La eficiencia de la fragmentación por rangos depende de la `shard key` elegida. Unas `shard key` mal diseñadas pueden resultar en una distribución desigual de los datos, lo que puede anular algunas de las ventajas de la fragmentación o causar cuellos de botella en el rendimiento.
