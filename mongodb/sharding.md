@@ -79,6 +79,17 @@ Una vez que los `chunks` están creados, el `balancer` se encarga de distribuir 
 - `Distribución`: Los chunks se distribuyen automáticamente entre los diferentes shards del cluster para balancear la carga.
 - `Indivisibilidad`: Un chunk completo siempre reside en un solo shard, nunca se divide entre múltiples shards.
 
+## Proceso de Balanceador
+
+En un intento por lograr una distribución uniforme de datos entre todos los `shards` del clúster, un `balanceador` se ejecuta en segundo plano para migrar rangos entre los fragmentos.
+
+MongoDB incluye un balanceador automático que:
+
+- Monitorea la distribución de chunks entre shards
+- Mueve chunks automáticamente cuando detecta desbalances
+- Intenta mantener un número similar de chunks en cada shard
+- Puede configurarse para ejecutarse en ventanas de tiempo específicas
+
 
 ## Estrategias de fragmentación
 
@@ -93,7 +104,6 @@ La distribución de datos basada en valores hash facilita una distribución más
 
 
 MongoDB toma el valor del campo que has definido como "shard key" (clave de fragmentación) y le aplica una función hash. Esta función convierte el valor original en un **número hash**. A cada `chunk` se le asigna un rango basado en los valores **hash** calculados.
-
 
 
 ### Fragmentación en un `índice hash de un solo campo`
@@ -157,44 +167,91 @@ sh.shardCollection(
 )
 ```
 
-### Fragmentar una colección poblada
+### Fragmentar una colección poblada (con datos)
 
-Si fragmenta una colección poblada utilizando una clave de fragmento con hash:
+Cuando fragmentas una colección que ya tiene datos usando una clave hash:
 
-- La operación de fragmentación crea un fragmento inicial que abarca todos los valores de clave del fragmento.
-- Tras la creación del fragmento inicial, el balanceador mueve los rangos del fragmento inicial cuando necesita equilibrar los datos.
+1. `Creación inicial`: Se crea un chunk inicial que cubre todos los valores existentes de la clave de fragmentación
+2. `Distribución posterior`: El balanceador mueve rangos de este chunk inicial cuando necesita equilibrar los datos entre shards
+
+Es un proceso más simple porque ya hay datos para analizar y distribuir.
 
 ### Fragmentar una colección vacía
 
-La operación de recopilación de fragmentos puede crear y distribuir fragmentos inicialmente para colecciones vacías o inexistentes si se han definido zonas y rangos de zonas para la colección. Esta creación y distribución inicial de fragmentos permite una configuración más rápida de la fragmentación por zonas. Tras la distribución inicial, el balanceador gestiona la distribución de fragmentos de forma habitual.
+El comportamiento varía según el tipo de clave de fragmentación y la configuración.
+
+### Caso 1: Clave hash de campo único
+
+#### Sin zonas definidas:
+
+- A partir de MongoDB 8.0, crea 1 chunk por shard por defecto
+- Puedes usar la opción `numInitialChunks` para especificar un número diferente
+- Se realiza una distribución inicial inmediata
+- Esto acelera la configuración del sharding
+
+#### Con zonas definidas:
+
+- Crea chunks vacíos para los rangos de zona definidos
+- Crea chunks adicionales para cubrir todo el rango de valores posibles
+- Realiza distribución inicial basada en las zonas
+- Acelera la configuración del "zoned sharding" (fragmentación por zonas)
+
+### Caso 2: Clave compuesta hash con `prefijo hash`
+
+Cuando el campo hash es el primer campo en la clave compuesta:
+
+#### Sin zonas:
+
+- Crea chunks vacíos cubriendo todo el rango
+- Los campos no-hash tienen valor MinKey en cada punto de división
+- 1 chunk por shard por defecto (MongoDB 8.0+)
+- Opción `numInitialChunks` disponible
+
+#### Con zona única (MinKey a MaxKey) y opción presplitHashedZones:
+
+- Crea chunks para la zona definida más chunks adicionales
+- Distribución inicial basada en zonas
+
+### Caso 3: Clave compuesta hash con prefijo No-Hash
+
+Cuando el campo hash **NO** es el primer campo:
+
+#### Sin zonas y `preSplitHashedZones` false/omitido:
+
+- No se realiza creación ni distribución inicial de chunks
+
+#### Sin zonas y `preSplitHashedZones` true:
+- Retorna un error - no se puede hacer
+  
+#### Con zonas y `preSplitHashedZones` especificado:
+- Crea chunks para rangos de zona definidos
+- Subdivide cada chunk inicial para que cada shard en la zona reciba el mismo número de chunks
+- Permite configuración rápida de zoned sharding
+
+## Fragmentación por rangos
+
+La fragmentación basada en rangos implica dividir los datos en `rangos contiguos` determinados por los valores de la clave de fragmento. En este modelo, es probable que los documentos con valores de clave de fragmento cercanos se encuentren en el `mismo chunk o shard`. 
 
 
+Esto permite consultas eficientes donde las lecturas se dirigen a documentos dentro de un rango contiguo. Sin embargo, el rendimiento de lectura y escritura puede disminuir si la selección de la clave de fragmento es deficiente
 
-## Proceso de Balanceador
 
-En un intento por lograr una distribución uniforme de datos entre todos los `shards` del clúster, un `balanceador` se ejecuta en segundo plano para migrar rangos entre los fragmentos.
+<img width="476" height="157" alt="image" src="https://github.com/user-attachments/assets/fb534b53-e92f-482a-b0ab-78b811f4f45d" />
 
-MongoDB incluye un balanceador automático que:
 
-- Monitorea la distribución de chunks entre shards
-- Mueve chunks automáticamente cuando detecta desbalances
-- Intenta mantener un número similar de chunks en cada shard
-- Puede configurarse para ejecutarse en ventanas de tiempo específicas
+La fragmentación basada en rangos es la metodología de fragmentación `predeterminada` si no se configuran otras opciones, como las requeridas para la fragmentación en hash o las zonas.
 
-## Ejemplo de configuración básica
+### Selección de clave de fragmento
 
-Para habilitar sharding en una colección:
+La fragmentación por rango es más eficiente cuando la clave de fragmento presenta las siguientes características:
 
-```javascript
-// Habilitar sharding en la base de datos
-sh.enableSharding("miBaseDeDatos")
+- Gran cardinalidad de clave de fragmento
+- Baja frecuencia de clave de fragmento
+- Claves de fragmento con cambios no monótonos
 
-// Crear índice en la shard key
-db.miColeccion.createIndex({usuario_id: 1})
+La siguiente imagen ilustra un clúster fragmentado que utiliza el campo `X` como clave de fragmentación. Si los valores de X tienen un rango amplio, una frecuencia baja y cambian a un ritmo no monótono, la distribución de inserciones podría ser similar a la siguiente:
 
-// Habilitar sharding en la colección
-sh.shardCollection("miBaseDeDatos.miColeccion", {usuario_id: 1})
-```
+
 
 ## Consideraciones antes de fragmentar
 
@@ -215,54 +272,7 @@ Debes conectarte a un enrutador Mongos para interactuar con cualquier colección
 
 Puedes conectarte a un `mongos` de la misma manera que te conectas a un `mongod` usando `mongosh` o un controlador MongoDB.
 
-## Estrategia de fragmentación
 
-MongoDB admite dos estrategias de fragmentación para distribuir datos entre clústeres fragmentados .
-
-### Fragmentación hash
-
-Es una estrategia de distribución de datos donde MongoDB toma el valor del campo que has definido como "shard key" (clave de fragmentación) y le aplica una función hash. Esta función convierte el valor original en un **número hash**. A cada `chunk` se le asigna un rango basado en los valores **hash** calculados.
-
-
-<img width="442" height="157" alt="image" src="https://github.com/user-attachments/assets/0b216921-d572-471d-a817-040b8773e0c7" />
-
-
-Aunque un rango de claves de fragmento puede ser similar, es poco probable que sus valores hash se encuentren en el mismo `chunk`. La distribución de datos basada en valores hash facilita una distribución más uniforme, especialmente en conjuntos de datos donde la clave de fragmento cambia de `forma monótona`.
-
-#### Ejemplos
-
-```javascript
-sh.shardCollection("mydb.users", {"userId": "hashed"})
-sh.shardCollection("mydb.sessions", {"sessionId": "hashed"})
-sh.shardCollection("mydb.logs", {"timestamp": "hashed"})
-```
-
-#### Ilustración
-
-```javascript
-// MongoDB creará chunks basados en valores hash:
-// Chunk 1: userId_hash: MinKey → -5000000000000000000
-// Chunk 2: userId_hash: -5000000000000000000 → 0
-// Chunk 3: userId_hash: 0 → 5000000000000000000
-// Chunk 4: userId_hash: 5000000000000000000 → MaxKey
-
-sh.shardCollection("ecommerce.customers", {"userId": "hashed"})
-```
-
-#### ¿Cuando usar fragmentación hash?
-
-```javascript
-// 1. Writes secuenciales que causarían hotspots
-sh.shardCollection("logs.events", {"timestamp": "hashed"})
-
-// 2. IDs autoincrementales
-sh.shardCollection("app.users", {"_id": "hashed"})
-
-// 3. Necesitas máxima distribución uniforme
-sh.shardCollection("sessions.data", {"sessionId": "hashed"})
-```
-
-Sin embargo, la distribución hash significa que las consultas basadas en rangos por medio de la `shard key` tienen menos probabilidades de apuntar a un solo `shard`, lo que da como resultado más operaciones de transmisión en todo el clúster.
 
 ### Fragmentación por rangos
 
