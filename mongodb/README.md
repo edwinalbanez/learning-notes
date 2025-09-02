@@ -73,6 +73,10 @@
     - [¿Cómo funcionan los índices?](#qué-son-realmente-los-índices-internamente)
     - [Analogía de listas](#analogía-de-listas)
 
+14. [Colecciones con límite](#14-colecciones-con-límite)
+    - [Características](#características-principales)
+    - [Crear colecciones](#crear-colecciones-con-límite)
+
 ---
 
 # 1. Instalación y configuración
@@ -2521,7 +2525,7 @@ Las `capped collections` son un tipo especial de colección en MongoDB que tiene
 - **Eliminación automática**: Los documentos más antiguos se eliminan automáticamente cuando se alcanza el límite.
 - **No modificables**: No puedes actualizar documentos si la actualización aumenta su tamaño. Las eliminaciones manuales tampoco están permitidas.
 
-## Creación de Capped Collections
+## Crear colecciones con límite
 ```javascript
 db.createCollection("miColeccion", {
    capped: true,
@@ -2557,13 +2561,7 @@ db.createCollection("eventos", {
 - **Colas de mensajes**: Implementación de colas FIFO simples.
 - **Datos de sesión**: Almacenamiento temporal de datos de sesiones web.
 
-## Operaciones especiales
-
-### Consultas Tailable Cursors
-Las capped collections soportan cursores "tailable" que permanecen abiertos y reciben nuevos documentos automáticamente:
-```javascript
-db.logs.find().addOption(DBQuery.Option.tailable)
-```
+## Operaciones
 
 ### Verificar si una colección es capped:
 ```javascript
