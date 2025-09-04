@@ -7,15 +7,15 @@ Esto es especialmente útil cuando el cluster se extiende a través de múltiple
 
 <img width="441" height="219" alt="image" src="https://github.com/user-attachments/assets/6b3e0b14-327c-4e6e-8591-29e8b4a61d71" />
 
-## Análisis del diagrama
+# Análisis del diagrama
 
-### Configuración de Zones
+###Configuración de Zones
 En la parte superior vemos la definición de zonas:
 
 - **Zona A**: Rango X: 1-10
 - **Zona B**: Rango X: 10-20
 
-### Distribución de Chunks
+## Distribución de Chunks
 Los chunks (fragmentos de datos) se distribuyen según su shard key:
 
 - `{ X : 8 }` → Va a Shard Alpha (está en zona A: 1-10)
@@ -23,7 +23,7 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 - `{ X : 3 }` → Va a Shard Beta (está en zona A: 1-10)
 - `{ X : 23 }` → Va a Shard Charlie (fuera de zonas definidas)
 
-### Asignación de Shards a Zonas
+## Asignación de Shards a Zonas
 
 - **Shard Alpha**: zone ["A"] - Solo maneja datos de zona A
 - **Shard Beta**: zone ["A","B"] - Maneja datos de ambas zonas
@@ -35,7 +35,7 @@ Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards
 > Configurar zonas y rangos de zonas `antes` de fragmentar una colección vacía o inexistente permite una configuración más rápida de la fragmentación por zonas.
 
 
-## Rangos
+# Rangos
 Cada zona abarca **uno** o **más** `rangos de valores` de clave de fragmento para una colección. Cada `rango` que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
 
 Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene los siguientes rangos de zona:
@@ -48,9 +48,9 @@ Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene l
 - Un documento con un valor de clave de fragmento de `7` se enruta a la `zona A`.
 - Un documento con un valor de clave de fragmento de `10` se enruta a la `zona B`.
 
-## Claves de fragmentos con hash y rangos de zonas
+# `Shard key` con hash y rangos de zonas
 
-Cuando usas un `shard key` con `hash` en MongoDB, las zonas y la distribución de datos se basan en los valores hasheados, no en los valores originales de los documentos. Esto cambia completamente cómo se comporta el enrutamiento de documentos comparado con shard keys sin hash.
+Cuando usas una `shard key` con `hash` en MongoDB, las zonas y la distribución de datos se basan en los valores hasheados, no en los valores originales de los documentos. Esto cambia completamente cómo se comporta el enrutamiento de documentos comparado con shard keys sin hash.
 
 Por ejemplo, considera una `shard key` en `{"x" : "hashed"}`. El siguiente rango representa el rango con hash entre `5` y `10`:
 
@@ -68,7 +68,7 @@ El `8` (que está entre 5 y 10) **NO** va a la misma zona, porque **después del
 > Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
 
 
-## Predefinir zonas y rangos de zonas para una colección vacía o inexistente
+# Zonas y rangos de zonas para una colección **vacía o inexistente**
 MongoDB permite definir zonas y rangos de zona antes de fragmentar una colección vacía. Esto es importante porque:
 
 - Las `zonas` son grupos lógicos de `shards` que pueden estar ubicados en diferentes centros de datos, regiones geográficas, o tener diferentes características de hardware
@@ -114,7 +114,6 @@ sh.shardCollection("mydb.users", { region: 1, userId: 1 })
 - Son tipos de datos especiales del sistema BSON
 
 ```javascript
-// Esto es código REAL que funciona:
 sh.updateZoneKeyRange("mydb.users", 
   { region: "east", userId: MinKey },    // ← MinKey literal
   { region: "east", userId: MaxKey },    // ← MaxKey literal
