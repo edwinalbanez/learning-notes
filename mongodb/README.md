@@ -76,8 +76,8 @@
 14. [Colecciones con límite](#14-colecciones-con-límite)
     - [Características](#características-principales)
     - [Crear colecciones](#crear-colecciones-con-límite)
-15. [Sharding]()
-16. [Zonas](url)
+15. [Sharding](https://github.com/albanez26/learning-notes/blob/main/mongodb/sharding.md)
+16. [Zonas](https://github.com/albanez26/learning-notes/blob/main/mongodb/zones.md)
 ---
 
 # 1. Instalación y configuración
