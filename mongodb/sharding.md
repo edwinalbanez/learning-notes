@@ -190,16 +190,13 @@ El comportamiento varía según el tipo de clave de fragmentación y la configur
 
 - A partir de MongoDB 8.0, crea 1 chunk por shard por defecto
 - Puedes usar la opción `numInitialChunks` para especificar un número diferente
-- Se realiza una distribución inicial inmediata
-- Esto acelera la configuración del sharding
+- Después de la distribución inicial, el balanceador administra la distribución de fragmentos en adelante.
 
 #### Con zonas definidas:
 
-- Crea chunks vacíos para los rangos de zona definidos
-- Crea chunks adicionales para cubrir todo el rango de valores posibles
+- Se crean fragmentos vacíos para los rangos de zona definidos, así como fragmentos adicionales para cubrir todo el rango de valores de clave de fragmentación
 - Realiza distribución inicial basada en las zonas
-- Acelera la configuración del "zoned sharding" (fragmentación por zonas)
-
+- Después de la distribución inicial, el balanceador administra la distribución de fragmentos en adelante.
 ---
 
 ### Clave compuesta hash con `prefijo hash`
@@ -209,14 +206,14 @@ Cuando el campo hash es el primer campo en la clave compuesta:
 #### Sin zonas:
 
 - Crea chunks vacíos cubriendo todo el rango
-- Los campos no-hash tienen valor MinKey en cada punto de división
+- Los campos no-hash tienen valor `MinKey` en cada punto de división
 - 1 chunk por shard por defecto (MongoDB 8.0+)
 - Opción `numInitialChunks` disponible
 
 #### Con zona única (MinKey a MaxKey) y opción presplitHashedZones:
-
-- Crea chunks para la zona definida más chunks adicionales
+- Crea chunks para la zona definida más chunks adicionales para cubrir todo el rango de valores de clave de fragmentación
 - Distribución inicial basada en zonas
+- Después de la distribución inicial, el balanceador administra la distribución de chunks en adelante.
 
 ---
 
@@ -226,15 +223,15 @@ Cuando el campo hash **NO** es el primer campo:
 
 #### Sin zonas y `preSplitHashedZones` false/omitido:
 
-- No se realiza creación ni distribución inicial de chunks
+- MongoDB no realiza ninguna creación o distribución de fragmentos inicial al fragmentar la colección.
 
 #### Sin zonas y `preSplitHashedZones` true:
 - Retorna un error - no se puede hacer
   
 #### Con zonas y `preSplitHashedZones` especificado:
-- Crea chunks para rangos de zona definidos
+- Crea chunks para rangos de zona definidos, así como chunks adicionales para cubrir todo el rango de valores de clave de fragmentación.
 - Subdivide cada chunk inicial para que cada shard en la zona reciba el mismo número de chunks
-- Permite configuración rápida de zoned sharding
+- Tras la distribución inicial, el balanceador gestiona la distribución de los chunks en adelante.
 
 ---
 
