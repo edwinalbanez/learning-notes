@@ -76,7 +76,8 @@
 14. [Colecciones con límite](#14-colecciones-con-límite)
     - [Características](#características-principales)
     - [Crear colecciones](#crear-colecciones-con-límite)
-
+15. [Sharding]()
+16. [Zonas](url)
 ---
 
 # 1. Instalación y configuración
