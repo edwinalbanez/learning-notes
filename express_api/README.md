@@ -149,8 +149,34 @@ Definamos un script npm dedicado para él en el archivo `package.json`:
 
 ---
 
-# REST
+# Recibiendo información
 
+Para acceder a los datos fácilmente, necesitamos la ayuda del `json-parser` de Express, que se usa con el comando `app.use(express.json())`.
+
+Activemos json-parser e implementemos un controlador inicial para manejar las solicitudes HTTP POST:
+
+
+```javascript
+const express = require('express')
+const app = express()
+
+
+app.use(express.json())
+
+//...
+
+
+app.post('/api/notes', (request, response) => {
+  const note = request.body
+  console.log(note)
+  response.json(note)
+})
+```
+
+La función del controlador de eventos puede acceder a los datos de la propiedad `body` del objeto `request`.
+
+
+Sin `json-parser`, la propiedad `body` no estaría definida. El json-parser funciona para que tome los datos JSON de una solicitud, los transforme en un objeto JavaScript y luego los adjunte a la propiedad **body** del objeto **request** antes de llamar al controlador de ruta.
 
 
 
