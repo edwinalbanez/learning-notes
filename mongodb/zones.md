@@ -311,6 +311,253 @@ Son útiles para definir rangos "abiertos":
 
 ---
 
+# Shard keys simples o compuestas
+
+> [!NOTE]
+> Este ejemplo solo aplica a claves de fragmento de campo único o compuestas sin un campo con hash.
+> 
+> Por ejemplo, `{ "zip": 1}` o `{ "zip": 1, "account": 1}`
+
+## 1. Creas las zonas
+usa `sh.addShardToZone()` para crear las zonas:
+
+```javascript
+sh.addShardToZone("shardA", "DC1")
+sh.addShardToZone("shardB", "DC2")
+```
+
+## 2. Crear los rangos de zona
+Utilice `sh.updateZoneKeyRange()` para crear los rangos para la colección `contacts` vacía en la base de datos `exampledb`:
+
+```javascript
+sh.updateZoneKeyRange(
+    "exampledb.contacts",
+    { zip: 10001 },
+    { zip: 10090 },
+    "DC1"
+);
+
+sh.updateZoneKeyRange(
+    "exampledb.contacts",
+    { zip: 90001 },
+    { zip: 96054 },
+    "DC2"
+);
+```
+
+## 3. Fragmenta la colección
+
+> [!NOTE]
+> Si la colección no existe, la operación de fragmentación la crea.
+> 
+> Si la colección está vacía y no existe un índice que admita la clave de fragmentación, la operación de fragmentación crea el índice.
+
+Utilice `sh.shardCollection()` para fragmentar la colección `contacts`:
+
+```javascript
+sh.shardCollection("exampledb.contacts",  { zip: 1 } );
+```
+
+## 4. Revisar los fragmentos creados y la distribución
+Para ver los fragmentos creados y la distribución, ejecute la operación `sh.status()`:
+
+```javascript
+sh.status()
+```
+
+El método retorna:
+```javascript
+--- Sharding Status ---
+  sharding version: {
+    "_id" : 1,
+    "minCompatibleVersion" : 5,
+    "currentVersion" : 6,
+    "clusterId" : ObjectId("5b80c06d35a961fd0ae1986d")
+  }
+  shards:
+        {  "_id" : "shardA",  "host" : "shardA/mongodb0.example.net:27018,mongodb1.example.net:27018,mongodb2.example.net:27018",  "state" : 1,  "tags" : [ "DC1" ] }
+        {  "_id" : "shardB",  "host" : "shardB/mongodb3.example.net:27018,mongodb4.example.net:27018,mongodb5.example.net:27018",  "state" : 1,  "tags" : [ "DC2" ] }
+  active mongoses:
+        "4.2.0" : 2
+  autosplit:
+        Currently enabled: yes
+  balancer:
+        Currently enabled:  yes
+        Currently running:  no
+        Failed balancer rounds in last 5 attempts:  0
+        Migration Results for the last 24 hours:
+                No recent migrations
+  databases:
+        { "_id" : "config", "primary" : "config" }
+        { "_id" : "exampledb", "primary" : "shardA", "version" : { "uuid" : UUID("6c351bcf-acd2-4fd9-82d8-9f6bd7321558"), "lastMod" : 1 } }
+                exampledb.contacts
+                        shard key: { "zip" : 1 }
+                        unique: false
+                        balancing: true
+                        chunks:
+                                shardA   3
+                                shardB   2
+                        { "zip" : { "$minKey" : 1 } } -->> { "zip" : 10001 } on : shardA Timestamp(1, 0)
+                        { "zip" : 10001 } -->> { "zip" : 10090 } on : shardA Timestamp(1, 1)
+                        { "zip" : 10090 } -->> { "zip" : 90001 } on : shardB Timestamp(1, 2)
+                        { "zip" : 90001 } -->> { "zip" : 96054 } on : shardB Timestamp(1, 3)
+                        { "zip" : 96054 } -->> { "zip" : { "$maxKey" : 1 } } on : shardA Timestamp(1, 4)
+                          tag: DC1  { "zip" : 10001 } -->> { "zip" : 10090 }
+                          tag: DC2  { "zip" : 90001 } -->> { "zip" : 96054 }
+```
+
+Para la colección, la operación de fragmentación creó cinco `chunks` (dos chunks que corresponden a los rangos de zona y los otros tres para cubrir todos los demás valores) en el `shardA` y el `shardB`.
+
+---
+
+# Shard key con hash compuesto y `prefijo con hash`
+
+> [!NOTE]
+> Este ejemplo solo se aplica a claves de fragmento con hash compuesto donde el campo con hash es el prefijo de la clave de fragmento (es decir, el primer campo de la clave de fragmento tiene hash).
+> 
+> Por ejemplo, `{ "_id": "hashed", "facility": 1}`
+
+MongoDB admite la fragmentación de colecciones en índices con hash compuesto. Al fragmentar una clave de fragmento con hash compuesto, MongoDB puede optimizar la creación y distribución inicial de fragmentos en la colección vacía o inexistente solo si los rangos de zona definidos cumplen requisitos adicionales.
+
+
+Considere una colección vacía, `examples.metrics`, que almacenará análisis de una de dos plantas de fabricación. La clave de fragmento planificada es `{ "_id": "hashed", "facility": 1}`, donde el campo hash es el prefijo de la clave de fragmento.
+
+## 1. Crear las zonas
+
+La clave de fragmento planificada es `{ "_id": "hashed", "facility": 1}`. Dado que el campo hash es el prefijo (es decir, el primer campo de la clave de fragmento), cree una sola zona con `sh.addShardToZone()`:
+
+```javascript
+sh.addShardToZone("shardA", "FacilityAlpha")
+sh.addShardToZone("shardB", "FacilityAlpha")
+```
+
+## 2. Crear los rangos de zona
+La distribución inicial de `chunks` en una clave de fragmento con hash compuesto y un `prefijo con hash` requiere un `único rango de zona` con `MinKey` para todos los campos de límite inferior y `MaxKey` para todos los campos de límite superior.
+
+
+Utilice `sh.updateZoneKeyRange()` para crear un único rango:
+
+```javascript
+sh.updateZoneKeyRange(
+   "examples.metrics",
+   { "_id" : MinKey, "facility" : MinKey },
+   { "_id" : MaxKey, "facility" : MaxKey },
+   "FacilityAlpha"
+);
+```
+
+## 3. Fragmentar la colección
+
+> [!NOTE]
+> Si la colección no existe, la operación de fragmentación la crea.
+> 
+> Si la colección está vacía y no existe un índice que admita la clave de fragmentación, la operación de fragmentación crea el índice.
+
+Utilice `sh.shardCollection()` con `presplitHashedZones: true` para fragmentar la colección y realizar la creación y distribución inicial de fragmentos:
+
+```javascript
+sh.shardCollection(
+  "examples.metrics",
+  { "_id" : "hashed", "facility" : 1 },
+  false,
+  { presplitHashedZones: true }
+)
+```
+
+## 4. Revisar los fragmentos creados y la distribución
+
+Para ver los fragmentos creados y su distribución, ejecute la operación:
+
+```javascript
+sh.status()
+```
+
+El resultado se asemeja al siguiente (se omite el contenido para facilitar la lectura):
+
+```javascript
+--- Sharding Status ---
+
+databases:
+  { "_id" : "config", "primary" : "config" }
+  { "_id" : "examples", "primary" : "shardA", "version" : { "uuid" : UUID("245f8abf-a363-48b0-8208-2a5b577bbb4e"), "lastMod" : 1 } }
+    examples.metrics
+      shard key: { "_id" : "hashed", "facility" : 1 }
+      unique: false
+      balancing: true
+      chunks:
+        shardA  2
+        shardB  2
+      { "_id" : { "$minKey" : 1 }, "facility" : { "$minKey" : 1 } } -->> { "_id" : NumberLong("-4611686018427387902"), "facility" : { "$minKey" : 1 } } on : shardA Timestamp(1, 0)
+      { "_id" : NumberLong("-4611686018427387902"), "facility" : { "$minKey" : 1 } } -->> { "_id" : NumberLong(0), "facility" : { "$minKey" : 1 } } on : shardA Timestamp(1, 1)
+      { "_id" : NumberLong(0), "facility" : { "$minKey" : 1 } } -->> { "_id" : NumberLong("4611686018427387902"), "facility" : { "$minKey" : 1 } } on : shardB Timestamp(1, 2)
+      { "_id" : NumberLong("4611686018427387902"), "facility" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 }, "facility" : { "$maxKey" : 1 } } on : shardB Timestamp(1, 3)
+
+        tag: FacilityAlpha  { "_id" : { "$minKey" : 1 }, "facility" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 }, "facility" : { "$maxKey" : 1 } }
+```
+
+La fragmentación generó un total de 4 `chunks`. Dos de ellos corresponden a los límites absolutos inferior y superior. Se creó una zona en el `shardA` y el `shardB`, correspondiente a `FacilityAlpha`. La zona se subdividió en 2 fragmentos mediante el campo hash.
+
+
+# Shard key con hash compuesto y campo con hash `sin prefijo`
+
+> [!NOTE]
+> Este ejemplo solo se aplica a claves de fragmento con hash compuesto donde el campo con hash no es el prefijo de la clave de fragmento (es decir, el primer campo de la clave de fragmento no tiene hash).
+>
+> Por ejemplo, { "facility": 1, "_id": "hashed"}
+
+Considere una colección vacía, `examples.metrics`, que almacenará análisis de una de dos instalaciones de fabricación. La clave de fragmento planificada es `{ "facility": 1, "_id": "hashed"}`, donde el campo hash no es el prefijo de la clave de fragmento.
+
+
+- El campo "`facility`" almacena el nombre de la instalación: "`FacilityAlpha`" o "`FacilityBaker`". La colección requiere rangos de zona en la instalación para ayudar a aislar los datos de cada instalación en fragmentos específicos.
+- El campo `_id` compensa la baja cardinalidad del campo "`facility`". El hash compensa la naturaleza monótonamente creciente del campo `_id`.
+
+## 1. Crear la zonas
+
+Utilice el comando `sh.addShardToZone()` para crear las zonas.
+
+```javascript
+sh.addShardToZone("shardA", "FacilityAlpha")
+sh.addShardToZone("shardB", "FacilityBaker")
+```
+
+## 2. Crear los rangos de zona
+
+La clave de fragmento planificada es `{"facility": 1, "_id": "hashed"}`. El campo "`facility`" tiene dos valores posibles: `FacilityAlpha` y `FacilityBaker`.
+
+
+La distribución inicial de fragmentos en una clave de fragmento con hash compuesto, donde el campo con hash no es el prefijo, requiere **un rango de zona para cada combinación de valores** de campo de prefijo distintos (es decir, todos los campos que preceden al campo con hash). Dado que "`facility`" tiene dos valores de prefijo distintos, la colección requiere exactamente dos rangos de zona que cubran esos valores.
+
+- El rango de límite inferior especifica `MinKey` para todos los campos sin prefijo.
+- El rango de límite superior tiene al menos un campo de prefijo que difiere de su equivalente de límite inferior.
+
+Utilice `sh.updateZoneKeyRange()` para crear el rango para `"facility": "FacilityAlpha"`:
+
+```javascript
+sh.updateZoneKeyRange(
+   "examples.metrics",
+   { "facility": "FacilityAlpha", "_id" : MinKey },
+   { "facility": "FacilityBaker", "_id" : MinKey },
+   "FacilityAlpha"
+);
+```
+
+- Dado que los límites superiores del rango de zona son `exclusivos`, este rango solo cubre documentos con el valor de prefijo de clave de fragmento distintivo `"facilty": "FacilityAlpha"` y todos los valores posibles de `_id`.
+
+Utilice `sh.updateZoneKeyRange()` para crear el rango para "facility": "FacilityBaker":
+
+```javascript
+sh.updateZoneKeyRange(
+   "examples.metrics",
+   { "facility": "FacilityBaker", "_id" : MinKey },
+   { "facility": MaxKey, "_id" : MinKey },
+   "FacilityBaker"
+);
+```
+
+- Si bien el límite superior de este rango puede técnicamente capturar otros valores de facilidad, la lógica inicial de distribución de fragmentos se basa en la suposición de que no existen otros valores distintos para `facility`. Dado que la colección solo contiene documentos donde `facility` es `FacilityAlpha` o `FacilityBaker`, este rango solo cubre los documentos con el valor de prefijo de clave de fragmento distinto` "facility" : "FacilityBaker"` y todos los valores posibles de `_id`.
+
+---
+
 # Distribución inicial de chunks con shard key con `hash compuesto`
 
 MongoDB admite la fragmentación de colecciones en índices con **hash compuesto**. Al fragmentar la `colección vacía o inexistente` en una clave de fragmento con hash compuesto, MongoDB optimiza la creación y distribución inicial de fragmentos.
