@@ -308,7 +308,6 @@ Son útiles para definir rangos "abiertos":
 { region: MinKey, userId: MinKey } → { region: MaxKey, userId: MaxKey }
 ```
 
-
 ---
 
 # Shard keys simples o compuestas
@@ -497,6 +496,7 @@ databases:
 
 La fragmentación generó un total de 4 `chunks`. Dos de ellos corresponden a los límites absolutos inferior y superior. Se creó una zona en el `shardA` y el `shardB`, correspondiente a `FacilityAlpha`. La zona se subdividió en 2 fragmentos mediante el campo hash.
 
+---
 
 # Shard key con hash compuesto y campo con hash `sin prefijo`
 
@@ -556,43 +556,58 @@ sh.updateZoneKeyRange(
 
 - Si bien el límite superior de este rango puede técnicamente capturar otros valores de facilidad, la lógica inicial de distribución de fragmentos se basa en la suposición de que no existen otros valores distintos para `facility`. Dado que la colección solo contiene documentos donde `facility` es `FacilityAlpha` o `FacilityBaker`, este rango solo cubre los documentos con el valor de prefijo de clave de fragmento distinto` "facility" : "FacilityBaker"` y todos los valores posibles de `_id`.
 
----
+## 3. Fragmentar la colección
 
-# Distribución inicial de chunks con shard key con `hash compuesto`
+> [!NOTE]
+> Si la colección no existe, la operación de fragmentación la crea.
+>
+> Si la colección está vacía y no existe un índice que admita la clave de fragmentación, la operación de fragmentación crea el índice.
 
-MongoDB admite la fragmentación de colecciones en índices con **hash compuesto**. Al fragmentar la `colección vacía o inexistente` en una clave de fragmento con hash compuesto, MongoDB optimiza la creación y distribución inicial de fragmentos.
+Utilice `sh.shardCollection()` con `presplitHashedZones: true` para fragmentar la colección y realizar la creación y distribución inicial de fragmentos:
 
-## El campo hash es `prefijo`
-Si el campo con hash es el prefijo de la clave de fragmento (es decir, el **primer campo** de la `shard key`), se debe cumplir con estas 2 condiciones para que MongoDB realice la creación y distribución del fragmento inicial:
-
-### 1.  Configuración de zona única
-```javascript
-// La colección debe tener una sola zona que cubra TODO el rango posible
-{
-  // Límites inferiores: MinKey para todos los campos
-  "userId": MinKey,
-  "timestamp": MinKey
-},
-{
-  // Límites superiores: MaxKey para todos los campos  
-  "userId": MaxKey,
-  "timestamp": MaxKey
-}
-```
-
-- `MinKey` y `MaxKey` son valores especiales que representan el mínimo y máximo posible
-- Esta configuración significa que la zona abarca **todos los valores posibles** de la shard key
-- Es como decir "toda la colección pertenece a una sola zona"
-
-
-### 2. Opción `presplitHashedZones: true`
 ```javascript
 sh.shardCollection(
-  "miBaseDatos.miColeccion",
-  { "userId": "hashed", "timestamp": 1 },
-  { presplitHashedZones: true }  // Esta opción es obligatoria
+  "examples.metrics",
+  { "facility" : 1, "_id" : "hashed"},
+  false,
+  { presplitHashedZones: true }
 )
 ```
 
-`presplitHashedZones` activa la **creación automática** de múltiples chunks **distribuidos uniformemente** antes de insertar datos
+## 4. Revisar los fragmentos creados y la distribución
 
+Para ver los fragmentos creados y su distribución, ejecute la operación:
+
+```javascript
+sh.status()
+```
+
+El resultado se parece al siguiente (se omite el contenido para facilitar la lectura):
+
+```javascript
+--- Sharding Status ---
+
+  databases:
+    { "_id" : "config", "primary" : "config" }
+    { "_id" : "examples", "primary" : "shardA", "version" : { "uuid" : UUID("6c351bcf-acd2-4fd9-82d8-9f6bd7321558"), "lastMod" : 1 } }
+      examples.metrics
+        shard key: { "facility" : 1, "_id" : "hashed" }
+        unique: false
+        balancing: true
+        chunks:
+          shardA  3
+          shardB  3
+        { "facility" : { "$minKey" : 1 }, "_id" : { "$minKey" : 1 } } -->> { "facility" : "FacilityAlpha", "_id" : { "$minKey" : 1 } } on : shard1 Timestamp(1, 0)
+        { "facility" : "FacilityAlpha", "_id" : { "$minKey" : 1 } } -->> { "facility" : "FacilityAlpha", "_id" : NumberLong(0) } on : shard1 Timestamp(1, 1)
+        { "facility" : "FacilityAlpha", "_id" : NumberLong(0) } -->> { "facility" : "FacilityBaker", "_id" : { "$minKey" : 1 } } on : shard1 Timestamp(1, 2)
+        { "facility" : "FacilityBaker", "_id" : { "$minKey" : 1 } } -->> { "facility" : "FacilityBaker", "_id" : NumberLong(0) } on : shard2 Timestamp(1, 3)
+        { "facility" : "FacilityBaker", "_id" : NumberLong(0) } -->> { "facility" : { "$maxKey" : 1 }, "_id" : { "$minKey" : 1 } } on : shard2 Timestamp(1, 4)
+        { "facility" : { "$maxKey" : 1 }, "_id" : { "$minKey" : 1 } } -->> { "facility" : { "$maxKey" : 1 }, "_id" : { "$maxKey" : 1 } } on : shard2 Timestamp(1, 5)
+
+          tag: FacilityAlpha  { "facility" : "FacilityAlpha", "_id" : { "$minKey" : 1 } } -->> { "facility" : "FacilityBaker", "_id" : { "$minKey" : 1 } }
+          tag: FacilityBaker  { "facility" : "FacilityBaker", "_id" : { "$minKey" : 1 } } -->> { "facility" : { "$maxKey" : 1 }, "_id" : { "$minKey" : 1 } }
+```
+
+La operación de fragmentación generó un total de 6 `chunks`. Dos de ellos corresponden a los límites absolutos inferior y superior. Se crearon dos zonas, una en el  `shardA` y otra en el `shardB`, correspondientes a `FacilityAlpha` y `FacilityBaker`. Cada una de estas zonas se subdividió en dos fragmentos mediante el campo hash.
+
+---
