@@ -76,8 +76,9 @@
 14. [Colecciones con límite](#14-colecciones-con-límite)
     - [Características](#características-principales)
     - [Crear colecciones](#crear-colecciones-con-límite)
-15. [Sharding](https://github.com/albanez26/learning-notes/blob/main/mongodb/sharding.md)
-16. [Zonas](https://github.com/albanez26/learning-notes/blob/main/mongodb/zones.md)
+15. [GeoJSON](#15-geojson)
+16. [Sharding](https://github.com/albanez26/learning-notes/blob/main/mongodb/sharding.md)
+17. [Zonas](https://github.com/albanez26/learning-notes/blob/main/mongodb/zones.md)
 ---
 
 # 1. Instalación y configuración
@@ -2583,4 +2584,192 @@ db.miColeccion.stats()
 - `Tamaño no modificable`: Una vez creada, no puedes cambiar el tamaño de la colección.
 
 ---
+
+# 15. GeoJSON
+
+GeoJSON es un formato para codificar estructuras de datos geográficos utilizando `JavaScript Object Notation` (JSON). Es un estándar abierto que permite representar geometrías simples como puntos, líneas y polígonos, junto con sus propiedades asociadas.
+
+
+Todos los objetos `GeoJSON` tienen una propiedad `type` que especifica el tipo de geometría:
+
+```json
+{
+  "type": "Point",
+  "coordinates": [-73.856077, 40.848447]
+}
+```
+
+
+> [!IMPORTANT]
+> - Siempre usar `[longitud, latitud]`
+> - Longitud:` -180` a `180`
+> - Latitud: `-90` a `90`
+
+
+## Tipos de geometrías soportadas por MongoDB
+
+### 1. Point (Punto)
+Representa una ubicación específica:
+
+```json
+{
+  "type": "Point",
+  "coordinates": [-73.856077, 40.848447]
+}
+```
+
+### 2. LineString (Línea)
+Una serie de puntos conectados:
+
+```json
+{
+  "type": "LineString",
+  "coordinates": [
+    [-73.856077, 40.848447],
+    [-73.856078, 40.848448],
+    [-73.856079, 40.848449]
+  ]
+}
+```
+
+### 3. Polygon (Polígono)
+Una forma cerrada:
+
+```json
+{
+  "type": "Polygon",
+  "coordinates": [[
+    [-73.856077, 40.848447],
+    [-73.856078, 40.848448],
+    [-73.856079, 40.848449],
+    [-73.856077, 40.848447]
+  ]]
+}
+```
+
+### 4. MultiPoint, MultiLineString, MultiPolygon
+Colecciones de geometrías del mismo tipo.
+
+
+### 5. GeometryCollection
+Colección de diferentes tipos de geometrías.
+
+
+## Creación de documentos con GeoJSON
+
+```javascript
+// Insertar un restaurante con ubicación
+db.restaurants.insertOne({
+  name: "Pizza Palace",
+  location: {
+    type: "Point",
+    coordinates: [-73.856077, 40.848447]
+  },
+  cuisine: "Italian"
+});
+
+// Insertar una zona de entrega (polígono)
+db.deliveryZones.insertOne({
+  name: "Downtown Zone",
+  area: {
+    type: "Polygon",
+    coordinates: [[
+      [-73.858, 40.849],
+      [-73.854, 40.849],
+      [-73.854, 40.847],
+      [-73.858, 40.847],
+      [-73.858, 40.849]
+    ]]
+  }
+});
+```
+
+
+## Índices geoespaciales
+Para realizar consultas geoespaciales eficientes, necesitas crear índices `2dsphere`:
+
+```javascript
+// Crear índice geoespacial
+db.restaurants.createIndex({ location: "2dsphere" });
+
+// Índice compuesto
+db.restaurants.createIndex({ 
+  location: "2dsphere", 
+  cuisine: 1 
+});
+```
+
+## Consultas geoespaciales en MongoDB
+
+### 1. `$near` - Buscar cerca de un punto
+```javascript
+db.restaurants.find({
+  location: {
+    $near: {
+      $geometry: {
+        type: "Point",
+        coordinates: [-73.856, 40.848]
+      },
+      $maxDistance: 1000 // metros
+    }
+  }
+});
+```
+
+### 2. `$geoWithin` - Buscar dentro de un área
+
+```javascript
+db.restaurants.find({
+  location: {
+    $geoWithin: {
+      $geometry: {
+        type: "Polygon",
+        coordinates: [[
+          [-73.860, 40.850],
+          [-73.850, 40.850],
+          [-73.850, 40.845],
+          [-73.860, 40.845],
+          [-73.860, 40.850]
+        ]]
+      }
+    }
+  }
+});
+```
+
+
+### 3. `$geoIntersects` - Buscar intersecciones
+
+```javascript
+db.deliveryZones.find({
+  area: {
+    $geoIntersects: {
+      $geometry: {
+        type: "Point",
+        coordinates: [-73.856, 40.848]
+      }
+    }
+  }
+});
+```
+
+### 4. `$nearSphere` - Similar a $near pero para geometrías esféricas
+
+```javascript
+db.restaurants.find({
+  location: {
+    $nearSphere: {
+      $geometry: {
+        type: "Point",
+        coordinates: [-73.856, 40.848]
+      },
+      $maxDistance: 1000
+    }
+  }
+});
+```
+
+
+
+
 
