@@ -77,8 +77,15 @@
     - [Características](#características-principales)
     - [Crear colecciones](#crear-colecciones-con-límite)
 15. [GeoJSON](#15-geojson)
+    - [Tipos de geometrías](#tipos-de-geometrías-soportadas-por-mongodb)
+    - [Crear documentos](#creación-de-documentos-con-geojson)
+    - [Índices geoespaciales](#índices-geoespaciales)
+    - [Consultas geoespaciales](#consultas-geoespaciales-en-mongodb)
+    
 16. [Sharding](https://github.com/albanez26/learning-notes/blob/main/mongodb/sharding.md)
 17. [Zonas](https://github.com/albanez26/learning-notes/blob/main/mongodb/zones.md)
+
+
 ---
 
 # 1. Instalación y configuración
@@ -2607,6 +2614,8 @@ Todos los objetos `GeoJSON` tienen una propiedad `type` que especifica el tipo d
 
 
 ## Tipos de geometrías soportadas por MongoDB
+
+El `tipo de geometría` en GeoJSON se refiere a la **forma o estructura geométrica** que estás representando en el espacio. Es como decirle a MongoDB "qué forma tiene este dato geográfico que estoy guardando".
 
 ### 1. Point (Punto)
 Representa una ubicación específica:
