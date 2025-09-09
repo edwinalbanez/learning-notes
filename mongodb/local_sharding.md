@@ -347,3 +347,12 @@ Utiliza múltiples campos como clave de fragmento y divide los datos en rangos c
 ```javascript
 sh.shardCollection("<database>.<collection>", { <shard key field> : 1, ... } )
 ```
+
+---
+
+## Diagrama del proceso
+
+<img width="3056" height="2554" alt="image" src="https://github.com/user-attachments/assets/c22838ff-0ccf-4dc2-9d24-c5a3abb81b26" />
+
+
+
