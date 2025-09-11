@@ -2481,46 +2481,124 @@ Ejemplo visual de un índice sobre campo "edad":
 ## Analogía de "listas"
 Puede ser útil pensar en los índices como "listas" ordenadas de referencias para entender su función:
 
-### Indice simple
+Tomando como ejemplo estos documentos:
+
 ```javascript
 // Documentos en colección
-{ _id: ObjectId("...a"), nombre: "Ana", edad: 25 }
-{ _id: ObjectId("...b"), nombre: "Carlos", edad: 18 }
-{ _id: ObjectId("...c"), nombre: "Beatriz", edad: 30 }
+{ _id: ObjectId("...a"), nombre: "Ana", edad: 25, tags: ["frontend", "react"] }
+{ _id: ObjectId("...b"), nombre: "Carlos", edad: 18, tags: ["backend", "node"] }
+{ _id: ObjectId("...c"), nombre: "Beatriz", edad: 30, tags: ["frontend", "vue", "css"] }
+{ _id: ObjectId("...d"), nombre: "Diana", edad: 25, tags: ["backend"] }    // Misma edad que Ana
+{ _id: ObjectId("...e"), nombre: "Eduardo", edad: 18, tags: ["frontend", "react", "node"] }  // Misma edad que Carlos
+```
 
+### Indice simple
+```javascript
 // El índice { edad: 1 } conceptualmente es como:
 [
-  { valor: 18, referencia: ObjectId("...b") },
-  { valor: 25, referencia: ObjectId("...a") },
-  { valor: 30, referencia: ObjectId("...c") }
+  { 
+    valor: 18, 
+    referencias: [ObjectId("...b"), ObjectId("...e")]  // Múltiples referencias
+  },
+  { 
+    valor: 25, 
+    referencias: [ObjectId("...a"), ObjectId("...d")]  // Múltiples referencias
+  },
+  { 
+    valor: 30, 
+    referencias: [ObjectId("...c")]                    // Una sola referencia
+  }
 ]
 ```
 
 ### Índice compuesto
+
 ```javascript
 // Es como una lista ordenada por múltiples criterios
 // Índice { edad: 1, nombre: 1 }
 [
-  { valores: [18, "Carlos"], referencia: ObjectId("...b") },
-  { valores: [25, "Ana"], referencia: ObjectId("...a") },
-  { valores: [30, "Beatriz"], referencia: ObjectId("...c") }
+  { 
+    valor: [18, "Carlos"], 
+    referencia: ObjectId("...b") 
+  },
+  { 
+    valor: [18, "Eduardo"], 
+    referencia: ObjectId("...e") 
+  },
+  { 
+    valor: [25, "Ana"], 
+    referencia: ObjectId("...a") 
+  },
+  { 
+    valor: [25, "Diana"], 
+    referencia: ObjectId("...d") 
+  },
+  { 
+    valor: [30, "Beatriz"], 
+    referencia: ObjectId("...c") 
+  }
 ]
 ```
 
-### índice multivalor
+Aunque tengamos edades duplicadas `(18, 25)`, las combinaciones `[edad, nombre]` son únicas, no hay múltiples referencias por entrada del índice.
+
+
+### índice multivalor (array)
+
 ```javascript
-// Documento
-{ _id: 1, etiquetas: ["A", "B", "C"] }
+//Índice
+{ tags: 1 }
 
-// Índice conceptual
+// resultado
 [
-  { valor: "A", referencia: ObjectId("1") },
-  { valor: "B", referencia: ObjectId("1") },  // mismo documento
-  { valor: "C", referencia: ObjectId("1") }   // mismo documento
+  { 
+    valor: "backend", 
+    referencias: [ObjectId("...b"), ObjectId("...d"), ObjectId("...e")]
+  },
+  { 
+    valor: "css", 
+    referencias: [ObjectId("...c")]
+  },
+  { 
+    valor: "frontend", 
+    referencias: [ObjectId("...a"), ObjectId("...c"), ObjectId("...e")]
+  },
+  { 
+    valor: "node", 
+    referencias: [ObjectId("...b"), ObjectId("...e")]
+  },
+  { 
+    valor: "react", 
+    referencias: [ObjectId("...a"), ObjectId("...e")]
+  },
+  { 
+    valor: "vue", 
+    referencias: [ObjectId("...c")]
+  }
 ]
 ```
 
-Todo esto en realidad está implementado como un `árbol B` de decisiones eficiente en lugar de una lista secuencial.
+Si tenemos un índice compuesto `{ tags: 1, nombre: 1 }`:
+
+```javascript
+[
+  { valor: ["backend", "Carlos"], referencia: ObjectId("...b") },
+  { valor: ["backend", "Diana"], referencia: ObjectId("...d") },
+  { valor: ["backend", "Eduardo"], referencia: ObjectId("...e") },
+  { valor: ["css", "Beatriz"], referencia: ObjectId("...c") },
+  { valor: ["frontend", "Ana"], referencia: ObjectId("...a") },
+  { valor: ["frontend", "Beatriz"], referencia: ObjectId("...c") },
+  { valor: ["frontend", "Eduardo"], referencia: ObjectId("...e") },
+  { valor: ["node", "Carlos"], referencia: ObjectId("...b") },
+  { valor: ["node", "Eduardo"], referencia: ObjectId("...e") },
+  { valor: ["react", "Ana"], referencia: ObjectId("...a") },
+  { valor: ["react", "Eduardo"], referencia: ObjectId("...e") },
+  { valor: ["vue", "Beatriz"], referencia: ObjectId("...c") }
+]
+```
+
+> [!NOTE]
+> Todo esto en realidad está implementado como un `árbol B` de decisiones eficiente en lugar de una lista secuencial.
 
 ---
 
