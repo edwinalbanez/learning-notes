@@ -2857,6 +2857,16 @@ db.restaurants.find({
 });
 ```
 
+## Analogía simple
+Piensa en el tipo de geometría como etiquetas en un mapa:
+
+- 📍 `Point`: "Aquí hay algo específico"
+- 🛣️ `LineString`: "Este es un camino que puedes seguir"
+- 🏞️ `Polygon`: "Esta es un área con límites"
+- 📍📍📍 `MultiPoint`: "Aquí hay varios lugares relacionados"
+- 🛣️🛣️🛣️ `MultiLineString`: "Estas son varias rutas relacionadas"
+- 🏞️🏞️🏞️ `MultiPolygon`: "Estas son varias áreas relacionadas"
+
 
 
 
