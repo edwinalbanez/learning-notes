@@ -2103,7 +2103,8 @@ score_B = 1 × 1 × idf_mongodb = 1 × idf_mongodb
 // Resultado: Documento A tendrá score 20 veces mayor que B
 ```
 
-Los documentos con **mayor score** aparecen **primero** en los resultados.
+> [!NOTE]
+> Los documentos con **mayor score** aparecen **primero** en los resultados.
 
 
 #### Ejemplos de consultas:
@@ -2134,7 +2135,7 @@ db.articulos.find({
 ```
 
 >[!IMPORTANT]
-> Solo puede haber un índice de texto por colección
+> Solo puede haber **un índice** de texto por colección
 
 ---
 
