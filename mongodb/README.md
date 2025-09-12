@@ -12,9 +12,9 @@
    - [Documentos embebidos](#documentos-embebidos)
      
 3. [Tipos de datos](#3-tipos-de-datos)
-   - [Datos básicos](#tipos-de-datos-básicos)
-   - [Datos complejos](#tipos-de-datos-complejos)
-   - [Datos especializados](#tipos-de-datos-especializados)
+   - [Datos básicos](#básicos)
+   - [Datos complejos](#complejos)
+   - [Datos especializados](#especializados)
 
 4. [Relaciones de documentos](#4-relaciones-de-documentos)
    - [Uno a uno](#one-to-one-11)
@@ -139,7 +139,7 @@ Para verificar que la configuración funciona, abre el `Simbolo del sistema` y e
 
 # 3. Tipos de datos
 
-## Tipos de datos básicos
+## Básicos
 
 ### `String (Cadena)`
 Texto codificado en UTF-8. Es el tipo más común para almacenar texto.
@@ -169,7 +169,7 @@ Fechas almacenadas como milisegundos desde la época Unix (1 enero 1970).
 { "fechaCreacion": new Date() }
 ```
 
-## Tipos de datos complejos
+## Complejos
 
 ### Object (Documento Embebido)
 Otros documentos JSON anidados dentro del documento principal.
@@ -197,22 +197,31 @@ Identificador único de 12 bytes que MongoDB genera automáticamente para el cam
 { "_id": ObjectId("507f1f77bcf86cd799439011") }
 ```
 
-## Tipos de datos especializados
+## Especializados
 
 ### `Binary Data`
 Para almacenar datos binarios como imágenes o archivos.
 
+---
+
 ### `Regular Expression`
 Expresiones regulares para búsquedas de patrones.
+
+---
 
 ### `JavaScript Code`
 Código JavaScript que puede ejecutarse en el servidor.
 
+---
+
 ### `Null`
 Representa valores nulos o campos sin valor.
 
+---
+
 ### `Undefined`
 Similar a null, pero indica que el campo no está definido.
+
 
 >[!IMPORTANT]
 > MongoDB es `schema-flexible`, lo que significa que diferentes documentos en la misma colección pueden tener estructuras diferentes. Un documento puede tener campos que otros no tienen, y los tipos de datos pueden variar entre documentos.
