@@ -2,9 +2,37 @@
 
 Este tutorial implica la creación de un nuevo clúster fragmentado que consta de un `mongos`, el conjunto de réplicas del servidor de configuración y dos conjuntos de réplicas de fragmentos.
 
+---
+
+## Índice
+
+1. [Conjunto de réplicas del servidor de configuración](#1-inicie-cada-miembro-del-conjunto-de-réplicas-del-servidor-de-configuración)
+   - [Iniciar cada miembro](#1-inicie-cada-miembro-del-conjunto-de-réplicas-del-servidor-de-configuración)
+   - [Conectarse a uno de los miembros](#2-conectarse-a-uno-de-los-servidores-de-configuración)
+   - [Iniciar el conjunto de réplicas](#3-iniciar-el-conjunto-de-réplicas)
+
+2. [Conjunto de réplicas de shards](#crear-los-conjuntos-de-réplicas-de-shards)
+   - [Iniciar cada miembro](#1-inicie-cada-miembro-del-conjunto-de-réplicas-de-shards)
+   - [Conectarse a uno de los miembros](#2-conectarse-a-un-miembro-del-conjunto-de-réplicas-de-shards)
+   - [Iniciar el conjunto de réplicas](#3-iniciar-el-conjunto-de-réplicas-1)
+
+3. [Iniciar mongos para el clúster fragmentado](#iniciar-mongos-para-el-clúster-fragmentado)
+4. [Conectarse al clúster fragmentado](#conectarse-al-clúster-fragmentado)
+5. [Agregar shards al clúster](#agregar-shards-al-clúster)
+
+6. [Fragmentar una colección](#fragmentar-una-colección)
+   - [Fragmentación hash](#la-fragmentación-hash)
+   - [Fragmentación por rangos](#la-fragmentación-por-rangos)
+
+7. [Diagrama del proceso](#diagrama-del-proceso)
+
+
+---
+
 ## Implementaciones de localhost 
 
 Si usa `localhost` o su `dirección IP` como la parte del nombre de host de cualquier identificador de host, debe usar ese identificador como configuración de host para cualquier otro componente de MongoDB en el clúster.
+
 
 Por ejemplo, el método `sh.addShard()` toma un parámetro de host para el nombre de host del fragmento de destino. Si establece host como localhost, debe usar localhost como host para todos los demás fragmentos del clúster.
 
@@ -350,7 +378,8 @@ sh.shardCollection("<database>.<collection>", { <shard key field> : 1, ... } )
 
 ---
 
-## Diagrama del proceso
+# Diagrama del proceso
+
 
 <img width="3056" height="2554" alt="image" src="https://github.com/user-attachments/assets/c22838ff-0ccf-4dc2-9d24-c5a3abb81b26" />
 
