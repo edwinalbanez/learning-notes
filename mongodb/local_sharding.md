@@ -29,7 +29,7 @@ Este tutorial implica la creación de un nuevo clúster fragmentado que consta d
 
 ---
 
-## Implementaciones de localhost 
+# Implementaciones de localhost 
 
 Si usa `localhost` o su `dirección IP` como la parte del nombre de host de cualquier identificador de host, debe usar ese identificador como configuración de host para cualquier otro componente de MongoDB en el clúster.
 
