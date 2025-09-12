@@ -2841,6 +2841,13 @@ db.deliveryZones.find({
 });
 ```
 
+#### Diferencias con otros operadores geoespaciales:
+
+- `$geoWithin`: Encuentra geometrías completamente dentro de otra
+- `$geoIntersects`: Encuentra geometrías que tienen cualquier intersección (incluyendo tocar o superponer)
+- `$near`: Encuentra geometrías cercanas basadas en distancia
+
+
 ### 4. `$nearSphere` - Similar a $near pero para geometrías esféricas
 
 ```javascript
