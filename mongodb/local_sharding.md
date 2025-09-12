@@ -4,7 +4,7 @@ Este tutorial implica la creación de un nuevo clúster fragmentado que consta d
 
 ---
 
-## Índice
+# Índice
 
 1. [Conjunto de réplicas del servidor de configuración](#1-inicie-cada-miembro-del-conjunto-de-réplicas-del-servidor-de-configuración)
    - [Iniciar cada miembro](#1-inicie-cada-miembro-del-conjunto-de-réplicas-del-servidor-de-configuración)
