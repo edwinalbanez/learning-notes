@@ -354,6 +354,5 @@ sh.shardCollection("<database>.<collection>", { <shard key field> : 1, ... } )
 
 <img width="3056" height="2554" alt="image" src="https://github.com/user-attachments/assets/c22838ff-0ccf-4dc2-9d24-c5a3abb81b26" />
 
-
-https://excalidraw.com/#json=omtoEvjMVEu-FggYqFdsP,Z1rZLRCuGOmqJxIC6qR4vQ
-
+Hecho con [Excalidraw](https://excalidraw.com/#json=omtoEvjMVEu-FggYqFdsP,Z1rZLRCuGOmqJxIC6qR4vQ
+)
