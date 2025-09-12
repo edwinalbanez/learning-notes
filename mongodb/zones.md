@@ -1,5 +1,44 @@
 # Zonas en clústeres fragmentados
 
+En clústeres fragmentados, se pueden crear zonas de datos fragmentados según la `clave de fragmento`. Cada zona se puede asociar con uno o más `shards` del clúster. Un `shard` se puede asociar con cualquier número de zonas.
+
+---
+
+# Índice
+
+1. [¿Qué son las zonas?](#qué-son-las-zonas)
+2. [Rangos](#rangos)
+3. [Shard key con hash](#shard-key-con-hash-y-rangos-de-zonas)
+4. [Clave de fragmento](#clave-de-fragmento)
+5. [Agregar shards a una zona](#agregar-shards-a-una-zona)
+6. [Crear un rango de zonas](#crear-un-rango-de-zonas)
+7. [Eliminar un rango de zonas](#eliminar-un-rango-de-zona)
+8. [Ver zonas existentes](#ver-zonas-existentes)
+9. [Collations en sharding](#collations-en-sharding)
+10. [Zonas y rangos para una colección vacía](#zonas-y-rangos-de-zonas-para-una-colección-vacía-o-inexistente)
+11. [Shard keys simples o compuestas](#shard-keys-simples-o-compuestas)
+   - [Crear las zonas](#1-crear-las-zonas)
+   - [Crear los rangos de zonas](#2-crear-los-rangos-de-zona)
+   - [Fragmentar la colección](#3-fragmentar-la-colección)
+   - [Revisar los fragmentos creados y la distribución](#4-revisar-los-fragmentos-creados-y-la-distribución)
+
+12. [Shard key con prefijo hash](#shard-key-con-hash-compuesto-y-prefijo-con-hash)
+   - [Crear las zonas](#1-crear-las-zonas-1)
+   - [Crear los rangos de zonas](#2-crear-los-rangos-de-zona-1)
+   - [Fragmentar la colección](#3-fragmentar-la-colección-1)
+   - [Revisar los fragmentos creados y la distribución](#4-revisar-los-fragmentos-creados-y-la-distribución-1)
+
+13. [Shard key con prefijo no hash](#shard-key-con-hash-compuesto-y-prefijo-no-hash)
+   - [Crear las zonas](#1-crear-las-zonas-2)
+   - [Crear los rangos de zonas](#2-crear-los-rangos-de-zona-2)
+   - [Fragmentar la colección](#3-fragmentar-la-colección-2)
+   - [Revisar los fragmentos creados y la distribución](#4-revisar-los-fragmentos-creados-y-la-distribución-2)
+
+---
+
+
+# ¿Qué son las zonas?
+
 En clústeres fragmentados, se pueden crear zonas que **representan un grupo de shards** y asociar uno o más **rangos de valores de clave de fragmento** a esa zona. MongoDB enruta las lecturas y escrituras dentro de un rango de zona únicamente a los shards dentro de ella.
 
 
@@ -7,15 +46,15 @@ Esto es especialmente útil cuando el cluster se extiende a través de múltiple
 
 <img width="441" height="219" alt="image" src="https://github.com/user-attachments/assets/6b3e0b14-327c-4e6e-8591-29e8b4a61d71" />
 
-# Análisis del diagrama
+## Análisis del diagrama
 
-###Configuración de Zones
+### Configuración de Zones
 En la parte superior vemos la definición de zonas:
 
 - **Zona A**: Rango X: 1-10
 - **Zona B**: Rango X: 10-20
 
-## Distribución de Chunks
+### Distribución de Chunks
 Los chunks (fragmentos de datos) se distribuyen según su shard key:
 
 - `{ X : 8 }` → Va a Shard Alpha (está en zona A: 1-10)
@@ -23,7 +62,7 @@ Los chunks (fragmentos de datos) se distribuyen según su shard key:
 - `{ X : 3 }` → Va a Shard Beta (está en zona A: 1-10)
 - `{ X : 23 }` → Va a Shard Charlie (fuera de zonas definidas)
 
-## Asignación de Shards a Zonas
+### Asignación de Shards a Zonas
 
 - **Shard Alpha**: zone ["A"] - Solo maneja datos de zona A
 - **Shard Beta**: zone ["A","B"] - Maneja datos de ambas zonas
@@ -34,8 +73,10 @@ Las zonas son **entidades lógicas** definidas a nivel del cluster. Los **shards
 > [!IMPORTANT]
 > Configurar zonas y rangos de zonas `antes` de fragmentar una colección vacía o inexistente permite una configuración más rápida de la fragmentación por zonas.
 
+---
 
 # Rangos
+
 Cada zona abarca **uno** o **más** `rangos de valores` de clave de fragmento para una colección. Cada `rango` que abarca una zona siempre incluye su límite inferior y excluye su límite superior. Las zonas no pueden compartir rangos ni tener rangos superpuestos.
 
 Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene los siguientes rangos de zona:
@@ -47,6 +88,8 @@ Por ejemplo, considera una clave de fragmento en `{"x": 1}`. El clúster tiene l
 
 - Un documento con un valor de clave de fragmento de `7` se enruta a la `zona A`.
 - Un documento con un valor de clave de fragmento de `10` se enruta a la `zona B`.
+
+---
 
 # `Shard key` con hash y rangos de zonas
 
@@ -85,7 +128,10 @@ Al elegir una clave de partición para una colección, considere qué campos pod
 > [!IMPORTANT]
 > Eliminar una colección también elimina automáticamente todos sus rangos de zona asociados, así que ten esto en cuenta en tu estrategia de gestión de datos.
 
+---
+
 # Agregar shards a una zona
+
 Asocia una `zona` a un `shard` específico mediante el método `sh.addShardToZone()` al conectarse a una instancia de `Mongos`. Un `shard` puede pertenecer a varias zonas, y varios `shard` también pueden pertenecer a la misma zona.
 
 ### Ejemplo
@@ -103,6 +149,8 @@ Puede eliminar la zona de un shard en particular usando el método s`h.removeSha
 ```javascript
 sh.removeShardFromZone("shard0002", "NRT")
 ```
+
+---
 
 # Crear un rango de zonas
 
@@ -128,8 +176,10 @@ Una zona puede tener **varios rangos de datos asociados**, pero un rango puede e
 > [!NOTE]
 > Los rangos de zonas siempre incluyen el límite inferior y excluyen el límite superior.
 
+---
 
 # Eliminar un rango de zona
+
 Utilice el método auxiliar de shell `sh.removeRangeFromZone()` para eliminar un rango de una zona.
 
 El siguiente ejemplo elimina la asignación de la zona de Nueva York para el rango de códigos postales dentro de Manhattan:
@@ -141,8 +191,10 @@ sh.removeRangeFromZone("records.user", {zipcode: "10001"}, {zipcode: "10281"})
 > [!NOTE]
 > Al eliminar una colección se eliminan sus rangos de zona/etiqueta asociados.
 
+---
 
 # Ver zonas existentes
+
 Utilice `sh.status()` para listar las zonas asociadas a cada shard del clúster. También puede ver las zonas de un shard consultando la colección de fragmentos en la base de datos de configuración.
 
 El siguiente ejemplo utiliza el método `find()` para devolver todos los fragmentos con la zona `NYC`.
@@ -160,6 +212,8 @@ El siguiente ejemplo utiliza el método `find()` para devolver cualquier rango a
 use config
 db.tags.find({ tag: "NYC" })
 ```
+
+---
 
 # `Collations` en `sharding`
 Las `collations` en MongoDB definen las reglas para comparar y ordenar `strings`, incluyendo aspectos como sensibilidad a mayúsculas/minúsculas, acentos, y reglas específicas de idiomas.
@@ -227,7 +281,7 @@ db.usuarios.find(
 // Encuentra SOLO: "jose@email.com" (exacto)
 ```
 
-### ¿Qué significa "simple"?
+## ¿Qué significa "simple"?
 
 - Comparación binaria exacta
 - Sensible a mayúsculas
@@ -241,6 +295,7 @@ db.usuarios.find(
 ---
 
 # Zonas y rangos de zonas para una colección **vacía o inexistente**
+
 MongoDB permite definir zonas y rangos de zona antes de fragmentar una colección vacía. Esto es importante porque:
 
 - Las `zonas` son grupos lógicos de `shards` que pueden estar ubicados en diferentes centros de datos, regiones geográficas, o tener diferentes características de hardware
@@ -317,7 +372,9 @@ Son útiles para definir rangos "abiertos":
 > 
 > Por ejemplo, `{ "zip": 1}` o `{ "zip": 1, "account": 1}`
 
-## 1. Creas las zonas
+
+## 1. Crear las zonas
+
 usa `sh.addShardToZone()` para crear las zonas:
 
 ```javascript
@@ -326,6 +383,7 @@ sh.addShardToZone("shardB", "DC2")
 ```
 
 ## 2. Crear los rangos de zona
+
 Utilice `sh.updateZoneKeyRange()` para crear los rangos para la colección `contacts` vacía en la base de datos `exampledb`:
 
 ```javascript
@@ -344,7 +402,7 @@ sh.updateZoneKeyRange(
 );
 ```
 
-## 3. Fragmenta la colección
+## 3. Fragmentar la colección
 
 > [!NOTE]
 > Si la colección no existe, la operación de fragmentación la crea.
@@ -498,7 +556,7 @@ La fragmentación generó un total de 4 `chunks`. Dos de ellos corresponden a lo
 
 ---
 
-# Shard key con hash compuesto y campo con hash `sin prefijo`
+# Shard key con hash compuesto y `prefijo no hash`
 
 > [!NOTE]
 > Este ejemplo solo se aplica a claves de fragmento con hash compuesto donde el campo con hash no es el prefijo de la clave de fragmento (es decir, el primer campo de la clave de fragmento no tiene hash).
@@ -511,7 +569,7 @@ Considere una colección vacía, `examples.metrics`, que almacenará análisis d
 - El campo "`facility`" almacena el nombre de la instalación: "`FacilityAlpha`" o "`FacilityBaker`". La colección requiere rangos de zona en la instalación para ayudar a aislar los datos de cada instalación en fragmentos específicos.
 - El campo `_id` compensa la baja cardinalidad del campo "`facility`". El hash compensa la naturaleza monótonamente creciente del campo `_id`.
 
-## 1. Crear la zonas
+## 1. Crear las zonas
 
 Utilice el comando `sh.addShardToZone()` para crear las zonas.
 
