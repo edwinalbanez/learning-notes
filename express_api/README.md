@@ -1,4 +1,5 @@
-# ¿Cómo crear una API con Express?
+# API con Express
+
 
 ## índice
 
@@ -33,7 +34,7 @@ Responderemos a las preguntas presentadas por la utilidad y el resultado será u
 El archivo define, por ejemplo, que el punto de entrada de la aplicación es el archivo `index.js`.
 
 
-Hagamos un pequeño cambio en el objeto `scripts` agregando un nuevo comando de script llamado `start`:
+Hagamos un pequeño cambio en el objeto `scripts` agregando un nuevo comando de script llamado `start`. Este comando permite iniciar la aplicación:
 ```json
 {
   // ...
@@ -53,7 +54,7 @@ Hagamos un pequeño cambio en el objeto `scripts` agregando un nuevo comando de 
 Usemos Express definiéndolo como una dependencia del proyecto con el comando:
 
 ```bash
-npm install express
+pnpm install express
 ```
 
 La versión `5.1.0` de Express se instaló en nuestro proyecto. ¿Qué significa el signo de intercalación delante del número de versión en package.json?
@@ -72,7 +73,7 @@ Sin embargo, la versión instalada de Express también puede ser una que tenga u
 
 Podemos actualizar las dependencias del proyecto con el comando:
 ```bash
-npm update
+pnpm update
 ```
 
 ---
@@ -110,9 +111,156 @@ Definamos un script npm dedicado para él en el archivo `package.json`:
 
 ---
 
+# Mongoose
+
+Mongoose podría describirse como un object document mapper (`ODM`) o mapeador de objetos a documentos en castellano, guardar objetos JavaScript como documentos en Mongo es sencillo con esta libería.
+
+
+Instalemos Mongoose:
+
+```bash
+pnpm install mongoose
+```
+
+# Schemas
+
+En la raíz del proyecto, crea un directorio llamado `models` y dentro de él crea un archivo `person.js`.
+
+
+En `person.js`, primero se establece la conexion a MongoDB:
+
+```javascript
+const mongoose = require('mongoose');
+const url = process.env.MONGODB_URI;
+
+mongoose
+  .connect(url)
+  .then(result => {
+    console.log('Connected to MongoDB!');
+    
+  })
+  .catch(error => {
+    console.log('Error connecting to MongoDB', error.message);
+    
+  });
+```
+
+---
+
+El `Schema` es la definición o estructura de los datos. Define:
+
+- Qué campos tendrá el documento
+- Qué tipo de datos acepta cada campo
+- Validaciones, valores por defecto, índices
+- Métodos y middleware
+
+
+Definimos el `esquema` de una persona que se almacena en la variable `personSchema`. El esquema le dice a Mongoose cómo se almacenarán los objetos de `persona` en la base de datos.
+También podemos definir reglas de validación específicas para cada campo en el esquema:
+
+```javascript
+const personSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true,
+    validate: {
+      validator: number => /^\d{2,3}-\d+$/.test(number)
+    },
+    message: props => `${props.value} is not a valid phone number`,
+  }
+});
+```
+
+Las bases de datos de documentos como `Mongo` no tienen esquema, lo que significa que la base de datos en sí no se preocupa por la estructura de los datos que se almacenan en la base de datos. Es posible almacenar documentos con campos completamente `diferentes` en la misma colección.
+
+---
+
+Ahora se configura `cómo se transforman a JSON` los documentos. Una forma de formatear los documentos devueltos por Mongoose es modificar el método `toJSON` del esquema, que se utiliza en todas las instancias de los modelos producidos con ese esquema:
+
+```javascript
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  }
+});
+```
+
+---
+
+Finalmente se exporta el `modelo` creado a partir del esquema
+
+```javascript
+module.exports = mongoose.model('Person', personSchema);
+```
+
+En la definición del modelo `Person`, el primer parámetro de "Person" es el nombre singular del modelo. El nombre de la colección será el plural `people` en minúsculas, porque la convención de Mongoose es nombrar automáticamente las colecciones como el plural (por ejemplo, people) cuando el esquema se refiere a ellas en singular (por ejemplo, Person).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
 # Web y Express
 
 Crea un archivo llamado `index.js` en la raiz del proyecto y escribe:
+
 ```javascript
 const express = require('express')
 const app = express()
@@ -168,7 +316,7 @@ La función del controlador de eventos acepta dos parámetros. El primer paráme
 ---
 
 
-# Recibiendo información
+# Recibiendo información (`express.json()`)
 
 Para acceder a los datos fácilmente, necesitamos la ayuda del `json-parser` de Express, que se usa con el comando `app.use(express.json())`.
 
