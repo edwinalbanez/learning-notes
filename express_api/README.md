@@ -265,14 +265,14 @@ app.use(morgan('short'));     // Formato corto
 app.use(morgan('tiny'));      // Formato mínimo
 ```
 
-### 2. String con formato personalizado
-Puedes crear tu propio formato usando tokens:
+### 2. `String` con formato personalizado
+Puedes crear tu propio formato usando `tokens`:
 
 ```javascript
 morgan(':method :url :status :res[content-length] - :response-time ms')
 ```
 
-Los tokens más comunes incluyen:
+Los `tokens` más comunes incluyen:
 
 - `:method` - Método HTTP (GET, POST, etc.)
 - `:url` - URL de la petición
@@ -281,8 +281,12 @@ Los tokens más comunes incluyen:
 - `:remote-addr` - Dirección IP del cliente
 - `:user-agent` - User agent del navegador
 
+
 ### 3. Función personalizada
-Para máximo control, puedes usar una función:
+Para máximo control, puedes usar una función, la función de formato se llamará con tres argumentos: `tokens`, `req` y `res`. 
+
+Donde `tokens` es un objeto con todos los tokens definidos, `req` es la solicitud HTTP y `res` es la respuesta HTTP. Se espera que la función devuelva una cadena que será la línea de registro, o `undefined/null` para omitir el registro.
+
 
 ```javascript
 morgan(function (tokens, req, res) {
@@ -296,12 +300,22 @@ morgan(function (tokens, req, res) {
 })
 ```
 
-### Argumentos de la función `format`
+#### Argumentos de la función `format`
 Cuando usas una función como formato, recibe tres argumentos:
 
 - `tokens`: Un objeto que contiene todas las funciones de tokens disponibles
 - `req`: El objeto de petición HTTP de Node.js
 - `res`: El objeto de respuesta HTTP de Node.js
+
+
+### Crear nuevos tokens
+Para definir un `token`, simplemente invoque` morgan.token()` con el nombre y una función. Se espera que esta función devuelva un valor de `cadena`. En este caso, el nuevo token está disponible como "`:type`":
+
+```javascript
+morgan.token('type', function (req, res) { return req.headers['content-type'] })
+```
+
+Llamar a `morgan.token()` con el mismo nombre que un token existente **sobrescribirá** la definición de dicho token. Se espera que la función `token` se llame con los argumentos `req` y `res`, que representan la solicitud HTTP y la respuesta HTTP. 
 
 
 ## Parámetro `options`
@@ -313,7 +327,7 @@ El parámetro `options` es un objeto opcional con configuraciones adicionales:
 
 
 ### `stream` - Dónde van los logs
-Por defecto: Los logs van a `process.stdout` (consola)
+Por defecto: Los logs van a `process.stdout` (consola). La opción `stream` debe ser un **objeto stream de escritura**.
 
 ```javascript
 // Crear streams para diferentes archivos
@@ -408,6 +422,71 @@ GET /api/users
 - No muestra status ni tiempo de respuesta
 - Útil para detectar crashes o peticiones que no terminan
 
+---
+
+# Política del mismo origen y CORS
+
+## Same origin policy (política de mismo origen)
+
+La `política de mismo origen` es un mecanismo de seguridad implementado por los navegadores para prevenir el secuestro de sesiones, entre otras vulnerabilidades de seguridad.
+
+
+Cuando visitas un sitio web (por ejemplo, http://example.com), el navegador emite una solicitud al servidor en el que está alojado el sitio web (example.com). La respuesta enviada por el servidor es un archivo HTML que puede contener una o más referencias a recursos externos alojados ya sea en el mismo servidor que example.com o en un sitio web diferente.
+
+
+Cuando el navegador ve referencias a una URL en el HTML fuente, emite una solicitud. Si la solicitud se realiza utilizando la URL desde la cual se obtuvo el HTML fuente, entonces el navegador procesa la respuesta sin problemas.
+
+## CORS (Cross-Origin Resource Sharing)
+Cuando el navegador detecta una solicitud `cross-origin`, implementa verificaciones de seguridad:
+
+1. El navegador hace la solicitud al servidor externo (por ejemplo, googleapis.com)
+2. Examina la respuesta buscando el encabezado Access-Control-Allow-Origin
+3. Verificación del encabezado:
+   - Si contiene `*`: permite cualquier origen
+   - Si contiene la URL específica del sitio origen: permite esa URL
+   - Si no está presente o no coincide: bloquea la respuesta
+
+
+Podemos permitir solicitudes de otros orígenes utilizando el middleware `cors` de **Node**.
+
+```bash
+pnpm install cors
+```
+
+```javascript
+const cors = require('cors')
+
+app.use(cors())
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -439,63 +518,7 @@ GET /api/users
 
 ---
 
-# Web y Express
 
-Crea un archivo llamado `index.js` en la raiz del proyecto y escribe:
-
-```javascript
-const express = require('express')
-const app = express()
-
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true
-  }
-]
-
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
-
-app.get('/api/notes', (request, response) => {
-  response.json(notes)
-})
-
-const PORT = 3001
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
-```
-
-Justo al comienzo de nuestro código estamos importando express, que esta vez es una función que se usa para crear una aplicación Express almacenada en la variable app:
-```javascript
-const express = require('express')
-const app = express()
-```
-
-A continuación, definimos dos rutas a la aplicación. El primero define un controlador de eventos, que se utiliza para manejar las solicitudes HTTP `GET` realizadas a la raíz `/` de la aplicación:
-```javascript
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
-```
-
-La función del controlador de eventos acepta dos parámetros. El primer parámetro `request` contiene toda la información de la solicitud HTTP y el segundo parámetro `response` se utiliza para definir cómo se responde a la solicitud.
-
-
----
 
 
 # Recibiendo información (`express.json()`)
