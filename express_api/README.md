@@ -122,7 +122,7 @@ Instalemos Mongoose:
 pnpm install mongoose
 ```
 
-# Schemas
+# Schema
 
 En la raíz del proyecto, crea un directorio llamado `models` y dentro de él crea un archivo `person.js`.
 
@@ -196,6 +196,15 @@ personSchema.set('toJSON', {
 
 ---
 
+## Modelo
+
+El `Model` es la **clase JavaScript funcional** con todos los métodos necesarios para trabajar con MongoDB, creada a partir del `Schema`. Es lo que realmente interactúa con la base de datos. Te permite:
+
+- Crear, leer, actualizar y eliminar documentos
+- Ejecutar consultas
+- Aplicar la lógica definida en el Schema
+
+
 Finalmente se exporta el `modelo` creado a partir del esquema
 
 ```javascript
@@ -204,27 +213,200 @@ module.exports = mongoose.model('Person', personSchema);
 
 En la definición del modelo `Person`, el primer parámetro de "Person" es el nombre singular del modelo. El nombre de la colección será el plural `people` en minúsculas, porque la convención de Mongoose es nombrar automáticamente las colecciones como el plural (por ejemplo, people) cuando el esquema se refiere a ellas en singular (por ejemplo, Person).
 
+---
+
+# dotenv
+
+Para definir variables de entorno durante el desarrollo, instalaremos la librería `dotenv`:
+
+```bash
+pnpm install dotenv
+```
+
+Para usar la librería, creamos un archivo `.env` en la raíz del proyecto. Las variables de entorno se definen dentro del archivo y pueden verse así:
+
+```.env
+MONGODB_URI=mongodb+srv://fullstack:<thepasswordishere>@cluster0.o1opl.mongodb.net/phonebook?retryWrites=true&w=majority
+PORT=3001
+```
+
+> [!CAUTION]
+> El archivo `.env` debe ignorarse de inmediato en `.gitignore`, **¡ya que no queremos publicar ninguna información confidencial públicamente!**
+
+---
+
+# Morgan
+
+Instalaremos el middleware `morgan` para el registro de solicitudes HTTP para `Node.js`
+
+```javascript
+pnpm install morgan
+```
+
+## Sintaxis y parámetros
+
+```javascript
+morgan(format, options)
+```
+
+## Parámetro `format`
+
+Puede ser uno de tres tipos:
+
+### 1. `String` con nombre predefinido
+Morgan incluye varios formatos predefinidos:
+
+```javascript
+// Ejemplos de formatos predefinidos
+app.use(morgan('combined'));  // Formato Apache combined
+app.use(morgan('common'));    // Formato Apache common
+app.use(morgan('dev'));       // Formato para desarrollo
+app.use(morgan('short'));     // Formato corto
+app.use(morgan('tiny'));      // Formato mínimo
+```
+
+### 2. String con formato personalizado
+Puedes crear tu propio formato usando tokens:
+
+```javascript
+morgan(':method :url :status :res[content-length] - :response-time ms')
+```
+
+Los tokens más comunes incluyen:
+
+- `:method` - Método HTTP (GET, POST, etc.)
+- `:url` - URL de la petición
+- `:status` - Código de estado HTTP
+- `:response-time` - Tiempo de respuesta en ms
+- `:remote-addr` - Dirección IP del cliente
+- `:user-agent` - User agent del navegador
+
+### 3. Función personalizada
+Para máximo control, puedes usar una función:
+
+```javascript
+morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, 'content-length'), '-',
+    tokens['response-time'](req, res), 'ms'
+  ].join(' ')
+})
+```
+
+### Argumentos de la función `format`
+Cuando usas una función como formato, recibe tres argumentos:
+
+- `tokens`: Un objeto que contiene todas las funciones de tokens disponibles
+- `req`: El objeto de petición HTTP de Node.js
+- `res`: El objeto de respuesta HTTP de Node.js
 
 
+## Parámetro `options`
+El parámetro `options` es un objeto opcional con configuraciones adicionales:
+
+- `stream`: Dónde escribir los logs (por defecto stdout)
+- `skip`: Función para decidir qué peticiones omitir
+- `immediate`: Si escribir el log inmediatamente al recibir la petición
 
 
+### `stream` - Dónde van los logs
+Por defecto: Los logs van a `process.stdout` (consola)
 
+```javascript
+// Crear streams para diferentes archivos
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, 'access.log'), 
+  { flags: 'a' } // 'a' significa append (agregar al final)
+);
 
+const errorLogStream = fs.createWriteStream(
+  path.join(__dirname, 'error.log'), 
+  { flags: 'a' }
+);
 
+// Log de todas las peticiones a archivo
+app.use(morgan('combined', {
+  stream: accessLogStream
+}));
 
+// Log de errores a archivo separado
+app.use(morgan('combined', {
+  stream: errorLogStream,
+  skip: function (req, res) { return res.statusCode < 400 }
+}));
+```
 
+---
 
+### `skip` - Qué peticiones omitir
+Función que recibe: `(req, res) => boolean`
 
+```javascript
+// Omitir peticiones exitosas (solo loggear errores)
+app.use(morgan('dev', {
+  skip: function (req, res) { 
+    return res.statusCode < 400; 
+  }
+}));
 
+// Omitir peticiones a archivos estáticos
+app.use(morgan('dev', {
+  skip: function (req, res) { 
+    return req.url.match(/\.(css|js|png|jpg|gif|ico)$/); 
+  }
+}));
 
+// Omitir peticiones de health check
+app.use(morgan('dev', {
+  skip: function (req, res) { 
+    return req.url === '/health' || req.url === '/ping'; 
+  }
+}));
+```
 
+---
 
+### `immediate` - Cuándo hacer el log
 
+`immediate: false` (defecto):
 
+```javascript
+// immediate: false (por defecto) - Log DESPUÉS de que la respuesta termine
+app.use(morgan('dev', {
+  immediate: false // Muestra el tiempo real de procesamiento y status code
+}));
 
+```
 
+Ejemplo de log:
+```
+GET /api/users 200 145ms
+```
 
+- Log **después** de enviar respuesta
+- Muestra status code y tiempo real
+- No loggea si la app crashea antes de responder
 
+`immediate: true`:
+
+```javascript
+// immediate: true - Log INMEDIATAMENTE al recibir la petición
+app.use(morgan(':method :url', {
+  immediate: true // Útil para ver qué peticiones llegan, aunque fallen
+}));
+```
+
+Ejemplo de log:
+```
+GET /api/users
+```
+
+- Log **inmediatamente** al recibir petición
+- No muestra status ni tiempo de respuesta
+- Útil para detectar crashes o peticiones que no terminan
 
 
 
