@@ -1,12 +1,12 @@
-# API con Express
+# API en Express - Agenda telefónica
 
 
-## índice
+# índice
 
 
-# Node.js y Express
 
-## Iniciar un nuevo proyecto
+
+# Iniciar un nuevo proyecto
 
 Naveguemos a un directorio apropiado y creemos una nueva plantilla para nuestra aplicación con el comando:
 
@@ -312,7 +312,7 @@ Cuando usas una función como formato, recibe tres argumentos:
 Para definir un `token`, simplemente invoque` morgan.token()` con el nombre y una función. Se espera que esta función devuelva un valor de `cadena`. En este caso, el nuevo token está disponible como "`:type`":
 
 ```javascript
-morgan.token('type', function (req, res) { return req.headers['content-type'] })
+morgan.token('type', (req, res) => req.headers['content-type']);
 ```
 
 Llamar a `morgan.token()` con el mismo nombre que un token existente **sobrescribirá** la definición de dicho token. Se espera que la función `token` se llame con los argumentos `req` y `res`, que representan la solicitud HTTP y la respuesta HTTP. 
@@ -459,96 +459,297 @@ const cors = require('cors')
 app.use(cors())
 ```
 
+# Servidor web
+
+A partir de ahora trabajaremos en el archivo `index.js`.
 
 
+Las variables de entorno definidas en el archivo `.env` se pueden utilizar con la expresión `require('dotenv').config()` y puedes referenciarlas en tu código como lo harías con las variables de entorno normales, con la sintaxis `process.env.SOME_VALUE`.
 
+```javascript
+require('dotenv').config();
+```
 
+Ahora realizamos estas importaciones:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-
-
-
-
-# Recibiendo información (`express.json()`)
-
-Para acceder a los datos fácilmente, necesitamos la ayuda del `json-parser` de Express, que se usa con el comando `app.use(express.json())`.
-
-Activemos json-parser e implementemos un controlador inicial para manejar las solicitudes HTTP POST:
+- `express`: que esta vez es una función que se usa para crear una aplicación Express
+- `morgan`: para el registro de solicitudes HTTP
+- `cors`: para permitir solicitudes de otros orígenes
+- `Person`: el modelo para interactuar con la base de datos
 
 
 ```javascript
-const express = require('express')
-const app = express()
-
-
-app.use(express.json())
-
-//...
-
-
-app.post('/api/notes', (request, response) => {
-  const note = request.body
-  console.log(note)
-  response.json(note)
-})
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+const Person = require('./models/person');
 ```
 
-La función del controlador de eventos puede acceder a los datos de la propiedad `body` del objeto `request`.
+Crear la app de `Express`:
+
+```javascript
+const app = express();
+```
+
+Para acceder a los datos fácilmente, necesitamos la ayuda del `json-parser` de Express, que se usa con el comando `app.use(express.json())`. El json-parser funciona para que tome los datos JSON de una solicitud, los transforme en un objeto JavaScript y luego los adjunte a la propiedad `body` del objeto `request` antes de llamar al controlador de ruta.
+
+Una opción para implementar el frontend es copiar la compilación de producción (el directorio dist) a la raíz del repositorio del backend y configurar el backend para que muestre la página principal del frontend (el archivo `dist/index.html`) como su página principal.
 
 
-Sin `json-parser`, la propiedad `body` no estaría definida. El json-parser funciona para que tome los datos JSON de una solicitud, los transforme en un objeto JavaScript y luego los adjunte a la propiedad **body** del objeto **request** antes de llamar al controlador de ruta.
+Para hacer que Express muestre contenido estático, la página index.html y el JavaScript, etc., necesitamos un middleware integrado de Express: `express.static('dist')`.
+
+```javascript
+app.use(express.json());
+app.use(cors());
+app.use(express.static('dist'));
+app.use(morgan('tiny'));
+```
+
+## Ver todos los documentos
+
+```javascript
+app.get('/api/persons', (request, response) => {
+  Person.find({}).then(
+    people => response.json(people)
+  );
+});
+```
+
+## Información de la agenda telefónica
+
+```javascript
+app.get('/info', (request, response) => {
+  Person.find({}).then(people => {
+    response.send(`
+      Phonebook has info for ${people.length} people. <br />
+      ${Date()}
+    `)
+  });
+});
+```
+
+## Ver un documento específico
+
+```javascript
+app.get('/api/persons/:id',  (request, response) => {
+  Person.findById(request.params.id).then(person => {
+    response.json(person)
+  })
+});
+```
+
+## Crear documento
+
+```javascript
+app.post('/api/persons', (request, response, next) => {
+
+  if (!request.body) {
+    return response.status(400).json({
+      error: 'No data in the request.'
+    })
+  }
+
+  const { name, number } = request.body;
+
+  if (!(name && number)) {
+    return response.status(400).json({
+      error: 'Name and number are required.'
+    })
+  }
+
+  const person = new Person({ name, number })
+
+  person.save().then(addedPerson => {
+    response.status(201).json(addedPerson)
+  })
+  .catch(error => next(error));
+
+});
+```
+
+## Eliminar un documento
+
+```javascript
+app.delete('/api/persons/:id', (request, response, next) => {
+  const id = request.params.id;
+
+  Person.findByIdAndDelete(id)
+    .then(deletedPerson => {
+      if (!deletedPerson) {
+        return response.status(404).json({
+          error: 'Person not found.'
+        });
+      }
+      response.status(204).end();
+    })
+    .catch(error => next(error));
+
+});
+```
+
+## Actualizar documento
+
+```javascript
+app.put('/api/persons/:id', (request, response, next) => {
+
+  if (!request.body) {
+    return response.status(400).json({
+      error: 'No data in the request.'
+    })
+  }
+  
+  const { name, number } = request.body;
+  
+  if (!(name && number)) {
+    return response.status(400).json({
+      error: 'Name and number are required.'
+    })
+  }
+
+  const id = request.params.id;
+  const person = { name, number };
+
+  Person.findByIdAndUpdate(
+    id, person, { new: true, runValidators: true, context: 'query' }
+  ).then(updatedPerson => {
+      if (!updatedPerson) {
+        return response.status(404).json({
+          error: 'Person not found.'
+        })
+      }
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error));
+});
+```
+
+## Ruta desconocida
+
+```javascript
+const unknowEndpoint = (request, response) => {
+  response.status(404).json({ error: 'unknow endpoint'})
+}
+
+app.use(unknowEndpoint);
+```
+
+## Manejador de errores
+
+```javascript
+const errorHandler = (error, request, response, next) => {
+  if (error.name === 'CastError') {
+    return response.status(400).json({ error: 'Incorrect format id.' });
+
+  } else if (error.name === 'ValidationError') {
+
+    const fieldsWithError = Object.keys(error.errors);
+    const errors = [];
+
+    fieldsWithError.forEach(field => {
+
+      if (field === 'name') {
+        const { kind } = error.errors.name;
+        
+        switch (kind) {
+          case 'required':
+            errors.push('The name is required.');
+            break;
+          case 'minlength':
+            errors.push('The name must have at least 3 characters.');
+            break;
+          default:
+            errors.push('Incorrect name format.');
+            break;
+        }
+      }
+
+      if (field === 'number') {
+        const { kind } = error.errors.number;
+        
+        switch (kind) {
+          case 'required':
+            errors.push('The number is required.');
+            break;
+          case 'minlength':
+            errors.push('The number must have at least 8 digits.')
+            break;
+          case 'user defined':
+            errors.push('Wrong number format, try something like 12-1234567 or 123-12345678.');
+            break;
+          default:
+            errors.push('Incorrect number format.');
+            break;
+        }
+      } 
+    });
+    
+    return response.status(400).json({ error: errors.join(' ') });
+  }
+
+  next(error);
+}
+
+app.use(errorHandler);
+```
+
+## Iniciar app
+
+Estamos utilizando el puerto definido en la variable de entorno `PORT` o el puerto 3001 si la variable de entorno PORT no está definida. Fly.io y Render configuran el puerto de la aplicación en función de esa variable de entorno.
+
+```javascript
+const PORT = process.env.PORT || 3001
+
+app.listen(PORT, () => {
+  console.log(`Server running in port ${PORT}`);
+});
+```
+
+## Optimizando el despliegue del frontend
+
+Una opción para implementar el frontend es copiar la compilación de producción (el directorio `dist`) a la raíz del repositorio del backend y configurar el backend para que muestre la página principal del frontend (el archivo `dist/index.html`) como su página principal.
+
+
+Para crear una nueva compilación de producción del frontend sin trabajo manual adicional, agreguemos algunos scripts npm al `package.json` del repositorio de backend.
+
+```json
+{
+  "scripts": {
+    //...
+    "build:ui": "rm -rf dist && cd ../frontend && npm run build && cp -r dist ../backend",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+  }
+}
+```
+
+En Windows, los scripts de `npm` se ejecutan en `cmd.exe` como la shell predeterminada, que no admite comandos `bash`. Para que funcionen los comandos bash anteriores, puedes cambiar la shell predeterminada a Bash (en la instalación estándar de Git para Windows) de la siguiente manera:
+
+```bash
+npm config set script-shell "C:\\Program Files\\Git\\bin\\bash.exe""
+```
+
+Los scripts anteriores funcionan esta estructura del proyecto, modifica los scripts para que coincidan con el tuyo:
+```
+proyecto_raiz/
+├── frontend/
+└── backend/
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
