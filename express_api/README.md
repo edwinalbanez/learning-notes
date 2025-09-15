@@ -767,10 +767,53 @@ export default defineConfig([
 
 ```
 
-La configuración `"js/recommended"` garantiza que se activen todas las reglas marcadas como recomendadas en la página de reglas. `ESLint` no analizará su código a menos que extienda una configuración compartida o active las reglas explícitamente en su configuración.
+La configuración `extends: ["js/recommended"]` garantiza que se activen todas las reglas marcadas como recomendadas en la página de reglas. `ESLint` no analizará su código a menos que extienda una configuración compartida o active las reglas explícitamente en su configuración.
+
+---
+
+Instalaremos estos plugins:
+
+```bash
+pnpm install --save-dev @eslint/js  @stylistic/eslint-plugin
+```
 
 
+`globalIgnores` permite ignorar los archivos que coincidan con los patrones definidos. Hemos incluido los plugins (`plugins: { js, stylistic }`) y los activamos con la propiedad `extends`.
 
+
+Finalmente, nuestra configuración tiene la siguiente estructura:
+
+```javascript
+import js from '@eslint/js'
+import globals from "globals";
+import stylistic from '@stylistic/eslint-plugin'
+import { defineConfig, globalIgnores } from "eslint/config";
+
+export default defineConfig([
+  { files: ["**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs"
+    }
+  },
+  { files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: globals.node
+    },
+    plugins: { js, stylistic },
+    extends: ["js/recommended"],
+    rules: {
+      'eqeqeq': 'error',
+      'no-trailing-spaces': 'error',
+      'object-curly-spacing': ['error', 'always'],
+      'arrow-spacing': [
+        'error', { 'before': true, 'after': true }
+      ],
+      'no-console': 0
+    },
+  },
+  globalIgnores(['./dist/'])
+]);
+```
 
 
 
