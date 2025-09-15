@@ -599,6 +599,10 @@ app.post('/api/persons', (request, response, next) => {
 });
 ```
 
+Si se llamó a `next` sin un argumento, entonces la ejecución simplemente pasaría a la siguiente ruta o middleware. Si se llama a la función `next` con un argumento, la ejecución continuará en el middleware del controlador de errores.
+
+---
+
 ## Eliminar un documento
 
 ```javascript
