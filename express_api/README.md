@@ -704,7 +704,7 @@ app.listen(PORT, () => {
 });
 ```
 
-## Optimizando el despliegue del frontend
+# Optimizando el despliegue del frontend
 
 Una opción para implementar el frontend es copiar la compilación de producción (el directorio `dist`) a la raíz del repositorio del backend y configurar el backend para que muestre la página principal del frontend (el archivo `dist/index.html`) como su página principal.
 
@@ -734,8 +734,40 @@ proyecto_raiz/
 └── backend/
 ```
 
+---
+
+# ESLint
+
+Genéricamente, `lint` o `linter` es cualquier herramienta que detecta y marca errores en los lenguajes de programación, incluidos los errores de estilo. El término comportamiento lint-like a veces se aplica al proceso de marcar el uso de lenguaje sospechoso. Las herramientas de tipo lint generalmente realizan análisis estáticos del código fuente.
 
 
+En el universo de JavaScript, la herramienta líder actual para el análisis estático (también conocida como "linting") es `ESlint`.
+
+
+Podemos instalar y configurar ESLint usando este comando:
+
+```bash
+pnpm create @eslint/config@latest
+```
+
+Al ejecutar `pnpm create @eslint/config@latest`, se hacen una serie de preguntas para determinar cómo se está usando ESLint y qué opciones debería incluir. Tras responderlas, se creará un archivo `eslint.config.js` (o `eslint.config.mjs`) en su directorio.
+
+
+Por ejemplo, una de las preguntas es "¿Dónde se ejecuta su código?". Si selecciona "Navegador", su archivo de configuración contendrá las definiciones de las variables globales de los navegadores web. Aquí tiene un ejemplo:
+
+```javascript
+import { defineConfig } from "eslint/config";
+import globals from "globals";
+import js from "@eslint/js";
+
+export default defineConfig([
+	{ files: ["**/*.js"], languageOptions: { globals: globals.browser } },
+	{ files: ["**/*.js"], plugins: { js }, extends: ["js/recommended"] },
+]);
+
+```
+
+La configuración `"js/recommended"` garantiza que se activen todas las reglas marcadas como recomendadas en la página de reglas. Como alternativa, puede usar configuraciones creadas por otros usuarios buscando "eslint-config" en npmjs.com. ESLint no analizará su código a menos que extienda una configuración compartida o active las reglas explícitamente en su configuración.
 
 
 
