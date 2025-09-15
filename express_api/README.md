@@ -767,7 +767,7 @@ export default defineConfig([
 
 ```
 
-La configuración `"js/recommended"` garantiza que se activen todas las reglas marcadas como recomendadas en la página de reglas. Como alternativa, puede usar configuraciones creadas por otros usuarios buscando "eslint-config" en npmjs.com. ESLint no analizará su código a menos que extienda una configuración compartida o active las reglas explícitamente en su configuración.
+La configuración `"js/recommended"` garantiza que se activen todas las reglas marcadas como recomendadas en la página de reglas. `ESLint` no analizará su código a menos que extienda una configuración compartida o active las reglas explícitamente en su configuración.
 
 
 
