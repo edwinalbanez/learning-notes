@@ -1,10 +1,42 @@
 # API en Express - Agenda telefónica
 
-
 # índice
 
+1. [Iniciar nuevo proyecto](#iniciar-un-nuevo-proyecto)
+2. [Express](#express)
+3. [Nodemon](#nodemon)
+4. [Mongoose](#mongoose)
+5. [Schema](#schema)
+   - [Modelo](#modelo)
+6. [Dotenv](#dotenv)
+7. [Morgan](#morgan)
+   - [Sintaxis y parámetros](#sintaxis-y-parámetros)
+   - [Parámetro `format`](#parámetro-format)
+        - [`string` de formato predefinido](#1-string-con-nombre-predefinido)
+        - [`String` de formato personalizado](#2-string-con-formato-personalizado)
+        - [Función para formato personalizado](#3-función-personalizada)
+        - [Crear nuevos tokens](#crear-nuevos-tokens)
+   - [Parámetro `options`](#parámetro-options)
+        - [Stream](#stream---dónde-van-los-logs)
+        - [Skip](#skip---qué-peticiones-omitir)
+        - [Immediate](#immediate---cuándo-hacer-el-log)
+8. [Política del mismo origen y CORS](#política-del-mismo-origen-y-cors)
+   - [Política del mismo origen](#same-origin-policy-política-de-mismo-origen)
+   - [CORS](#cors-cross-origin-resource-sharing)
+9. [Servidor web](#servidor-web)
+   - [Ver todos los documentos](#ver-todos-los-documentos)
+   - [Información de la agenda telefónica](#información-de-la-agenda-telefónica)
+   - [Ver un docuemento específico](#ver-un-documento-específico)
+   - [Crear docuemento](#crear-documento)
+   - [Eliminar un docuemento](#eliminar-un-documento)
+   - [Actualizar un documento](#actualizar-documento)
+   - [Ruta desconocida](#ruta-desconocida)
+   - [Manejador de errores](#manejador-de-errores)
+   - [Iniciar app](#iniciar-app)
+10. [Optimizando el despliegue](#optimizando-el-despliegue-del-frontend)
+11. [ESLint](#eslint)
 
-
+---
 
 # Iniciar un nuevo proyecto
 
