@@ -1,15 +1,13 @@
 # API en Express - Agenda telefónica
 
-# índice
+# Índice
 
 1. [Iniciar nuevo proyecto](#iniciar-un-nuevo-proyecto)
 2. [Express](#express)
 3. [Nodemon](#nodemon)
 4. [Mongoose](#mongoose)
-5. [Schema](#schema)
-   - [Modelo](#modelo)
-6. [Dotenv](#dotenv)
-7. [Morgan](#morgan)
+5. [Dotenv](#dotenv)
+6. [Morgan](#morgan)
    - [Sintaxis y parámetros](#sintaxis-y-parámetros)
    - [Parámetro `format`](#parámetro-format)
         - [`string` de formato predefinido](#1-string-con-nombre-predefinido)
@@ -20,21 +18,27 @@
         - [Stream](#stream---dónde-van-los-logs)
         - [Skip](#skip---qué-peticiones-omitir)
         - [Immediate](#immediate---cuándo-hacer-el-log)
+7. [Schema](#schema)
+   - [Modelo](#modelo)
 8. [Política del mismo origen y CORS](#política-del-mismo-origen-y-cors)
    - [Política del mismo origen](#same-origin-policy-política-de-mismo-origen)
    - [CORS](#cors-cross-origin-resource-sharing)
 9. [Servidor web](#servidor-web)
-   - [Ver todos los documentos](#ver-todos-los-documentos)
-   - [Información de la agenda telefónica](#información-de-la-agenda-telefónica)
-   - [Ver un docuemento específico](#ver-un-documento-específico)
-   - [Crear docuemento](#crear-documento)
-   - [Eliminar un docuemento](#eliminar-un-documento)
-   - [Actualizar un documento](#actualizar-documento)
-   - [Ruta desconocida](#ruta-desconocida)
-   - [Manejador de errores](#manejador-de-errores)
-   - [Iniciar app](#iniciar-app)
-10. [Optimizando el despliegue](#optimizando-el-despliegue-del-frontend)
-11. [ESLint](#eslint)
+   - [Controllers](#controllers)
+      - [Ver todos los documentos](#ver-todos-los-documentos)
+      - [Información de la agenda telefónica](#información-de-la-agenda-telefónica)
+      - [Ver un documento específico](#ver-un-documento-específico)
+      - [Crear documento](#crear-documento)
+      - [Eliminar un documento](#eliminar-un-documento)
+      - [Actualizar un documento](#actualizar-documento)
+   - [Utils](#utils)
+        - [Configuración](#configuración)
+        - [Logger](#logger)
+        - [Middleware](#middleware)
+   - [Crear la app](#crear-la-app)
+   - [Iniciar la app](#iniciar-la-app)
+11. [Optimizando el despliegue](#optimizando-el-despliegue-del-frontend)
+12. [ESLint](#eslint)
 
 ---
 
@@ -783,7 +787,7 @@ module.exports = app
 La responsabilidad de establecer la conexión con la base de datos se ha entregado al módulo `app.js`.
 
 
-## Iniciar app
+## Iniciar la app
 
 Crea un archivo `index.js` en el directorio raíz del proyecto. El contenido del archivo `index.js` se utiliza para iniciar la aplicación de la siguiente manera:
 
