@@ -154,97 +154,6 @@ Instalemos Mongoose:
 pnpm install mongoose
 ```
 
-# Schema
-
-En la raíz del proyecto, crea un directorio llamado `models` y dentro de él crea un archivo `person.js`.
-
-
-En `person.js`, primero se establece la conexion a MongoDB:
-
-```javascript
-const mongoose = require('mongoose');
-const url = process.env.MONGODB_URI;
-
-mongoose
-  .connect(url)
-  .then(result => {
-    console.log('Connected to MongoDB!');
-    
-  })
-  .catch(error => {
-    console.log('Error connecting to MongoDB', error.message);
-    
-  });
-```
-
----
-
-El `Schema` es la definición o estructura de los datos. Define:
-
-- Qué campos tendrá el documento
-- Qué tipo de datos acepta cada campo
-- Validaciones, valores por defecto, índices
-- Métodos y middleware
-
-
-Definimos el `esquema` de una persona que se almacena en la variable `personSchema`. El esquema le dice a Mongoose cómo se almacenarán los objetos de `persona` en la base de datos.
-También podemos definir reglas de validación específicas para cada campo en el esquema:
-
-```javascript
-const personSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    minLength: 3,
-    required: true
-  },
-  number: {
-    type: String,
-    minLength: 8,
-    required: true,
-    validate: {
-      validator: number => /^\d{2,3}-\d+$/.test(number)
-    },
-    message: props => `${props.value} is not a valid phone number`,
-  }
-});
-```
-
-Las bases de datos de documentos como `Mongo` no tienen esquema, lo que significa que la base de datos en sí no se preocupa por la estructura de los datos que se almacenan en la base de datos. Es posible almacenar documentos con campos completamente `diferentes` en la misma colección.
-
----
-
-Ahora se configura `cómo se transforman a JSON` los documentos. Una forma de formatear los documentos devueltos por Mongoose es modificar el método `toJSON` del esquema, que se utiliza en todas las instancias de los modelos producidos con ese esquema:
-
-```javascript
-personSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  }
-});
-```
-
----
-
-## Modelo
-
-El `Model` es la **clase JavaScript funcional** con todos los métodos necesarios para trabajar con MongoDB, creada a partir del `Schema`. Es lo que realmente interactúa con la base de datos. Te permite:
-
-- Crear, leer, actualizar y eliminar documentos
-- Ejecutar consultas
-- Aplicar la lógica definida en el Schema
-
-
-Finalmente se exporta el `modelo` creado a partir del esquema
-
-```javascript
-module.exports = mongoose.model('Person', personSchema);
-```
-
-En la definición del modelo `Person`, el primer parámetro de "Person" es el nombre singular del modelo. El nombre de la colección será el plural `people` en minúsculas, porque la convención de Mongoose es nombrar automáticamente las colecciones como el plural (por ejemplo, people) cuando el esquema se refiere a ellas en singular (por ejemplo, Person).
-
 ---
 
 # dotenv
@@ -456,6 +365,78 @@ GET /api/users
 
 ---
 
+# Schema
+
+En la raíz del proyecto, crea un directorio llamado `models` y dentro de él crea un archivo `person.js`.
+
+
+El `Schema` es la definición o estructura de los datos. Define:
+
+- Qué campos tendrá el documento
+- Qué tipo de datos acepta cada campo
+- Validaciones, valores por defecto, índices
+- Métodos y middleware
+
+
+Definimos el `esquema` de una persona que se almacena en la variable `personSchema`. El esquema le dice a Mongoose cómo se almacenarán los objetos de `persona` en la base de datos. También podemos definir reglas de validación específicas para cada campo en el esquema:
+
+```javascript
+const personSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
+  number: {
+    type: String,
+    minLength: 8,
+    required: true,
+    validate: {
+      validator: number => /^\d{2,3}-\d+$/.test(number)
+    },
+    message: props => `${props.value} is not a valid phone number`,
+  }
+});
+```
+
+Las bases de datos de documentos como `Mongo` no tienen esquema, lo que significa que la base de datos en sí no se preocupa por la estructura de los datos que se almacenan en la base de datos. Es posible almacenar documentos con campos completamente `diferentes` en la misma colección.
+
+---
+
+Ahora se configura `cómo se transforman a JSON` los documentos. Una forma de formatear los documentos devueltos por Mongoose es modificar el método `toJSON` del esquema, que se utiliza en todas las instancias de los modelos producidos con ese esquema:
+
+```javascript
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  }
+});
+```
+
+---
+
+## Modelo
+
+El `Model` es la **clase JavaScript funcional** con todos los métodos necesarios para trabajar con MongoDB, creada a partir del `Schema`. Es lo que realmente interactúa con la base de datos. Te permite:
+
+- Crear, leer, actualizar y eliminar documentos
+- Ejecutar consultas
+- Aplicar la lógica definida en el Schema
+
+
+Finalmente se exporta el `modelo` creado a partir del esquema
+
+```javascript
+module.exports = mongoose.model('Person', personSchema);
+```
+
+En la definición del modelo `Person`, el primer parámetro de "Person" es el nombre singular del modelo. El nombre de la colección será el plural `people` en minúsculas, porque la convención de Mongoose es nombrar automáticamente las colecciones como el plural (por ejemplo, people) cuando el esquema se refiere a ellas en singular (por ejemplo, Person).
+
+---
+
 # Política del mismo origen y CORS
 
 ## Same origin policy (política de mismo origen)
@@ -493,64 +474,36 @@ app.use(cors())
 
 # Servidor web
 
-A partir de ahora trabajaremos en el archivo `index.js`.
+## Controllers
+Crea un directorio llamado `controllers`, dentro de ese directorio crea un archivo `people.js`.
 
 
-Las variables de entorno definidas en el archivo `.env` se pueden utilizar con la expresión `require('dotenv').config()` y puedes referenciarlas en tu código como lo harías con las variables de entorno normales, con la sintaxis `process.env.SOME_VALUE`.
+Al principio del archivo, creamos un nuevo objeto `router` e importamos el modelo `Person`:
 
 ```javascript
-require('dotenv').config();
+const peopleRouter = require('express').Router();
+const Person = require('../models/person');
 ```
 
-Ahora realizamos estas importaciones:
-
-- `express`: que esta vez es una función que se usa para crear una aplicación Express
-- `morgan`: para el registro de solicitudes HTTP
-- `cors`: para permitir solicitudes de otros orígenes
-- `Person`: el modelo para interactuar con la base de datos
+Un `objeto de enrutador` es un instancia aislada de **middleware y rutas**. Puedes pensar en ella como una "mini-aplicación", capaz solo de realizar funciones de middleware y enrutamiento. Cada aplicación Express tiene un enrutador de aplicación incorporado.
 
 
-```javascript
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const Person = require('./models/person');
-```
+El enrutador es de hecho un `middleware`, que se puede utilizar para definir "rutas relacionadas" en un solo lugar, que normalmente se coloca en su propio módulo. 
 
-Crear la app de `Express`:
+### Ver todos los documentos
 
 ```javascript
-const app = express();
-```
-
-Para acceder a los datos fácilmente, necesitamos la ayuda del `json-parser` de Express, que se usa con el comando `app.use(express.json())`. El json-parser funciona para que tome los datos JSON de una solicitud, los transforme en un objeto JavaScript y luego los adjunte a la propiedad `body` del objeto `request` antes de llamar al controlador de ruta.
-
-Una opción para implementar el frontend es copiar la compilación de producción (el directorio dist) a la raíz del repositorio del backend y configurar el backend para que muestre la página principal del frontend (el archivo `dist/index.html`) como su página principal.
-
-
-Para hacer que Express muestre contenido estático, la página index.html y el JavaScript, etc., necesitamos un middleware integrado de Express: `express.static('dist')`.
-
-```javascript
-app.use(express.json());
-app.use(cors());
-app.use(express.static('dist'));
-app.use(morgan('tiny'));
-```
-
-## Ver todos los documentos
-
-```javascript
-app.get('/api/persons', (request, response) => {
+peopleRouter.get('/', (request, response) => {
   Person.find({}).then(
     people => response.json(people)
   );
 });
 ```
 
-## Información de la agenda telefónica
+### Información de la agenda telefónica
 
 ```javascript
-app.get('/info', (request, response) => {
+peopleRouter.get('/info', (request, response) => {
   Person.find({}).then(people => {
     response.send(`
       Phonebook has info for ${people.length} people. <br />
@@ -560,20 +513,20 @@ app.get('/info', (request, response) => {
 });
 ```
 
-## Ver un documento específico
+### Ver un documento específico
 
 ```javascript
-app.get('/api/persons/:id',  (request, response) => {
+peopleRouter.get('/:id',  (request, response) => {
   Person.findById(request.params.id).then(person => {
     response.json(person)
   })
 });
 ```
 
-## Crear documento
+### Crear documento
 
 ```javascript
-app.post('/api/persons', (request, response, next) => {
+peopleRouter.post('/', (request, response, next) => {
 
   if (!request.body) {
     return response.status(400).json({
@@ -603,10 +556,10 @@ Si se llamó a `next` sin un argumento, entonces la ejecución simplemente pasar
 
 ---
 
-## Eliminar un documento
+### Eliminar un documento
 
 ```javascript
-app.delete('/api/persons/:id', (request, response, next) => {
+peopleRouter.delete('/:id', (request, response, next) => {
   const id = request.params.id;
 
   Person.findByIdAndDelete(id)
@@ -623,10 +576,10 @@ app.delete('/api/persons/:id', (request, response, next) => {
 });
 ```
 
-## Actualizar documento
+### Actualizar documento
 
 ```javascript
-app.put('/api/persons/:id', (request, response, next) => {
+peopleRouter.put('/:id', (request, response, next) => {
 
   if (!request.body) {
     return response.status(400).json({
@@ -659,19 +612,63 @@ app.put('/api/persons/:id', (request, response, next) => {
 });
 ```
 
-## Ruta desconocida
+El módulo exporta el enrutador para que esté disponible para todos los consumidores del módulo.
+
+```javascript
+module.exports = peopleRouter;
+```
+
+## Utils
+
+## Configuración
+
+Las variables de entorno definidas en el archivo `.env` se pueden utilizar con la expresión `require('dotenv').config()` y puedes referenciarlas en tu código como lo harías con las variables de entorno normales, con la sintaxis `process.env.SOME_VALUE`.
+
+
+El manejo de las variables de entorno se extrae a un archivo `utils/config.js` separado:
+
+```javascript
+require('dotenv').config()
+
+const PORT = process.env.PORT
+const MONGODB_URI = process.env.MONGODB_URI
+
+module.exports = {
+  MONGODB_URI,
+  PORT
+}
+```
+
+## Logger
+
+Separemos todas las impresiones a la consola en su propio módulo `utils/logger.js:`
+
+```
+const info = (...params) => {
+  console.log(...params)
+}
+
+const error = (...params) => {
+  console.error(...params)
+}
+
+module.exports = {
+  info, error
+}
+```
+
+El `logger` tiene dos funciones, `info` para imprimir mensajes de registro normales y `error` para todos los mensajes de error.
+
+
+## Middleware
+
+Nuestros middleware personalizados se han movido a un nuevo módulo `utils/middleware.js`:
 
 ```javascript
 const unknowEndpoint = (request, response) => {
   response.status(404).json({ error: 'unknow endpoint'})
 }
 
-app.use(unknowEndpoint);
-```
-
-## Manejador de errores
-
-```javascript
 const errorHandler = (error, request, response, next) => {
   if (error.name === 'CastError') {
     return response.status(400).json({ error: 'Incorrect format id.' });
@@ -725,20 +722,84 @@ const errorHandler = (error, request, response, next) => {
   next(error);
 }
 
-app.use(errorHandler);
+module.exports = {
+	unknowEndpoint,
+	errorHandler
+}
 ```
+
+## Crear la app
+
+Para acceder a los datos fácilmente, necesitamos la ayuda del `json-parser` de Express, que se usa con el comando `app.use(express.json())`. El json-parser funciona para que tome los datos JSON de una solicitud, los transforme en un objeto JavaScript y luego los adjunte a la propiedad `body` del objeto `request` antes de llamar al controlador de ruta.
+
+
+Para hacer que Express muestre el contenido estático copiado del frontend, (el directorio `dist`) como su página principal, necesitamos un middleware integrado de Express: `express.static('dist')`.
+
+
+El enrutador que definimos anteriormente se usa si la URL de la solicitud comienza con `/api/persons`. Por esta razón, el objeto `peopleRouter` solo debe definir las partes relativas de las rutas, es decir, la ruta vacía `/` o solo el parámetro `/:id`.
+
+
+En la raíz del proyecto crea un archivo `app.js` con este contenido:
+
+```javascript
+const config = require('./utils/config');
+const express = require('express');
+const cors = require('cors');
+const morgan = require('morgan');
+const peopleRouter = require('./controllers/people');
+const middleware = require('./utils/middleware');
+const logger = require('./utils/logger');
+const mongoose = require('mongoose');
+
+const app = express(); // crear la app de Express
+
+mongoose.set('strictQuery', false)
+
+logger.info('connecting to', config.MONGODB_URI)
+
+mongoose.connect(config.MONGODB_URI)
+  .then(() => {
+    logger.info('connected to MongoDB')
+  })
+  .catch((error) => {
+    logger.error('error connecting to MongoDB:', error.message)
+  })
+
+app.use(cors());
+app.use(express.static('dist'));
+app.use(express.json());
+app.use(morgan('tiny'));
+app.use(middleware.requestLogger);
+
+app.use('/api/notes', peopleRouter)
+
+app.use(middleware.unknownEndpoint)
+app.use(middleware.errorHandler)
+
+module.exports = app
+
+```
+
+La responsabilidad de establecer la conexión con la base de datos se ha entregado al módulo `app.js`.
+
 
 ## Iniciar app
 
-Estamos utilizando el puerto definido en la variable de entorno `PORT` o el puerto 3001 si la variable de entorno PORT no está definida. Fly.io y Render configuran el puerto de la aplicación en función de esa variable de entorno.
+Crea un archivo `index.js` en el directorio raíz del proyecto. El contenido del archivo `index.js` se utiliza para iniciar la aplicación de la siguiente manera:
 
 ```javascript
-const PORT = process.env.PORT || 3001
+const app = require('./app'); // la aplicación Express real
+const config = require('./utils/config');
+const logger = require('./utils/logger');
 
-app.listen(PORT, () => {
-  console.log(`Server running in port ${PORT}`);
+app.listen(config.PORT, () => {
+  logger.info(`Server running on port ${config.PORT}`)
 });
 ```
+
+El archivo `index.js` solo importa la aplicación real desde el archivo `app.js` y luego inicia la aplicación. La función `info` del módulo de registro se utiliza para la impresión de la consola que indica que la aplicación se está ejecutando.
+
+---
 
 # Optimizando el despliegue del frontend
 
