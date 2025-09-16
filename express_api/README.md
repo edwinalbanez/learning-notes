@@ -475,7 +475,7 @@ app.use(cors())
 # Servidor web
 
 ## Controllers
-Crea un directorio llamado `controllers`, dentro de ese directorio crea un archivo `people.js`.
+En la raíz del proyecto, crea un directorio llamado `controllers`, dentro de ese directorio crea un archivo `people.js`.
 
 
 Al principio del archivo, creamos un nuevo objeto `router` e importamos el modelo `Person`:
@@ -643,7 +643,7 @@ module.exports = {
 
 Separemos todas las impresiones a la consola en su propio módulo `utils/logger.js:`
 
-```
+```javascript
 const info = (...params) => {
   console.log(...params)
 }
