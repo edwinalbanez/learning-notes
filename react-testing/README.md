@@ -1,7 +1,7 @@
 # Testing en React 
 Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones_react)
 
-## Tabla de Contenido
+# Tabla de Contenido
 1. [Instalaciones](#instalaciones)
 2. [Configuración](#configuración)
 3. [Renderizando componentes](#renderizando-el-componente-para-pruebas)
@@ -12,12 +12,12 @@ Fuente: [FullStackOpen](https://fullstackopen.com/es/part5/probando_aplicaciones
 8. [Probando formularios](#probando-formularios)
 9. [Cobertura de las pruebas](#cobertura-de-las-pruebas)
 
-## Instalaciones
+# Instalaciones
 Comencemos instalando Vitest y la librería jsdom que simula un navegador web:
 ```bash
 npm install --save-dev vitest jsdom
 ```
-Además de Vitest, también necesitamos otra librería de pruebas que nos ayudará a renderizar componentes para fines de prueba. La mejor opción actual para esto es **react-testing-library**, que ha visto un rápido crecimiento en popularidad recientemente. También vale la pena extender el poder expresivo de las pruebas con la librería **jest-dom**.
+Además de `Vitest`, también necesitamos otra librería de pruebas que nos ayudará a renderizar componentes para fines de prueba. La mejor opción actual para esto es `react-testing-library`, que ha visto un rápido crecimiento en popularidad recientemente. También vale la pena extender el poder expresivo de las pruebas con la librería `jest-dom`.
 
 Instalemos las librerías con el comando:
 ```bash
@@ -30,7 +30,9 @@ Resumen de instalaciones:
 - `@testing-library/react` ➡️ renderiza componentes de React en el DOM simulado.
 - `@testing-library/jest-dom` ➡️ añade métodos para realizar pruebas.
 
-## Configuración
+---
+
+# Configuración
 Agregamos un script al archivo `package.json` para ejecutar las pruebas:
 ```json
 {
@@ -51,9 +53,23 @@ Vamos a crear un archivo `testSetup.js` en la raíz del proyecto con el siguient
   cleanup();
  })
  ```
-Ahora, luego de cada prueba, la función cleanup es ejecutada para resetear jsdom, que esta simulando al navegador.
+Ahora, luego de cada prueba, la función `cleanup` es ejecutada para resetear `jsdom`, que esta simulando al navegador.
 
-El último import extiende el uso de Vitest con matchers específicos para DOM. Añade métodos como `toBeInTheDocument()`, `toHaveClass()`, `toBeVisible()`, etc.
+En `import '@testing-library/jest-dom/vitest'` se importan matchers personalizados de `jest-dom` adaptados para `Vitest`. Este import:
+
+- No extrae ninguna variable (es un side-effect import)
+- Extiende las aserciones de Vitest con matchers específicos para el DOM
+- Añade métodos como: `toBeInTheDocument()`, `toHaveTextContent()`, `toBeVisible()`, `toHaveClass()`, etc.
+- Hace que tus tests sean más legibles y expresivos
+
+## Puntos clave:
+
+- El archivo `testSetup.js` se ejecuta `UNA sola vez al inicio` (no antes de cada test)
+- El `afterEach()` se REGISTRA en ese momento
+- El `cleanup()` se EJECUTA después de cada test individual
+- Es un archivo de configuración global que afecta a `todos` tus tests
+
+---
 
 Expandamos el archivo `vite.config.js` de la siguiente manera:
 ```javascript
@@ -66,15 +82,31 @@ export default defineConfig({
   }
 })
 ```
-Con globals: true, no es necesario importar palabras clave como `describe`, `test` y `expect` en las pruebas.
 
-Resumen de configuraciones:
+## `environment: 'jsdom'` 
+Define el entorno de ejecución de los tests:
 
-- Agregar un script en `package.json` para ejecutar los tests.
-- Crear un archivo que se ejecuta automáticamente antes de todas las pruebas. Su propósito es preparar el entorno de testing y establecer comportamientos comunes.
-- Definir el entorno de las pruebas (jsdom), permitir el uso de funciones comunes para el testing sin necesidad de importarlas, y establecer que archivos se ejecutan antes de las pruebas.
+- `'jsdom'`: simula un navegador en Node.js
+- Proporciona APIs del navegador: `window`, `document`, `localStorage`, etc.
+- Esencial para testing de React ya que React necesita el `DOM`
+- Otras opciones: `'node'` (por defecto), `'happy-dom'`, `'edge-runtime'`
 
-## Renderizando el componente para pruebas
+Sin esto, obtendrías errores como:` ReferenceError: document is not defined`
+
+## `globals: true`
+Habilita variables globales de testing:
+
+- Hace disponibles funciones sin importarlas: `describe`, `it`, `test`, `expect`, `beforeEach`, `afterEach`, `vi`, etc.
+
+## `setupFiles: './testSetup.js'`
+Especifica el archivo de configuración inicial:
+
+- Ruta al archivo que se ejecuta antes de todos los tests
+- Puede ser un `string` (un archivo) o un `array de strings` (múltiples archivos)
+- En este caso apunta a `./testSetup.js` (relativo a la raíz del proyecto)
+- Aquí es donde normalmente pondrías el código del `cleanup()` y `jest-dom` que vimos antes
+
+# Renderizando el componente para pruebas
 Tomaremos como ejemplo este componente para renderizar una nota:
 ```javascript
 const Note = ({ note, toggleImportance }) => {
