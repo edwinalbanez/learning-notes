@@ -65,12 +65,9 @@ class Motocicleta extends Vehiculo {
 Sirve para ocultar la complejidad. Se define "qué" hace un objeto, pero no necesariamente "cómo". Para esto se usan clases abstractas e interfaces.
 
 ### Clases abstractas
-Una clase abstracta es una clase que no se puede instanciar (no puedes crear un objeto directamente con new ClaseAbstracta()). Su único propósito es ser heredada por otras clases (clases hijas).
+Una clase abstracta es una clase que no se puede instanciar (no puedes crear un objeto directamente con `new ClaseAbstracta()`). Su único propósito es ser heredada por otras clases (clases hijas).
 
 Se utiliza para definir una estructura común y obligar a las clases hijas a implementar ciertos métodos, garantizando que todas compartan un comportamiento base.
-
-#### Métodos Abstractos
-Un método abstracto es una declaración de una función que obliga a la clase hija a definir su lógica. Es como decir: "No sé exactamente cómo lo harás, pero prometo que cualquier hijo mío sabrá hacer esto".
 
 #### Ejemplo
 Imagina que estás desarrollando un sistema para una veterinaria. Todos los animales hacen un sonido, pero un "Animal" genérico no suena a nada; un "Perro" o un "Gato" sí.
@@ -110,7 +107,6 @@ class Gato extends Animal {
 
 $miPerro = new Perro("Bruno");
 echo $miPerro->respirar(); //Bruno está respirando
-echo "\n";
 echo $miPerro->hacerSonido(); //Bruno hace ¡guau!
 ```
 
@@ -121,8 +117,6 @@ echo $miPerro->hacerSonido(); //Bruno hace ¡guau!
 Es un contrato puro. No puede tener lógica, solo define qué métodos deben existir. Una clase puede implementar múltiples interfaces.
 
 ```php
-<?php
-
 interface Exportable {
   public function exportar(): string;
 }
@@ -134,3 +128,70 @@ class ReporteVentas implements Exportable {
 }
 ```
 
+## D. Polimorfismo
+Es la capacidad de tratar diferentes objetos de la misma manera si comparten una `interfaz` o `clase` padre. Esto hace que tu código sea desacoplado.
+
+```php
+interface Animal {
+  public function hacerSonido();
+}
+
+class Perro implements Animal {
+  public function hacerSonido(): string {
+    return "¡guau!";
+  }
+}
+
+class Gato implements Animal {
+  public function hacerSonido(): string {
+    return "¡miau!";
+  }
+}
+
+//función polimórfica: acepta cualquier objeto que sea un Animal
+function emitirSonido(Animal $animal) {
+  echo $animal->hacerSonido() . "\n";
+}
+
+$mascotas = [new Perro(), new Gato()];
+
+foreach($mascotas as $mascota){
+  emitirSonido($mascota);
+  //siempre funciona sin importar si es Perro o Gato, porque ambos son Animales
+}
+```
+---
+
+# Constructor
+PHP ofrece métodos especiales que se ejecutan automáticamente ante ciertos eventos. El más importante es el `__construct()`.
+
+```php
+class Usuario {
+  private string $nombre;
+
+  //Se ejecuta al instanciar: new Usuario("Alex")
+  public function __construct(string $nombre){
+    $this->nombre = $nombre;
+  }
+}
+
+```
+
+## Características avanzadas
+
+### Promoción de propiedades
+En versiones antiguas, definíamos la propiedad y luego la asignábamos en el constructor. Hoy lo hacemos en una sola línea:
+
+```php
+class Producto {
+  public function __construct(
+    private string $nombre,
+    private float $precio,
+    protected int $stock = 0
+  ){}
+
+  public function getDetalles(): string {
+    return "$this->nombre cuesta $$this->precio";
+  }
+}
+```
