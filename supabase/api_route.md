@@ -77,3 +77,32 @@ create policy "Los usuarios autenticados pueden actualizar las puntuaciones."
   using (true)
   with check (true);
 ```
+
+## 2.4 Habilitar el acceso a la API de datos para roles autenticados y de servicio.
+Con RLS configurado, otorgue acceso de escritura a los roles `authenticated` y `service_role`.
+```sql
+-- Conceda acceso de escritura solo después de haber implementado RLS y las políticas.
+grant select, insert, update, delete on public.leaderboard to authenticated;
+grant select, insert, update, delete on public.leaderboard to service_role;
+```
+
+## 2.5 Inserta algunos datos ficticios
+Ahora agrega algunas puntuaciones a la tabla para que la API tenga algo que consultar.
+```sql
+insert into leaderboard (player, score)
+values
+  ('alice', 4200),
+  ('bob', 3700),
+  ('carol', 5100),
+  ('dave', 2900);
+```
+
+## 2.6 Obtener los datos
+Puedes encontrar tu URL de API y tus claves en la sección `Configuración` > `Configuración de API` del Panel de control. Consulta la tabla `leaderboard`  agregando `/rest/v1/leaderboard` a la URL de la API.
+
+
+
+
+
+
+
