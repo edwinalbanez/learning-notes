@@ -1,3 +1,30 @@
+# Uso de esquemas personalizados
+Por defecto, su base de datos tiene un esquema `public` que se expone automáticamente en las API de datos.
+
+## Creación de esquemas personalizados 
+Puedes crear tu propio esquema personalizado ejecutando la siguiente consulta SQL, sustituyendo `myschema` por el nombre que quieras usar para tu esquema:
+```sql
+CREATE SCHEMA myschema;
+```
+
+## Exponiendo esquemas personalizados
+Puedes exponer esquemas de base de datos personalizados; para ello, debes seguir estos pasos:
+
+- Ve a la configuración de la API y agrega tu esquema personalizado a "Esquemas expuestos".
+<img width="706" height="233" alt="image" src="https://github.com/user-attachments/assets/050e8446-3ae2-4117-ab46-fed778d440e4" />
+ 
+ - Ejecute la siguiente consulta SQL, sustituyendo `myschema` por el nombre de su esquema:
+```sql
+  GRANT USAGE ON SCHEMA myschema TO anon, authenticated, service_role;
+  GRANT ALL ON ALL TABLES IN SCHEMA myschema TO anon, authenticated, service_role;
+  GRANT ALL ON ALL ROUTINES IN SCHEMA myschema TO anon, authenticated, service_role;
+  GRANT ALL ON ALL SEQUENCES IN SCHEMA myschema TO anon, authenticated, service_role;
+  ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA myschema GRANT ALL ON TABLES TO anon, authenticated, service_role;
+  ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA myschema GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+  ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA myschema GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+```
+
+
 ## 1. Crear tabla
 
 Crea una tabla de clasificación para almacenar los nombres de los jugadores y sus puntuaciones.
@@ -14,3 +41,39 @@ create table leaderboard (
 ## 2. Habilitar el acceso a la API de datos para el rol `anon`
 Exponga la tabla `leaderboard` a través de la API de datos para que pueda consultarse mediante HTTP. Una tabla de clasificación debe ser pública, por lo que los clientes anónimos solo necesitan acceso de lectura.
 
+```sql
+-- Permitir acceso de solo lectura a clientes anónimos y autenticados
+grant select on public.leaderboard to anon;
+grant usage on schema sistema_tienda to anon, authenticated;
+grant select on table sistema_tienda.productos to anon, authenticated;
+```
+
+## 3. Configurar RLS
+Habilite la seguridad a nivel de fila (RLS) para esta tabla y cree las políticas que controlan quién puede leer y escribir filas. En una tabla de clasificación, cualquier persona debería poder leer las puntuaciones. Solo los usuarios autenticados deberían poder enviarlas o actualizarlas.
+
+```sql
+-- Activar RLS
+alter table "leaderboard"
+enable row level security;
+
+-- Cualquiera puede consultar la tabla de clasificación.
+create policy "Leaderboard is public"
+  on leaderboard
+  for select
+  to anon, authenticated
+  using (true);
+
+-- Los usuarios autenticados pueden enviar y actualizar puntuaciones.
+create policy "Authenticated users can submit scores"
+  on leaderboard
+  for insert
+  to authenticated
+  with check (true);
+
+create policy "Authenticated users can update scores"
+  on leaderboard
+  for update
+  to authenticated
+  using (true)
+  with check (true);
+```
