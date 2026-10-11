@@ -48,6 +48,12 @@ Exponga la tabla `leaderboard` a través de la API de datos para que pueda consu
 grant select on table myschema.leaderboard to anon, authenticated;
 ```
 
+---
+También se puede habilitar el acceso en la sección `Integraciones` > `API de datos` > `Configuración del Panel de control`. En **Esquemas expuestos** , asegúrese de que `public` esté incluido y, a continuación, en **Tablas expuestas** , active el acceso para la tabla `leaderboard`.
+
+<img width="704" height="277" alt="image" src="https://github.com/user-attachments/assets/904be89c-1c31-48c1-9cd8-0587108025cd" />
+
+
 ## 2.3 Configurar RLS
 Habilite la seguridad a nivel de fila (RLS) para esta tabla y cree las políticas que controlan quién puede leer y escribir filas. En una tabla de clasificación, cualquier persona debería poder leer las puntuaciones. Solo los usuarios autenticados deberían poder enviarlas o actualizarlas.
 
