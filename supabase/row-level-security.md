@@ -2,7 +2,7 @@
 
 ## Contenido
 - [Comprender la seguridad a nivel de fila (RLS)](#comprender-la-seguridad-a-nivel-de-fila): explica cómo se combinan los permisos y las políticas para controlar el acceso
-- [Proteger una tabla mediante RLS]: es el procedimiento que debe seguirse para cada tabla en un esquema expuesto: permisos (grants), políticas y la base de datos de pruebas de Supabase.
+- [Proteger una tabla con RLS](#proteger-una-tabla-con-rls): es el procedimiento que debe seguirse para cada tabla en un esquema expuesto: permisos (grants), políticas y la base de datos de pruebas de Supabase.
 ---
 
 ## Comprender la seguridad a nivel de fila
@@ -30,6 +30,8 @@ where auth.uid() = tareas.user_id;
 -- La política se añade de forma implícita.
 ```
 
+---
+
 ### Roles
 **Supabase** asigna cada consulta a uno de los roles:
 
@@ -50,7 +52,23 @@ on perfiles for select
 to authenticated
 using ( true );
 ```
+---
 
+### Permisos y políticas
+
+**Postgres** realiza dos comprobaciones antes de que un usuario acceda a una tabla:
+
+- Los **`permisos`** (grants) determinan si un rol **puede**, en primer lugar, realizar una operación (`select`, `insert`, etc) sobre la tabla.
+- Si el usuario tiene permiso para realizar la operación; entonces, las **`políticas`** verifican a qué filas se puede aplicar dicha operación.
+
+Configura ambos elementos para cada tabla que expongas.
+
+> [!NOTE]
+> Añadir políticas `no revoca` los permisos concedidos. Una tabla protegida únicamente mediante políticas `sigue permitiendo` a un usuario anónimo realizar inserciones, siempre y cuando no se revoque el permiso correspondiente.
+
+---
+
+## Proteger una tabla con RLS
 
 
 
