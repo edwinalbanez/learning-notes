@@ -52,6 +52,9 @@ on perfiles for select
 to authenticated
 using ( true );
 ```
+> [!IMPORTANT]
+> Una política que permite el acceso de lectura (`select`) al rol `anon` mediante `USING (true)` otorga a cualquier visitante no autenticado acceso de lectura a todas las filas de la tabla `perfiles`. Utilízala únicamente para datos destinados a ser públicos.
+
 ---
 
 ### Permisos y políticas
@@ -63,7 +66,7 @@ using ( true );
 
 Configura ambos elementos para cada tabla que expongas.
 
-> [!NOTE]
+> [!IMPORTANT]
 > Añadir políticas `no revoca` los permisos concedidos. Una tabla protegida únicamente mediante políticas `sigue permitiendo` a un usuario anónimo realizar inserciones, siempre y cuando no se revoque el permiso correspondiente.
 
 ---
@@ -91,6 +94,39 @@ revoke all on table public.reportes from anon, authenticated;
 grant select, insert, update, delete on table public.reports to authenticated;
 ```
 
+---
+
+### Escribir una política para cada operación.
+
+Crea una política independiente para cada una de las operaciones: `SELECT`, `INSERT`, `UPDATE` y `DELETE`. Postgres no admite múltiples operaciones en una misma cláusula `FOR`, y una política `FOR ALL` oculta qué operación debía cubrir cada regla.
+
+Estos ejemplos utilizan una tabla de perfiles en la que cada usuario solo tiene acceso a su propia fila:
+
+```sql
+create table perfiles (
+  id uuid primary key,
+  user_id uuid references auth.users,
+  avatar_url text
+);
+
+alter table perfiles enable row level security;
+
+revoke all on table perfiles from anon, authenticated;
+grant select, insert, update, delete on table perfiles to authenticated;
+```
+
+> [!NOTE]
+> **Supabase** ofrece funciones auxiliares que simplifican RLS si utilizas **Supabase Auth**. `auth.uid()` devuelve el ID del usuario que realiza la solicitud.
+
+#### Políticas `SELECT`
+Puedes especificar determinadas políticas mediante la cláusula `using`.
+
+```sql
+create policy "Los usuarios solo pueden ver su propio perfil."
+on perfiles for select
+to authenticated
+using ( (select auth.uid()) = user_id );
+```
 
 
 
