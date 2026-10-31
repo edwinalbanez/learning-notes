@@ -70,8 +70,26 @@ Configura ambos elementos para cada tabla que expongas.
 
 ## Proteger una tabla con RLS
 
+### Habilita RLS y establece los permisos
 
+Ejecuta el siguiente código SQL utilizando el editor SQL en el panel de control (Dashboard) de Supabase. Habilita RLS y, a continuación, configura los permisos para que se ajusten a las funciones de cada rol en tu aplicación:
 
+#### 1. Habilita `RLS` en la tabla.
+```sql
+alter table public.reportes enable row level security;
+```
+  Una vez habilitada la RLS, no es posible acceder a ningún dato a través de la API mediante una clave publicable hasta que se creen políticas.
+
+#### 2. Revoca cualquier permiso existente en los roles `anon` y `authenticated`.
+```sql
+revoke all on table public.reportes from anon, authenticated;
+```
+
+#### 3. Concede únicamente los privilegios que el rol necesita.
+```sql
+-- Los usuarios que han iniciado sesión pueden gestionar los informes. Los que no han iniciado sesión no tienen acceso a nada.
+grant select, insert, update, delete on table public.reports to authenticated;
+```
 
 
 
