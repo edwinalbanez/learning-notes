@@ -118,6 +118,8 @@ grant select, insert, update, delete on table perfiles to authenticated;
 > [!NOTE]
 > **Supabase** ofrece funciones auxiliares que simplifican RLS si utilizas **Supabase Auth**. `auth.uid()` devuelve el ID del usuario que realiza la solicitud.
 
+---
+
 #### Políticas `SELECT`
 Puedes especificar determinadas políticas mediante la cláusula `using`.
 
