@@ -72,7 +72,7 @@ Configura ambos elementos para cada tabla que expongas.
 
 ## Proteger una tabla con RLS
 
-### Habilita RLS y establece los permisos
+### 1. Habilita RLS y establece los permisos
 
 Ejecuta el siguiente código SQL utilizando el editor SQL en el panel de control (Dashboard) de Supabase. Habilita RLS y, a continuación, configura los permisos para que se ajusten a las funciones de cada rol en tu aplicación:
 
@@ -129,6 +129,8 @@ to authenticated
 using ( (select auth.uid()) = user_id ); -- el ID del usuario que inició sesión debe ser el mismo que la columna "user_id"
 ```
 
+---
+
 #### Políticas `INSERT`
 Puedes especificar políticas de inserción mediante la cláusula `with check`. La expresión `with check` garantiza que cualquier fila nueva cumpla con las restricciones de la política, en este ejemplo, un usuario no puede crear una fila que pertenezca a otra persona.
 
@@ -139,6 +141,8 @@ to authenticated
 with check ( (select auth.uid()) = user_id );
 ```
 Cada vez que se crea una nueva fila, el ID del usuario que inició sesión debe ser el mismo que se registró en la columna `user_id`.
+
+---
 
 #### Políticas `UPDATE`
 Puedes especificar políticas de actualización combinando las expresiones `using` y `with check`. La cláusula `using` determina qué filas existentes **pueden** actualizarse. La cláusula `with check` define cómo debe ser la fila resultante, lo que impide que un usuario reasigne el `user_id` a otra persona.
@@ -155,6 +159,8 @@ Si no se define ninguna expresión de comprobación (`with check`), la expresió
 > [!IMPORTANT]
 > Para realizar una operación `UPDATE`, se requiere una política `SELECT` antes. Sin una política `SELECT`, la operación `UPDATE` no funcionará según lo previsto.
 
+---
+
 #### Políticas `DELETE`
 Puedes especificar políticas de eliminación mediante la cláusula `using`.
 
@@ -164,6 +170,47 @@ on perfiles for delete
 to authenticated
 using ( (select auth.uid()) = user_id );
 ```
+
+---
+
+### Especifica roles en tus políticas
+
+Indica **siempre** el rol al que se aplica una política, utilizando la cláusula `to`. En lugar de esto:
+```sql
+create policy "test_select" on test_table
+using ( auth.uid() = user_id );
+```
+
+Debes hacer esto:
+```sql
+create policy "test_select" on test_table
+to authenticated -- siempre se debe especificar el rol
+using ( (select auth.uid()) = user_id );
+```
+Esto evita que la política se ejecute para usuarios **anónimos**, porque al escribir `to authenticated` se reserva para usuarios autenticados.
+
+### Llamar funciones con `SELECT`
+Puedes utilizar la sentencia `select` para mejorar las políticas que emplean funciones. Por ejemplo, en lugar de esto:
+```sql
+create policy "test_select" on test_table
+to authenticated
+using ( auth.uid() = user_id );
+```
+Puedes hacer:
+```sql
+create policy "test_select" on test_table
+to authenticated
+using ( (select auth.uid()) = user_id );
+```
+Cuando escribes `auth.uid()` directamente, **Postgres** puede volver a ejecutar la función por cada fila que revisa. Con 100,000 filas, serían 100,000 llamadas.
+
+Al envolverlo en `(select auth.uid())`, **Postgres** lo trata como una `subconsulta` que se evalúa **una sola vez** por consulta, guarda el resultado y lo reutiliza para compararlo con cada fila. El resultado es el mismo, pero mucho más rápido en tablas grandes.
+
+
+
+
+
+
 
 
 
