@@ -16,7 +16,7 @@ create policy "Los usuarios solo pueden ver sus propias tareas pendientes."
 on tareas -- indica la tabla
 for select -- en qué acción se activará la política
 to authenticated -- la política se aplica a los usuarios que iniciaron sesión
-using ( (select auth.uid()) = user_id ); -- condición para permitir el "select" (el resultado debe ser booleano)
+using ( (select auth.uid()) = user_id ); -- el ID del usuario que inició sesión debe ser el mismo que la columna "user_id"
 ```
 
 > [!NOTE]
@@ -26,8 +26,7 @@ Esa política se traduce en lo siguiente cada vez que un usuario selecciona un e
 ```sql
 select *
 from tareas
-where auth.uid() = tareas.user_id;
--- La política se añade de forma implícita.
+where auth.uid() = tareas.user_id; -- La política se añade de forma implícita.
 ```
 
 ---
@@ -61,8 +60,8 @@ using ( true );
 
 **Postgres** realiza dos comprobaciones antes de que un usuario acceda a una tabla:
 
-- Los **`permisos`** (grants) determinan si un rol **puede**, en primer lugar, realizar una operación (`select`, `insert`, etc) sobre la tabla.
-- Si el usuario tiene permiso para realizar la operación; entonces, las **`políticas`** verifican a qué filas se puede aplicar dicha operación.
+- Los **`permisos`** (grants) determinan si un rol **puede o no** realizar una operación (`select`, `insert`, etc) sobre la tabla.
+- Si el usuario tiene permiso; entonces, las **`políticas`** verifican a qué filas se puede aplicar dicha operación.
 
 Configura ambos elementos para cada tabla que expongas.
 
@@ -94,13 +93,11 @@ revoke all on table public.reportes from anon, authenticated;
 grant select, insert, update, delete on table public.reports to authenticated;
 ```
 
----
-
 ### Escribir una política para cada operación.
 
 Crea una política independiente para cada una de las operaciones: `SELECT`, `INSERT`, `UPDATE` y `DELETE`. Postgres no admite múltiples operaciones en una misma cláusula `FOR`, y una política `FOR ALL` oculta qué operación debía cubrir cada regla.
 
-Estos ejemplos utilizan una tabla de perfiles en la que cada usuario solo tiene acceso a su propia fila:
+Estos ejemplos utilizan una tabla de perfiles en la que cada usuario solo tiene acceso a su propia fila. Primero, realizamos los 3 pasos anteriores:
 
 ```sql
 create table perfiles (
@@ -109,16 +106,18 @@ create table perfiles (
   avatar_url text
 );
 
+-- Habilita RLS en la tabla.
 alter table perfiles enable row level security;
 
+--- Revoca cualquier permiso existente en los roles anon y authenticated
 revoke all on table perfiles from anon, authenticated;
+
+-- Concede únicamente los privilegios que el rol necesita
 grant select, insert, update, delete on table perfiles to authenticated;
 ```
 
 > [!NOTE]
 > **Supabase** ofrece funciones auxiliares que simplifican RLS si utilizas **Supabase Auth**. `auth.uid()` devuelve el ID del usuario que realiza la solicitud.
-
----
 
 #### Políticas `SELECT`
 Puedes especificar determinadas políticas mediante la cláusula `using`.
@@ -127,13 +126,44 @@ Puedes especificar determinadas políticas mediante la cláusula `using`.
 create policy "Los usuarios solo pueden ver su propio perfil."
 on perfiles for select
 to authenticated
-using ( (select auth.uid()) = user_id );
+using ( (select auth.uid()) = user_id ); -- el ID del usuario que inició sesión debe ser el mismo que la columna "user_id"
 ```
 
+#### Políticas `INSERT`
+Puedes especificar políticas de inserción mediante la cláusula `with check`. La expresión `with check` garantiza que cualquier fila nueva cumpla con las restricciones de la política, en este ejemplo, un usuario no puede crear una fila que pertenezca a otra persona.
 
+```sql
+create policy "Los usuarios pueden crear su propio perfil."
+on perfiles for insert
+to authenticated
+with check ( (select auth.uid()) = user_id );
+```
+Cada vez que se crea una nueva fila, el ID del usuario que inició sesión debe ser el mismo que se registró en la columna `user_id`.
 
+#### Políticas `UPDATE`
+Puedes especificar políticas de actualización combinando las expresiones `using` y `with check`. La cláusula `using` determina qué filas existentes **pueden** actualizarse. La cláusula `with check` define cómo debe ser la fila resultante, lo que impide que un usuario reasigne el `user_id` a otra persona.
 
+```sql
+create policy "Los usuarios pueden actualizar su propio perfil."
+on perfiles for update
+to authenticated
+using ( (select auth.uid()) = user_id )       -- ¿Se puede actualizar esta fila?
+with check ( (select auth.uid()) = user_id ); -- ¿Cómo debe quedar la fila después de actualizar?
+```
+Si no se define ninguna expresión de comprobación (`with check`), la expresión `using` determina tanto qué filas son visibles como qué filas nuevas están permitidas.
 
+> [!IMPORTANT]
+> Para realizar una operación `UPDATE`, se requiere una política `SELECT` antes. Sin una política `SELECT`, la operación `UPDATE` no funcionará según lo previsto.
+
+#### Políticas `DELETE`
+Puedes especificar políticas de eliminación mediante la cláusula `using`.
+
+```sql
+create policy "Los usuarios pueden eliminar su propio perfil."
+on perfiles for delete
+to authenticated
+using ( (select auth.uid()) = user_id );
+```
 
 
 
