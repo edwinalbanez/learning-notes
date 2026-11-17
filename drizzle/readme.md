@@ -1,5 +1,15 @@
 # Drizzle ORM
 
+## Contenido
+- [Instalación](#instalación)
+- [Esquema](#esquema)
+- [Conexión a la base de datos](#conexión-a-la-base-de-datos)
+- [Configuración](#configuración)
+- [Migraciones](#migraciones)
+- [Studio](#studio)
+
+---
+
 ## Instalación
 Vamos a configurar Drizzle para nuestro proyecto. Primero, instale los paquetes necesarios:
 
@@ -12,7 +22,7 @@ npm install -D drizzle-kit
 
 El paquete `drizzle-orm` es el ORM en sí mismo. El paquete `@neondatabase/serverless` es el controlador de PostgreSQL optimizado para entornos *serverless* como Vercel, donde la base de datos se ejecuta en Neon. El paquete `drizzle-kit` es una herramienta de línea de comandos (CLI) para gestionar las migraciones de la base de datos.
 
-## Esquema de base datos
+## Esquema
 A continuación, definimos el esquema de la base de datos. Creamos un archivo `db/schema.ts` en la raíz con el siguiente contenido:
 
 ```javascript
